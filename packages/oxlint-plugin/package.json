@@ -1,0 +1,54 @@
+{
+  "name": "@agcodeguidelines/oxlint-plugin",
+  "version": "0.1.0",
+  "description": "AdGuard guideline rules and JavaScript rule adapters for Oxlint",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./compat": {
+      "types": "./dist/compat.d.ts",
+      "default": "./dist/compat.js"
+    },
+    "./stylistic": {
+      "types": "./dist/stylistic.d.ts",
+      "default": "./dist/stylistic.js"
+    },
+    "./jsdoc": {
+      "types": "./dist/jsdoc.d.ts",
+      "default": "./dist/jsdoc.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./jsx-a11y": {
+      "types": "./dist/jsx-a11y.d.ts",
+      "default": "./dist/jsx-a11y.js"
+    },
+    "./import": {
+      "types": "./dist/import.d.ts",
+      "default": "./dist/import.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "engines": {
+    "node": "^24.20.0"
+  },
+  "peerDependencies": {
+    "oxlint": "1.82.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@oxlint/plugins": "1.82.0",
+    "oxc-parser": "0.149.0",
+    "oxc-resolver": "11.24.2"
+  }
+}

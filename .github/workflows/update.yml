@@ -1,0 +1,66 @@
+name: Refresh guideline snapshot
+
+on:
+  schedule:
+    - cron: '19 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: guideline-snapshot-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.20.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - run: pnpm install --frozen-lockfile
+      - name: Refresh the source snapshot
+        id: refresh
+        continue-on-error: true
+        run: pnpm run snapshots:refresh --latest-guide
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check the proposed snapshot
+        id: check
+        if: steps.refresh.outcome == 'success'
+        continue-on-error: true
+        run: pnpm run check
+      - name: Open a signed draft update
+        id: proposal
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: automation/guideline-snapshot
+          title: 'chore: refresh AdGuard guideline snapshot'
+          draft: true
+          sign-commits: true
+          commit-message: |
+            chore: refresh AdGuard guideline snapshot
+
+            Co-authored-by: Codex <codex@openai.com>
+          body: |
+            Refresh the frozen AdGuard JavaScript guide and sample, reproduce the isolated rule sources, and regenerate the catalog and attributed Vitest corpus.
+
+            Refresh: ${{ steps.refresh.outcome }}. Acceptance check: ${{ steps.check.outcome }}.
+
+            Review changes to rule behavior, disabled sample settings, manual clauses, capability exclusions, and compatibility patches before merging. This workflow does not merge or publish packages.
+      - name: Dispatch full platform checks for the bot branch
+        if: steps.proposal.outputs.pull-request-number != ''
+        run: gh workflow run check.yml --ref automation/guideline-snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Surface failed refreshes or checks
+        if: steps.refresh.outcome != 'success' || steps.check.outcome != 'success'
+        run: exit 1

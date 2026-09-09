@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/rule-catalog" },
+    { "path": "packages/oxlint-plugin" },
+    { "path": "packages/oxlint-config" }
+  ]
+}

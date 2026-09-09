@@ -1,0 +1,6 @@
+* text=auto eol=lf
+# Preserve upstream source bytes while checking whitespace in authored files.
+vendor/** -whitespace
+docs/reference/Javascript.md -whitespace
+docs/reference/eslintrc.cjs -whitespace
+**/THIRD_PARTY_NOTICES.md -whitespace

@@ -1,0 +1,207 @@
+{
+  "extends": [
+    "./packages/oxlint-config/dist/typescript.json",
+    "./packages/oxlint-config/dist/node.json"
+  ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "coverage/**",
+    "docs/reference/**",
+    "tests/fixtures/**",
+    ".cache/**",
+    "vendor/**"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
+      "rules": {
+        "ag-jsdoc/require-param-type": "off",
+        "ag-jsdoc/require-returns-type": "off"
+      }
+    },
+    {
+      "files": [
+        "scripts/**/*.ts",
+        "tests/**/*.ts",
+        "vitest.config.ts"
+      ],
+      "rules": {
+        "ag-import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true
+          }
+        ],
+        "ag-import/no-relative-packages": "off",
+        "ag-compat/no-restricted-syntax": [
+          "error",
+          "ForInStatement",
+          "LabeledStatement",
+          "WithStatement"
+        ],
+        "ag-compat/no-param-reassign": [
+          "error",
+          {
+            "props": false
+          }
+        ],
+        "ag-compat/no-continue": "off",
+        "ag-compat/no-nested-ternary": "off",
+        "ag-compat/max-len": [
+          "error",
+          {
+            "code": 120,
+            "comments": 120,
+            "tabWidth": 4,
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/**/*.ts"
+      ],
+      "rules": {
+        "ag-import/no-relative-packages": "off",
+        "ag-import/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true,
+            "packageDir": "."
+          }
+        ],
+        "ag-import/extensions": [
+          "error",
+          "never",
+          {
+            "js": "always",
+            "json": "always"
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "**/*.ts"
+      ],
+      "rules": {
+        "ag-import/extensions": [
+          "error",
+          "never",
+          {
+            "js": "always",
+            "json": "always"
+          }
+        ],
+        "ag-compat/max-len": [
+          "error",
+          {
+            "code": 120,
+            "comments": 120,
+            "tabWidth": 4,
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true,
+            "ignoreRegExpLiterals": true
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/oxlint-plugin/src/legacy-context.ts",
+        "packages/oxlint-plugin/src/legacy-source.ts",
+        "packages/oxlint-plugin/src/import-parser.ts",
+        "packages/oxlint-plugin/src/remote-source.ts"
+      ],
+      "rules": {
+        "ag-compat/no-restricted-syntax": [
+          "error",
+          "ForInStatement",
+          "LabeledStatement",
+          "WithStatement"
+        ],
+        "ag-compat/no-continue": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/oxlint-plugin/src/import-parser.ts"
+      ],
+      "rules": {
+        "ag-compat/no-param-reassign": [
+          "error",
+          {
+            "props": false
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/oxlint-plugin/src/legacy-context.ts",
+        "packages/oxlint-plugin/src/legacy-source.ts",
+        "packages/oxlint-plugin/src/import-resolver.ts",
+        "packages/oxlint-plugin/src/remote-source.ts",
+        "scripts/process.ts"
+      ],
+      "rules": {
+        "ag-import/prefer-default-export": "off"
+      }
+    },
+    {
+      "files": [
+        "scripts/import-upstream.ts"
+      ],
+      "rules": {
+        "ag-compat/max-classes-per-file": "off"
+      }
+    }
+  ],
+  "settings": {
+    "import/resolver": {
+      "typescript": true,
+      "node": {
+        "extensions": [
+          ".js",
+          ".mjs",
+          ".jsx",
+          ".ts",
+          ".tsx",
+          ".mts",
+          ".cts"
+        ]
+      }
+    },
+    "import/extensions": [
+      ".js",
+      ".mjs",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".mts",
+      ".cts"
+    ],
+    "import/core-modules": [],
+    "import/ignore": [
+      "node_modules",
+      "\\.(coffee|scss|css|less|hbs|svg|json)$"
+    ],
+    "propWrapperFunctions": [
+      "forbidExtraProps",
+      "exact",
+      "Object.freeze"
+    ],
+    "agReact": {
+      "pragma": "React",
+      "version": "detect"
+    },
+    "agSourceType": "module",
+    "agTypeScript": true
+  }
+}

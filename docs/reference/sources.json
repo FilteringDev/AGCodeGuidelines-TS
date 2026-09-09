@@ -1,0 +1,50 @@
+{
+  "guide": {
+    "repository": "AdguardTeam/CodeGuidelines",
+    "revision": "4774d8e04322b9d6a195ba677269bbdb00082a1d"
+  },
+  "sources": {
+    "core": {
+      "repository": "eslint/eslint",
+      "version": "8.57.1",
+      "ref": "v8.57.1",
+      "directory": "eslint-8.57.1",
+      "archiveSha256": "c2217fc1186b63105061fbeb419446e15e89e1caca11368b064641e92e9003c0"
+    },
+    "jsdoc": {
+      "repository": "gajus/eslint-plugin-jsdoc",
+      "version": "64.3.6",
+      "ref": "v64.3.6",
+      "directory": "eslint-plugin-jsdoc-64.3.6",
+      "archiveSha256": "75e82f7e833d46670692825bb98f7faaf2517ca47a1b1e3599c87f8f04944d64"
+    },
+    "react": {
+      "repository": "jsx-eslint/eslint-plugin-react",
+      "version": "7.37.5",
+      "ref": "v7.37.5",
+      "directory": "eslint-plugin-react-7.37.5",
+      "archiveSha256": "2d7cb1432d95bf7761f0da790c82bc55e1aa8ce108930c21388debf3a634ad42"
+    },
+    "import": {
+      "repository": "import-js/eslint-plugin-import",
+      "version": "2.32.0",
+      "ref": "v2.32.0",
+      "directory": "eslint-plugin-import-2.32.0",
+      "archiveSha256": "9cfcaba06b7a275683639a43954974ddeabf2f8ecf52f1c009313ddf5d1c4f5d"
+    },
+    "a11y": {
+      "repository": "jsx-eslint/eslint-plugin-jsx-a11y",
+      "version": "6.10.2",
+      "ref": "v6.10.2",
+      "directory": "eslint-plugin-jsx-a11y-6.10.2",
+      "archiveSha256": "fbc9de7e8b592d6b15ff875c5f523ff598faf57c98e7b448f17312dca0fb7039"
+    },
+    "style": {
+      "repository": "eslint-stylistic/eslint-stylistic",
+      "version": "5.10.0",
+      "ref": "v5.10.0",
+      "directory": "eslint-stylistic-5.10.0",
+      "archiveSha256": "73776b7c13f561d40da170ca67cc7293ab37e50ce44ba187fb845d4c999cc252"
+    }
+  }
+}

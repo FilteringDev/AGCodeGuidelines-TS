@@ -1,0 +1,36 @@
+{
+  "name": "@agcodeguidelines/oxlint-config",
+  "version": "0.1.0",
+  "description": "Reproducible AdGuard JavaScript and TypeScript guidelines for Oxlint",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./javascript": "./dist/javascript.json",
+    "./typescript": "./dist/typescript.json",
+    "./node": "./dist/node.json",
+    "./tsconfig": "./tsconfig.base.json"
+  },
+  "files": [
+    "dist",
+    "tsconfig.base.json",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "dependencies": {
+    "@agcodeguidelines/oxlint-plugin": "workspace:*"
+  },
+  "peerDependencies": {
+    "oxlint": "1.82.0"
+  },
+  "engines": {
+    "node": "^24.20.0"
+  },
+  "license": "MIT",
+  "bin": {
+    "ag-oxlint-config": "./dist/cli.js"
+  }
+}

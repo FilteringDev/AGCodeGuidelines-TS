@@ -1,0 +1,22 @@
+{
+  "name": "@agcodeguidelines/rule-catalog",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "THIRD_PARTY_NOTICES.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": "^24.20.0"
+  },
+  "description": "Pinned AdGuard guideline clauses, rule mappings, and configuration provenance"
+}

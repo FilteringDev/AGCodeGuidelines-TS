@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+
+# The legacy configuration packages are read only as baseline data. Oxlint
+# executes the reusable rules; their ESLint peers do not run another linter.
+autoInstallPeers: false
+strictPeerDependencies: false
+
+allowBuilds:
+  esbuild: true

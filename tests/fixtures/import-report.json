@@ -1,0 +1,1785 @@
+{
+  "failures": {},
+  "exclusions": {
+    "custom parser AST": 92,
+    "bind operator": 14,
+    "flow": 167,
+    "upstream disables supported parsers": 4,
+    "do expressions": 14,
+    "Flow wildcard type": 1,
+    "legacy TypeScript parser AST": 3
+  },
+  "excludedCases": [
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-unexpected-multiline.js",
+      "rule": "no-unexpected-multiline",
+      "reason": "custom parser AST",
+      "codeHash": "09012da2448d7be33743bc40d6143642f2ef7c8cc37a74243a18898d524edfc0"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-unexpected-multiline.js",
+      "rule": "no-unexpected-multiline",
+      "reason": "custom parser AST",
+      "codeHash": "b2f0d5ba988b17c1c45b3f0f6ded2182fa3f4f823d54f8dfa11ed8781c084dbe"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-unexpected-multiline.js",
+      "rule": "no-unexpected-multiline",
+      "reason": "custom parser AST",
+      "codeHash": "16c56cd7a81efc62004b90295832b206e288d64ca00641bfdfe803cc59ccaf30"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-unexpected-multiline.js",
+      "rule": "no-unexpected-multiline",
+      "reason": "custom parser AST",
+      "codeHash": "76ed1f1f9f528f07954c07fc9f367a70ac2dcbbd55ac838230f857bb09315448"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/array-bracket-spacing.js",
+      "rule": "array-bracket-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "3ddd52880831ec1d2201d369a6025e987224220ac1230c80559b1829b6e21ec4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/array-bracket-spacing.js",
+      "rule": "array-bracket-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "f9d1677a57a008538a61acf6e3908d108a1a76a580c83343cd193d627aaba7f6"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/array-bracket-spacing.js",
+      "rule": "array-bracket-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "3ddd52880831ec1d2201d369a6025e987224220ac1230c80559b1829b6e21ec4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/array-bracket-spacing.js",
+      "rule": "array-bracket-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "f9d1677a57a008538a61acf6e3908d108a1a76a580c83343cd193d627aaba7f6"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "048703634e912c022825596b54d6f1d82e71d46132cf92e651ec30c68b336db5"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "553518be727b6f0a0870ef5d819dea89784db01c97c1585f019b89455312ee99"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "71207cdc670e6ebffa8255dd506423f9a4fd68a4a71671662b2b23fc7e2ad927"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "0ce7776d94b30dabdb9a44897f90e055c0f7cfb471bb6937ecf7ce8158affaf8"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "048703634e912c022825596b54d6f1d82e71d46132cf92e651ec30c68b336db5"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "553518be727b6f0a0870ef5d819dea89784db01c97c1585f019b89455312ee99"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "71207cdc670e6ebffa8255dd506423f9a4fd68a4a71671662b2b23fc7e2ad927"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/comma-dangle.js",
+      "rule": "comma-dangle",
+      "reason": "custom parser AST",
+      "codeHash": "0ce7776d94b30dabdb9a44897f90e055c0f7cfb471bb6937ecf7ce8158affaf8"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/function-paren-newline.js",
+      "rule": "function-paren-newline",
+      "reason": "custom parser AST",
+      "codeHash": "3c4ba7f7ee6052e1da7f53cf5da86708dcb33b595080318f8c1418a1ee4cb662"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/function-paren-newline.js",
+      "rule": "function-paren-newline",
+      "reason": "custom parser AST",
+      "codeHash": "3c4ba7f7ee6052e1da7f53cf5da86708dcb33b595080318f8c1418a1ee4cb662"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "fe80378e513400879d60c08be088497cd77ef020ee199e4ecc80dcaac4238991"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "3bb80347e2c0b6b86324bdf53c67f8ccd35ae3f6c3df8310345e9d5b571de77c"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "607d6e697a90153c6cf262ebf3e9b52803320e39d8c5db5ab5a49967d4470921"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "745d40909e799a04e7085c17bd04c30a2e8c760962db4b3181fabdfc8ff3c053"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "359d1f6fa5a30a3dfbea3dd2511553220edcda845d20f62e5d48182f1fe414a4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "2b23a2e6da64409dd518ded206c7e5ca471f19553661f26df61cca641cccc467"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "d7b4b809553416cf74a0a8ba035594a80847ed47b422e34bec064141d0aad01e"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "9417aa7d566fb0d5ec2007cb7962b7bb62dd72c63cf8ec69f3fab8a5e06142bd"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "ecb802b7b8a5afc7e4e333eb33c21cc54d906b8a78504e82375e1e5abc808123"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "4bd8f8930950fad1c13a7959f9da7e3ff6a9c9c062ffa18d6e049248b066e1e9"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "7eb95fc8ef269f020cb2d798291f1065e85e6044ccbf78acbaf18e6310897e59"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "5434ddb1e77e0519644d95d3d71c270c9b699f41d40eb31843a56c4372f442be"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "5a02b3c5cae3d9a09b7cd3c5445aa5785b1275945673ac9851f56a7163535831"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/indent.js",
+      "rule": "indent",
+      "reason": "custom parser AST",
+      "codeHash": "f08ba70aa15cf8f6e09d6e720155ad188e22aa05de8ee18ad3d7c97d4f708df7"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/keyword-spacing.js",
+      "rule": "keyword-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "2163941c92aee722cfd2c1681682cae7b7482a774aafc056a2294ea5d288699e"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/keyword-spacing.js",
+      "rule": "keyword-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "f79668c2038b46aff92922f107b2581f59cac275fbbd8a16764144fca5d83e2a"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/keyword-spacing.js",
+      "rule": "keyword-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "2163941c92aee722cfd2c1681682cae7b7482a774aafc056a2294ea5d288699e"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/keyword-spacing.js",
+      "rule": "keyword-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "f79668c2038b46aff92922f107b2581f59cac275fbbd8a16764144fca5d83e2a"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-spacing.js",
+      "rule": "object-curly-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "8d4d09ec880663c7a911fce3ae1dc94f0c2f9155f1871cd3b5d39347bea0d662"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-spacing.js",
+      "rule": "object-curly-spacing",
+      "reason": "custom parser AST",
+      "codeHash": "7cd0e20fd49017ce02b889e7874f3fe45d0347ff29cf277fda347840bcebad4e"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "29abce8653959e7fcaf5a34d65e1d064088b1ea2309c2e7967b8944ce9df39ad"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "5cc59eb6bf5ffb19f2e23006cbdf2dc09b43203db6e48fa29e4538481d3ad960"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "1c40fe6e6fc6df875d4c6552d6dd9d7ea644d71a260719353bd0014d2513067d"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "a4d2984453b24aa78eb9b88d10b569f6447e1a00bf1f9d47b2a28cd357012055"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "1c40fe6e6fc6df875d4c6552d6dd9d7ea644d71a260719353bd0014d2513067d"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "a4d2984453b24aa78eb9b88d10b569f6447e1a00bf1f9d47b2a28cd357012055"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "29abce8653959e7fcaf5a34d65e1d064088b1ea2309c2e7967b8944ce9df39ad"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-curly-newline.js",
+      "rule": "object-curly-newline",
+      "reason": "custom parser AST",
+      "codeHash": "5cc59eb6bf5ffb19f2e23006cbdf2dc09b43203db6e48fa29e4538481d3ad960"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/prefer-object-spread.js",
+      "rule": "prefer-object-spread",
+      "reason": "custom parser AST",
+      "codeHash": "2ceecf8291fbfe8587e80ff9499698c89e868e98d16ef6955cb199141016d4b2"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/prefer-object-spread.js",
+      "rule": "prefer-object-spread",
+      "reason": "custom parser AST",
+      "codeHash": "e9d563834760698d609dab13febbedf9b7e7958e9f3612dc250d15b9a0636c9a"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-before-blocks.js",
+      "rule": "space-before-blocks",
+      "reason": "custom parser AST",
+      "codeHash": "5b8d4d9e6bb4c0cf5717e54cbcae66d6cba9d65ba844bbf7efde38215abe398e"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-before-blocks.js",
+      "rule": "space-before-blocks",
+      "reason": "custom parser AST",
+      "codeHash": "5260c8a1b0101182670edb831bdf1050e80377b7ebc0101b379369b9db14bc59"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-before-function-paren.js",
+      "rule": "space-before-function-paren",
+      "reason": "custom parser AST",
+      "codeHash": "b9bb859692619480c6082c038dc04901a89ec4d9f59be066e17bce0dc7ef8eeb"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "5f288fdd632f4a200dc239737b8f16bdbc7f442c5bd84c6a43dd27d38c199440"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "f360a5758f7a8a7b20e1b74d97831ec84e58b4505107637aed82b1e27f0aae18"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "6ee7a63347889a02efb0abdc8b05d2422c63356c3b4671751c74832bb1a4abe9"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "31d0f13672741af383fd4575a59cb1775d5988a4ca61f6c6823c56006bffb879"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "1835435ef63f6802e233edbfa5d867e19260d5d76b22f47bb3ad646de10d25b6"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/space-infix-ops.js",
+      "rule": "space-infix-ops",
+      "reason": "custom parser AST",
+      "codeHash": "834cf16ef2973a6413907a75c0ea9186592936dca9e284c263f955cb037202e7"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "4adbbf6b58bdb014c777b7e32b4ca67ca4da22b3788def0390eb3122b85e86c1"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "aaa12137fc2a22cce7df4a46a8406911b76c769ff039bab3aeee40c0dbde17e5"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "4adbbf6b58bdb014c777b7e32b4ca67ca4da22b3788def0390eb3122b85e86c1"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "aaa12137fc2a22cce7df4a46a8406911b76c769ff039bab3aeee40c0dbde17e5"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "4adbbf6b58bdb014c777b7e32b4ca67ca4da22b3788def0390eb3122b85e86c1"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "aaa12137fc2a22cce7df4a46a8406911b76c769ff039bab3aeee40c0dbde17e5"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9ecf6d21b580005e7e370e3daf0adfc270da93adf68f1b0d19abc20e2d670533"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9ecf6d21b580005e7e370e3daf0adfc270da93adf68f1b0d19abc20e2d670533"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9ecf6d21b580005e7e370e3daf0adfc270da93adf68f1b0d19abc20e2d670533"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9fe7e5d4d1d7adef0979827e03ffac95dbc9aa69b3603d91570e79f7293906c7"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9fe7e5d4d1d7adef0979827e03ffac95dbc9aa69b3603d91570e79f7293906c7"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "9fe7e5d4d1d7adef0979827e03ffac95dbc9aa69b3603d91570e79f7293906c7"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "1fe37691396ffcc2fa7830e70a0debe21db5d3515822489c76f7f33c06235bb4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "1fe37691396ffcc2fa7830e70a0debe21db5d3515822489c76f7f33c06235bb4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "1fe37691396ffcc2fa7830e70a0debe21db5d3515822489c76f7f33c06235bb4"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "cbadf40db0e7f9d894e780ffc28457b3f1ebc70dddcdb6c8490b80caacc5b505"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "cbadf40db0e7f9d894e780ffc28457b3f1ebc70dddcdb6c8490b80caacc5b505"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "cbadf40db0e7f9d894e780ffc28457b3f1ebc70dddcdb6c8490b80caacc5b505"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "a1644a9cd2579f81c01cc8d67e71587b38382800e6d5c48ad7968b8064860fdd"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "a1644a9cd2579f81c01cc8d67e71587b38382800e6d5c48ad7968b8064860fdd"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/arrow-parens.js",
+      "rule": "arrow-parens",
+      "reason": "custom parser AST",
+      "codeHash": "a1644a9cd2579f81c01cc8d67e71587b38382800e6d5c48ad7968b8064860fdd"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-useless-constructor.js",
+      "rule": "no-useless-constructor",
+      "reason": "custom parser AST",
+      "codeHash": "4239427f184ae855dd14a24169d6ae62bb3a3ed37b8a1c7e6d58f3ea79173822"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-useless-rename.js",
+      "rule": "no-useless-rename",
+      "reason": "custom parser AST",
+      "codeHash": "934e83228f5a571a0c6ad7d4ba24f5364b6d1524068cdbb92eeb85652013cdc0"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/no-var.js",
+      "rule": "no-var",
+      "reason": "custom parser AST",
+      "codeHash": "b278601439f119bc093c2ecfddfe5d48165ed5bf807c648b03607c614f711d71"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/object-shorthand.js",
+      "rule": "object-shorthand",
+      "reason": "custom parser AST",
+      "codeHash": "3ab085ac2b8dd85a424c2219d15c45c7dafec6628fb3f0f7c12ef4b14861f145"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/prefer-const.js",
+      "rule": "prefer-const",
+      "reason": "custom parser AST",
+      "codeHash": "d241c1ca7589cd2a4ea0b44fc66aef0d514b3928af361f81336ed2813964ff32"
+    },
+    {
+      "origin": "eslint-8.57.1/tests/lib/rules/prefer-const.js",
+      "rule": "prefer-const",
+      "reason": "custom parser AST",
+      "codeHash": "d241c1ca7589cd2a4ea0b44fc66aef0d514b3928af361f81336ed2813964ff32"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "b668303140a0d05ac8a386e07b4700b51dbf0bfef1fdd948fc2ee46e6ca35edc"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "ae132f2e0aabaa01040628f42fd69bdab7149e47e70f82481958639a008d2866"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "3abb51924949652c2fcda4d647aba647de4cc03366cd46efc2c0d5ab0c8951a0"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "8bef3a00b0803200ab7811692aba64695f2373018f47908e2abbfc4789cc6284"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "f997d1457c78c590032ba328e643d0d79d7ae83ac94bbc07856e5ceedac6ea90"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "547676ba96eea292192c2a121e3af8205af3d0dd069a103c276abdf7f6d52c35"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "8bef3a00b0803200ab7811692aba64695f2373018f47908e2abbfc4789cc6284"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "85455dc8ee57979d276fe162279da447c522fdcaa5db765c835be3423aac6fb8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "54ae17fdb1ef9d72697c921db16a2dce9fd11bb562e635e4d3912032938a52f6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "8430a653fafb7ca1f6909a59ed28d8bb716fde2e0c5480fa36fa3c044f980e49"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "197482ca5bda2e9fec04760cb7488d2be714a0d5936ef3dcd378b0adc653d54e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "6deff1159f7c8d16be3b8c6e2a2e81c14406fd1624ce5d2fe7c1f6e56804a962"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-bind.js",
+      "rule": "react/jsx-no-bind",
+      "reason": "bind operator",
+      "codeHash": "4c8e7a2f46b2a7dd0cdd9e1ced304f78763c4b3c9d7516040b45216137a6f1ec"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-stateless-function.js",
+      "rule": "react/prefer-stateless-function",
+      "reason": "flow",
+      "codeHash": "467061f17ecd48600a2703874820341a23e7adc08f5e224846490c133103e80b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "4c07f507df7f4eeb32ce4ab1381a8afacddc26d61c3174b75240aa6e41b1b258"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "2e8e5618228460b48dea12a32fbc70e7961627d78a2b2c2caecb29c97d639b9a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "a9b23fa66acb93607e16de7510666b526e5eab2b4bf0879590d1356c8aaaec1c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "9e3effa230387e5dc0dde9f3dc9c524d7df0d78ee4f24617630bbbe1407bd7dc"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "9cb1ccf897f2f476c49054846bfc8c437e28ad791102316580d7aa83d527551b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "628ffe9cd26d7e693dd06016bbd113c1888655006509be049cf15f58e26e3fb8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "3e9fd17dd7104c5a1c8d9cda102a4c9b64bd51e20d1ad0afeaaca3b4e043762a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "bfc596ed3bad3bffd81670c6d262c10bf8e456057c0251b98b90516d9e161ffd"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "9bde11dfc08635e794e8c0012211e9a9139dc39c4792702e7412ea1b4b4cbe0d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "bb36c2f69f65cbbbfa20cb87fb93eb35e0c0351eb426c3b8814ed8496189ba4a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "0872e5677a09a944b0856db9728793eebffd39ee98178d845faa9dc4ca180fed"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "207414d5cefef6647b9682b87c8545b42c6f45aada3cf2916e0153c52eb9470f"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "88e806eee6d2aeeb7f40995d2a45a9eedc6300457a60fd3705e4a905fb1ca268"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "24aa4c8942caabfb0a86ddd4bd29da10f1ef904eb17231b7cd55393eb208c503"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "46b3541d4e5e2912e1dba8c408f8abedc3e79e518bfad6972dd6d244f5bcd477"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "0c9aa40432e9e3386a0af31c1c40ef83400441e95eac96bcc288343469e72e8a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "addb90bf5ed43050509c8065cf403666a2b9526fc31bdb616e114417f54a9a75"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "3f077672db278c60c429bbfbbe266b0261f3198985d97c14da6b40d473f6cd63"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "c2d62fe79c9a1e0918f41ea0d5e1eccd2cbb71c5f572e8fb6b8eb352c5744cc2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "621b4d02d0033a73ff58b156dcf1a3f8571066669cfa9af3861228663c47a25d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "1a8fe2cd1b158b0726105d9de61ba323f4a2a801343b9f1f601c4396016ae805"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "d2dd531b5cf9a036bc568ae0fbe0df551189a2ba27d2b48a987c3eab9e9075b3"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b43491b94b629c3d1e3263d0725a917a68dd07d3edbf384150fbc4a9083f6c45"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "8b716e0a4c3809e0f2eb3ce12f917138170c354c6d614ed26eca62994a4ffacd"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "19192ab3d5c61315a4b01157a6cca468fc8844f1a2e74c2c9f20abb6d0a03bbd"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "19192ab3d5c61315a4b01157a6cca468fc8844f1a2e74c2c9f20abb6d0a03bbd"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "ef3dc71fc97e4f55093c2460d857155e445cb043d29cf8f392942f1772a3570b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "ef3dc71fc97e4f55093c2460d857155e445cb043d29cf8f392942f1772a3570b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "6d7d61410e3093d5b6d0a81e85cab850b5fcd847bb2c58fd3622ca66ff515774"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "6d7d61410e3093d5b6d0a81e85cab850b5fcd847bb2c58fd3622ca66ff515774"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "f88ae54014882ab4f13bb194e148202b14f658cf049def7c13b0c6b5ffb15539"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "ba536bf484745173bb4d4ed54800b7bdbbc671542c8f580321c7eabd4d7efe65"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "ba536bf484745173bb4d4ed54800b7bdbbc671542c8f580321c7eabd4d7efe65"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b663a89a1531450b1027804307ff3f0a48be2fb7701a2749a10e5c06c566fc48"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b663a89a1531450b1027804307ff3f0a48be2fb7701a2749a10e5c06c566fc48"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "45a7607d7245f05cc4c2fa09e3cd80f464e214f3fb47ae1c77ab792098920c96"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "fcbb205b7806df448ba8f21266d37d18dc4b65cf7d3a861d2ead805e01ac3194"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b8b5ae146bec6043c20a00dd222a077c0234a0ec227abd6ace053595ea0a6cc7"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b8b5ae146bec6043c20a00dd222a077c0234a0ec227abd6ace053595ea0a6cc7"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "d8a907e44c153950a59f218b7675df51c6d0055c2a3df320f1ebf0b7c4dcc8ba"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "4e7f55e541c5e6dd5a2436db1724d8d7da21e246aee85ee917f65b037fd221a3"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b1cccf5598e0686a2f40c33efcceb69c3d2dd8b56f45c4774fc011089d05724f"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "62836157b0ce7ab571d2de52404285f29eaa9b8664b2504143bb4c32e7d3c553"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "f2721035d1a61ad2ca5ed1e3bd7ee5630f11a47f50ef05448ba1b311e606509c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "151b2903886f17fd7eafe3a2381770abbcda253882e017192ffffa572dfc2dc3"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "bcfc7734d4b8b5b60f4e1ea521db371b19c58709b263c515e066ba6b14bf4ac6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "bind operator",
+      "codeHash": "73caa96f60dc8d78eca248afffa10b262f5069b1f7a2c12be19ee0ef04070472"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "6acecbb2afd2af1b85463659ba51fd8a933d348f64f3d3437fde92babb14f53a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "ced36f70282854526948b01af5e78f1b044e719073667e00b3135dda23c43e8e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "920f1d8063d97397f27d5ae9cc695da9e3ca41fbdcc3ffc79142f07faab84e49"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b3eb7a364aba66661e3a6f1a5a26660ad718d15d4760fccad7ad679f55a7dc4e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "upstream disables supported parsers",
+      "codeHash": "46d1d2bb711dacde15baa3e768293887d98a42942e9fc6bdbcd1bed4b5fb844c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "1b9dd9248470b8625164400521295784fccc14a400aebac97c8706e945bc08ac"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "e54c32970acb335c87a0d0e40c902a170b793862a63ecf630b9d6eec7161dbb8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "3924ed39722efd7b157f3cee9c43538ed58b4b445d6391ac5480b18ee8d0831b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "7809822473b68c1b21e782cec248ac8bb79a48a73fd57695c66e295d13f5ff3c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "14bc858a743945c1540ff794437885c5eb61f602ab10f9399d5139c34f064052"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "373b23ebe57a4d6bb32ad8c52da1b922789d3251d8bd1e683efad4a9e1b7200c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "82a24bc7e56fa751e54762a083371f114e31dd20c78492a17a4df3d6f72278a6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "29746baab34359a3fdb6dc5db8d3c05632ebc12481bce141b7b982e5cf4e073b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "4a4731ea68d2db23abcb9eafb40b6bd09eb1ecf2e700462b1fa4b86c82aec2e5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "3a77d776825d9237d18ac1283271b69bd0cf1a71db001820f0c4923495e085eb"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "64b269fde06e06e8c1e9418d5ceaf01c1456104ed2b32023f2a48ca11f77ad71"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "0479e8d9ff373b058f3cf399832b3363bd8b664c854abcece7b18d460716088e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "89cc171ba6eafe42b1a5dcfb023e1048a1aefb06a8a7a6076f0b897e232a26a2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "89cc171ba6eafe42b1a5dcfb023e1048a1aefb06a8a7a6076f0b897e232a26a2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "417de9b0684d1737e9576616822dc9024ff30717d322802401dc18546d59b09b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "417de9b0684d1737e9576616822dc9024ff30717d322802401dc18546d59b09b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "cbe85037c995fd6024f163d512fa7245aea75f3a941b52d999269b4ab6589ddb"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "cbe85037c995fd6024f163d512fa7245aea75f3a941b52d999269b4ab6589ddb"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "46aaaec032a663977225fb25d07389459ca454a133cbc390f127ffd198a3a752"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "46aaaec032a663977225fb25d07389459ca454a133cbc390f127ffd198a3a752"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "c60c64141b21b07e2eaf8a75c0fdb089cca005f40ec8d0f3f2d29205ead2b552"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "c60c64141b21b07e2eaf8a75c0fdb089cca005f40ec8d0f3f2d29205ead2b552"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "920b35a159f7c5f8436faa3538bf22505a006870a3023e4e9e2c9cd7d276c654"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "920b35a159f7c5f8436faa3538bf22505a006870a3023e4e9e2c9cd7d276c654"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "70e22191a96b3085f3a1cb80960e3cee41b5fb6d5d91cac949bf5938bc72eb79"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "70e22191a96b3085f3a1cb80960e3cee41b5fb6d5d91cac949bf5938bc72eb79"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "7ff9f6627ce28f7736c590996716dadf2af5929be588eb0eb85783598260bca8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "7ff9f6627ce28f7736c590996716dadf2af5929be588eb0eb85783598260bca8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "31a652c6b8a80d1fd66f5818eb4ae18096520643ed2a3c7fd5ef64e79bb30e20"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "671a0d52754b966f326e3000ce779760dbc26ed83f3bbb994e3e3ba406ea0354"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "e61629304932deaa81f4c61b8580daaa265f2bedc083121b90d645bb5a572b9e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "b88406a52a96ce0fa3da89bf51fbe4568c363b863c469e351e655da5c0ccd699"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "70a51b65b92eb186be894a6a62ec3ec1c08be79af07fee1e73ba14ca4ba03211"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "4115add7457ba61d76f611537727ef87d6318be0c6963502ffd7361210cb9267"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "bb9c25ac54a96b5d3bfb22ff4d193502c2daf6fb60d0f31404af955325b25172"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "05ef516c2b1e7574880de694bc80a4c6f167381a075decfcff83866e4f2db30b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prop-types.js",
+      "rule": "react/prop-types",
+      "reason": "flow",
+      "codeHash": "e7db2372e072e720373ede1e02ccc3376e655089d88394618dd39ff2a8cb7b1b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "7833accb2351c1cedbee00cb4bf5043511297a4b5871911fe14ef80c781a8933"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "406607022165b1953e77ff894a1da505b3e7935850ed8af838b3b1e607c1bd0c"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "c98e705acdeedf962454cbba415f4c0b75ab7fa947e0245e9426d5af689cd710"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "d01b07dea6b03bd8b9d257ecf2d9d2d7c1d81a02068fde55e4db406f5a065ee0"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "bdab717b717054ea740808c336be061845768d73c2fa6a9a707d5ff75dc9ebfa"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "bc15a6b0b14a11b52e55c95b5aa4d3c8b11663ceef854478efe83133290a6bcb"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "db5cfc44bcd51b46a282b9abd752ea5b96aa262277f5f59569e8d692a5b0ed2a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "e78f107da3f8c6e42ecd212dc60a9bc9846e7bcd9bcd09ca25643ffbf6cd2218"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "ca87132a9113c150bd235da057e947386625d54cfda4ba2661989a9a04b4008d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "57395e7e93944632445a3a2bd8f657b69ec5bf863e7cc6d2bc745e52a9966d11"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "flow",
+      "codeHash": "96cc43c5b26d214523ee7ae1bfbc819fd016698d46b1849930471896bb40c531"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "516943c765244401d3e893ab7e594f4deeb7663cc686d3f7ffa8434d332e7e7b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "406df69704155940823cf0d119a60b05a3dceb6d89e5254e36fa51ae7f6c5621"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "5facc56dea1156f5d4e5fc3a24b2ace3be7d56110067b699611df0e527f7ceb2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-indent.js",
+      "rule": "react/jsx-indent",
+      "reason": "do expressions",
+      "codeHash": "9f894ed8a9a2564a1d7a542237a9ef13f94bf3f96e356af43e88fd0f569fc3f1"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "19a280d3ddbe92f2a2ec0f9f2bdb96beea0aa81f35f830aa0746d72e91512a59"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "3d0f33d0a906111047f80913a314a3313decd7e2d0fba8f0d519a9f3d53961d7"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "8798ef9001b2dfcc32ad90658d6b336afb11e24bcbcc00b89bd09e1d731c567e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "b1c86705d3fe9b26155149839bbb62e54e6ba45b4f0a8a71e9f8373b67828652"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "Flow wildcard type",
+      "codeHash": "e19714fe6117957d83bf0ebdb8c60f0da10684be11ea1dde6ce85bd344c193cc"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "3bca8bbbf106f16708959f4fbbde1a5e8fe779c4224dad3bf78f99136099b1ac"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "6f21bf628b533e1e2ad92f2c41a4085b30a82cb6c4e57d19554312c27f467336"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "333bbb569e6d174f224dc92168a074822c53123bd35f6e9cd2f4d199ea542afe"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "7aaeadedab720d17a2231276aa8de5f5767d890decdd74edf6ffc83f7b0b6e30"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "ad9ab966ff0d4648c9c196a099b6d2d63b2f38cb809d21b6c54f543859111d27"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "366bda70e3c27c6d0996f56b4571566c96ce7b1463934758f52e52517c9db8fb"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "38a5f8eeb33f5c67a38768736b52a939d401dbf38950d78da54560649e8d374e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "fd1892b876aa2e2b069c5adb3525afc9c7ce30e349e1ab6a9835837cd54a498d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "ffc7763bbe00ce509ace5187fcaba6c57ba5f8a44d0444587396bcb08a641395"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "bb9c25ac54a96b5d3bfb22ff4d193502c2daf6fb60d0f31404af955325b25172"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "9d8442ae1a2faee7921551f7f088ceea5e2289e6a807516870c6c87e4b1d0d24"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "9d8442ae1a2faee7921551f7f088ceea5e2289e6a807516870c6c87e4b1d0d24"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "22e34bde04ea28750adda33c7bfa4fe720f283b9daefa6a71ae34a14ba952500"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "fcb4fae852a912e9e649310b5e70ea9e62f1d2c90b5bc92740afe31419ff4584"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "2b63113c74e6c7ca65f7dc344e85cb2038cce8e5dfea30d2a65c00054e2a1639"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "ec06734f1e3db78ba1cc2bae5c03e2a8a44680cbdf833bd0b1665fed60353bd0"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "2b274003fa44c4243b1fabd5b3fba050889fde5a1656f5698d4f0ca86e847381"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "22e34bde04ea28750adda33c7bfa4fe720f283b9daefa6a71ae34a14ba952500"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "542d5f2a96bf6b4fcf55291aab6c71266033c2ef98b7216077adbbe8c342ecf9"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "573b4031272a562803a52292f49ccecd182659a285eee4ad84ebf324127ea3f5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "addb90bf5ed43050509c8065cf403666a2b9526fc31bdb616e114417f54a9a75"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "3f077672db278c60c429bbfbbe266b0261f3198985d97c14da6b40d473f6cd63"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "c2d62fe79c9a1e0918f41ea0d5e1eccd2cbb71c5f572e8fb6b8eb352c5744cc2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "e175db445f65aa2aed7555e8942fe9f16d0698df0ce9d23c3447ffe0a318d5fc"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "a448c9bdd1979f827dd8e02c3f2be849f4fc87b547792f24fe0fa4aea7b0eef5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-prop-types.js",
+      "rule": "react/no-unused-prop-types",
+      "reason": "flow",
+      "codeHash": "b1c86705d3fe9b26155149839bbb62e54e6ba45b4f0a8a71e9f8373b67828652"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unescaped-entities.js",
+      "rule": "react/no-unescaped-entities",
+      "reason": "upstream disables supported parsers",
+      "codeHash": "dfd7c92880fd7d09e6874677a4bdbf5cd9ce000e41bb13f5a6f70a75aa37b71e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unescaped-entities.js",
+      "rule": "react/no-unescaped-entities",
+      "reason": "upstream disables supported parsers",
+      "codeHash": "e2e4f81c25fc86f979cdb0ebc93b932d548490934d2161140be758bf2701c652"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unescaped-entities.js",
+      "rule": "react/no-unescaped-entities",
+      "reason": "upstream disables supported parsers",
+      "codeHash": "abd2481d8e15b6213c459cc23bb6246cadbceec8a54aad25e288ae6a853bff10"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "9ca30bed169f94413a69b0e093b1cc0ccf13fc48b2a6e644bf97d6ad920178d5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "78030634bd9716858d33e68861adac846d76e4810a8e6fd12ad806f9cdf73b49"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "46f62cb87630985eb62feedeb8cb5f0e109be708ea68a449e26a7c42b0089273"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "08d5aa01a31cfe08bdace8f5d2bfaf6873d7061aa40d0d976289a7481d94db47"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "e21360423ef24710039bec9708cbdbb9b8c83a476e8d87aa7aecdc7453761080"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "65a94af08ea90afea8f655744681b36348616cf7708d4e072703dc8dd60589b9"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "3be960288b0ae5f31d4036707abb50d3639377fedbb5685ec7dececeaeb6d0b3"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "bf318e6103850492d816431921a149ae972e1c646304708ff7e2d3d84be540b4"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "5aa35b79c3aecc1cb8bf6d34cf114dbf08ab5d743be2e1ba8b0d581367084a0d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "4c0ad1cb7d3a917bb1673a9ef5c2c36e72bc4ba772146d86af6f6d7a485c8e2e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "9d3bca971ed00ffed024ec9e60252024566cca2a98980e7d4c4974f6225272a6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "a1d69a94e3e8d830aa91c0c86998d624b2acfa8786d6337ec3e27b4e2efabec7"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "32336547e6b1f185b307ada22beab7bd34eaf60c59c6e4f9520adc239acab925"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "b48e7a6383524dca8d8ac87b3f5effc9fc26649ed1ae3831fa5611cce0b1c2c6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "999d81a4d500d174a70a55f468036687c58d84c17582a29535bdbedb702881c1"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "cd741bb5563b2af2cd37b72cebe2845fdd752dfcf337d84b43eb4621fd7b02cf"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "9a83e85d033b04b2a6548a962bd3579a1c7f83efb761702276e42d14b7e71dac"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "abf20e724ced55fa262ed09f6f7b4f732d300d9507648bed83bfc66bcc18a064"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "713b36716e8ce49da93ae2fe8a0116beaa5b5d46d242ef60a058a24dbc96939d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "f8bff0db47b7100efae382d415391ff239159c278b0d77be2d62f9d2e077222a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "ae1845145db8dc34b9a2ca6f00411f161e9fe3d98b08f5fee5c79f9ff3c192b8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "79fb9eeb80c56dc43ccf7a25fae58efe422f5e263cf76f850eed5a7cd5e174d0"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "7f369a3ccc81e2076a9c14cec2c674f1babd30dbd3813b54231562fc5fd7269a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "fba6798404e66cb306d6475adb0a58563b8fc09efb8786d13228d6dc185949e0"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "c981ba0d4915500f7a8feb5a45feaaeae8d846e821c1d6a9d1669266a4fddbe6"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "3f890fdf6d60ca20d3d12376d41865ae11040dd84a9b3c551db9f893ad951351"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "670e18262cf8292d2b864769d58047c9878c1852cf62d987f1b182ed61a14bab"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "21f9d98fd4c23dbd722181c76c17b23e1b34a9195c1ebbe0943c920479baad70"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "440f9cb5324d5bb1215bc65c053702dec47dcf72e47806699476d71b3c8cbddf"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "44f241daffce4d729b99961c91ae0fab89995432e66f3c0f2ad2bdee4ea9eb2a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "ea738dc8488a1290732f585214616157c20c6072754f8dd9f15653f28d1f810b"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "9efc40cb85aa3f58ce2d307cbaec83dd2f32445917af047a52c3c6093c1837e5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "e785f27dca24172b18a29b2ffe1d651393ae59e71065682b64c1f49ac753c930"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/require-default-props.js",
+      "rule": "react/require-default-props",
+      "reason": "flow",
+      "codeHash": "5fa4eab0f025af3a9d1ba8af8f7c83f7849bc4a4be9ac919821607dfdc77a2a4"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "1cc350c75c81fc65e08a040a86ff75aef3bddb1640ace28706cfbd2bab7cc2f2"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "d76c5393bb672fadf4254e9ce4345c615b552cead92c45bf6c1465bc6d2f24a7"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "c4a05276db8ba88aea2be0b4f3e6d1e24a3f5aa3c60f624bbc69878b49cd956f"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "acb7043285d2aa5685da9387a44d0ce920b8c54f02b2df4218c0937d0a7be0d5"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "afae1f6480dd070e5247dcaa9b4b7536cfc975a82a116d4a2f77ed59e6b83de9"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/default-props-match-prop-types.js",
+      "rule": "react/default-props-match-prop-types",
+      "reason": "flow",
+      "codeHash": "f5998bd8947fc87ab7e59f3985f25fb69e3e39cb8f3004c97e1dd18e4430c701"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-state.js",
+      "rule": "react/no-unused-state",
+      "reason": "flow",
+      "codeHash": "eb95bcbd9718a45a9f4431ff1e5eba99803ddd72f01cab75f79c3558e01452bd"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/no-unused-state.js",
+      "rule": "react/no-unused-state",
+      "reason": "flow",
+      "codeHash": "aa508ecb2958589af125742b6453218024723676a588c475359f6920ac9ed5b3"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-curly-brace-presence.js",
+      "rule": "react/jsx-curly-brace-presence",
+      "reason": "legacy TypeScript parser AST",
+      "codeHash": "ade662319cb5a1bc69c7491dd6b5de4b01e4ffb46649317e5f2eab75c6d8834a"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-fragments.js",
+      "rule": "react/jsx-fragments",
+      "reason": "legacy TypeScript parser AST",
+      "codeHash": "f50a8cbcb066a5ee0aaba2bf278137841eb39d5c48ff987356550ebda28c5764"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/jsx-no-useless-fragment.js",
+      "rule": "react/jsx-no-useless-fragment",
+      "reason": "legacy TypeScript parser AST",
+      "codeHash": "0bbaca57514464721790ce1bdf436516f2670d5f1f94d779258952c2f150f88e"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "7b5079c9f75c20b5e0ea455a59e29756ade328a3cb3e71b6556a61e03e439965"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "83fc463ea2dec148e7dfe8f2a8cbdda39f30af711494fd41237ba564b66f982d"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "c500f484d8b4f840e2548850801815458fe7a62cabd732c3f6b6fac2bc534127"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "cf9022e843b5ee1b6bc27c8e56c8f8840598391b415bb75fa5da3a17f7ffaced"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "a1c95da48beb164c637566bdcc190babc12f42e4ea2b02605ea1e59f0917b5d8"
+    },
+    {
+      "origin": "eslint-plugin-react-7.37.5/tests/lib/rules/prefer-exact-props.js",
+      "rule": "react/prefer-exact-props",
+      "reason": "flow",
+      "codeHash": "d6e43a47c57b2658de326d3d72f89f5e5e4456696368be8f5abf865f92e1b3e9"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/checkParamNames.js",
+      "rule": "jsdoc/check-param-names",
+      "reason": "custom parser AST",
+      "codeHash": "f47d0674450d488e4d5eb56f69058a38bc00cb64ddf464cc0fd8c46ecb292902"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/noUndefinedTypes.js",
+      "rule": "jsdoc/no-undefined-types",
+      "reason": "custom parser AST",
+      "codeHash": "7e60414c39521ed45ad02c95fa45122638ea38e6f10053185067a182e7f178f5"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireJsdoc.js",
+      "rule": "jsdoc/require-jsdoc",
+      "reason": "custom parser AST",
+      "codeHash": "39aa1d2a8d178a9d76f367d6ff9e866318f39cfd049ed5723320ed91287839ff"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireJsdoc.js",
+      "rule": "jsdoc/require-jsdoc",
+      "reason": "custom parser AST",
+      "codeHash": "509b5c9421236ea2dde1929c03323576575c12e897934f0c43ba6b455c015a51"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireJsdoc.js",
+      "rule": "jsdoc/require-jsdoc",
+      "reason": "custom parser AST",
+      "codeHash": "6a29abe2254c119dbbe07d8fef79eda23665231a35f1ad905ee42773d29e763f"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireJsdoc.js",
+      "rule": "jsdoc/require-jsdoc",
+      "reason": "custom parser AST",
+      "codeHash": "dcf2c208af5a5af94b44e9d6e4d0dc3e9e25d2949c71b12929247ed42692e8ba"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireParam.js",
+      "rule": "jsdoc/require-param",
+      "reason": "custom parser AST",
+      "codeHash": "d9d3f194984779284ec2add4a267055a0499da9b552875a9d56c15a7475d249c"
+    },
+    {
+      "origin": "eslint-plugin-jsdoc-64.3.6/test/rules/assertions/requireParam.js",
+      "rule": "jsdoc/require-param",
+      "reason": "custom parser AST",
+      "codeHash": "f47d0674450d488e4d5eb56f69058a38bc00cb64ddf464cc0fd8c46ecb292902"
+    }
+  ],
+  "count": 41724
+}
