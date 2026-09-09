@@ -50,8 +50,10 @@
   "hashes": {
     "docs/reference/Javascript.md": "53112cfb0630027356bb14a70c6d3df8744d5acd376a430942f1997fb8cd2b0a",
     "docs/reference/airbnb.json": "22563ee49a8e3c8ec31e1352eb0885850b3191c585f391a3f6486c404a42e527",
-    "docs/reference/eslintrc.cjs": "b96e64afd08549d58726e8c102f71cd928d0992f26dfc6a0d0d25575c9351253",
+    "docs/reference/eslintrc.ts": "8e24e92384202396ff8a1f37762e3d6eba38bfc819af783f4656c45b83962e4d",
+    "docs/reference/eslintrc.upstream.txt": "b96e64afd08549d58726e8c102f71cd928d0992f26dfc6a0d0d25575c9351253",
     "docs/reference/sources.json": "b3b887f1113f6278d3af503a213cb3fa33d2d1ba1ef38167ac4b58fddc3dbeee",
+    "scripts/reference-patches.json": "c91e5d7bf472e5e53987165c23b2d003dc4b560ca31dd4348d0f33a63d007eff",
     "scripts/vendor-recipes.json": "ac28f9aeb4c0ed781d2734aa75146bba66137d85dc0d1e2cc01c1be22fedea9c",
     "tests/fixtures/import-report.json": "eee483bacc28fe9e4c974eb5323ef34066617e883d9eb2a0c7a1bcf69da08d35",
     "tests/fixtures/upstream.json": "dfc0a72b9abe316e69a5c5708ecb07cdc0099693c08932769c9ff8708fb7bcce",

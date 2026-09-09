@@ -5,13 +5,15 @@ import { dirname, join } from 'node:path';
 
 import lock from '../docs/reference/sources.json' with { type: 'json' };
 import recipeData from './vendor-recipes.json' with { type: 'json' };
+import { patchSource, type SourcePatch } from './ports';
 
 interface Recipe {
     provider: keyof typeof lock.sources;
     source?: string;
     content?: string;
     guard?: { source: string; sha256: string };
-    patches?: { before: string; after: string }[];
+    patches?: SourcePatch[];
+    patchesFile?: string;
 }
 
 const root = process.argv[process.argv.indexOf('--source-root') + 1];
@@ -28,12 +30,10 @@ for (const [target, recipe] of Object.entries(recipeData as Record<string, Recip
         }
     }
     let content = recipe.source ? await readFile(join(sourceRoot, recipe.source), 'utf8') : recipe.content!;
-    for (const patch of recipe.patches ?? []) {
-        if (content.split(patch.before).length !== 2) {
-            throw new Error(`Review the compatibility patch for ${target}: its context changed.`);
-        }
-        content = content.replace(patch.before, () => patch.after);
-    }
+    const patches = recipe.patchesFile
+        ? JSON.parse(await readFile(recipe.patchesFile, 'utf8')) as SourcePatch[]
+        : [];
+    content = patchSource(content, [...(recipe.patches ?? []), ...patches], target);
     outputs.set(target, content);
 }
 // Validate every source and patch before writing any output.

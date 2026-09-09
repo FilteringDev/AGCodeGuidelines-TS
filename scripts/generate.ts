@@ -6,13 +6,15 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename, relative } from 'node:path';
+import sample from '../docs/reference/eslintrc';
+import { verifyReference } from './reference';
 
 import type {
     Catalog, Clause, Mapping, RuleMap, RuleSetting,
 } from '../packages/rule-catalog/src/index';
 
 interface LegacyConfig {
-    extends?: string[];
+    extends?: readonly string[];
     rules?: RuleMap;
     settings?: Record<string, unknown>;
     env?: Record<string, boolean>;
@@ -91,11 +93,12 @@ apply(airbnb, 'airbnb@19.0.4/base@15.0.0');
 hash('airbnb.json', airbnbText);
 apply(jsdoc.configs.recommended ?? {}, 'jsdoc@64.3.6/recommended');
 hash('jsdoc@64.3.6/recommended', JSON.stringify(jsdoc.configs.recommended));
-const sampleText = await readFile('docs/reference/eslintrc.cjs', 'utf8');
+const sampleText = await readFile('docs/reference/eslintrc.upstream.txt', 'utf8');
 const guideText = await readFile('docs/reference/Javascript.md', 'utf8');
 hash('Javascript.md', guideText);
 hash('eslintrc.cjs', sampleText);
-apply(ROOT_REQUIRE('../docs/reference/eslintrc.cjs') as LegacyConfig, 'eslintrc.cjs');
+verifyReference(sampleText, sample);
+apply(sample, 'eslintrc.cjs');
 
 const additions: RuleMap = {
     'jsdoc/require-file-overview': 'error',

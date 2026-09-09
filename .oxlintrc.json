@@ -7,7 +7,6 @@
     "**/dist/**",
     "**/node_modules/**",
     "coverage/**",
-    "docs/reference/**",
     "tests/fixtures/**",
     ".cache/**",
     "vendor/**"

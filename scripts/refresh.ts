@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 import { execPnpm } from './process';
+import { portReference } from './reference';
 
 interface Source {
     repository: string;
@@ -77,10 +78,12 @@ try {
     const guide = `https://raw.githubusercontent.com/${lock.guide.repository}/${lock.guide.revision}/JavaScript`;
     const guideText = await (await fetchSource(`${guide}/Javascript.md`)).text();
     const sampleText = await (await fetchSource(`${guide}/.eslintrc.js`)).text();
+    const samplePort = portReference(sampleText);
     // Verify ports before applying the new guide snapshot.
     execPnpm(['exec', 'tsx', 'scripts/vendor.ts', '--source-root', root], { stdio: 'inherit' });
     await writeFile('docs/reference/Javascript.md', guideText);
-    await writeFile('docs/reference/eslintrc.cjs', sampleText);
+    await writeFile('docs/reference/eslintrc.upstream.txt', sampleText);
+    await writeFile('docs/reference/eslintrc.ts', samplePort);
     await writeFile('docs/reference/sources.json', `${JSON.stringify(lock, null, 2)}\n`);
     for (const task of ['snapshots:airbnb', 'catalog:generate', 'build']) {
         execPnpm(['run', task], { stdio: 'inherit' });

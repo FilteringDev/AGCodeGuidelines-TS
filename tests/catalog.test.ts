@@ -28,7 +28,7 @@ describe('source and scenario inventory', () => {
     });
 
     it('pins both reference snapshots by their content hash', () => {
-        ['Javascript.md', 'eslintrc.cjs'].forEach((name) => {
+        ['Javascript.md', 'eslintrc.upstream.txt'].forEach((name) => {
             const hash = createHash('sha256')
                 .update(readFileSync(`docs/reference/${name}`))
                 .digest('hex');

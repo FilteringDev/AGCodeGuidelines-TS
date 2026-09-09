@@ -2,9 +2,13 @@
 
 `docs/reference/sources.json` pins the guide commit and six upstream rule/test repositories. Each archive has a SHA-256 digest. `vendor/manifest.json` records the bytes of the frozen guide, inherited sample data, isolated sources, fixture corpus, and port recipes. Normal builds and tests use the committed snapshot and do not fetch upstream source.
 
+The guide's original configuration bytes are retained in `docs/reference/eslintrc.upstream.txt`. The executable port is `docs/reference/eslintrc.ts`. Exact reviewed replacements in `scripts/reference-patches.json` reproduce the typed port, and snapshot checks compare its configuration data with the original sample. The catalog retains the original `eslintrc.cjs` provenance label and upstream hash. A sample change that no longer matches the port must be reviewed before refresh writes snapshots.
+
 Run `pnpm run snapshots:refresh` to download the pinned archives, verify their digests, reproduce the vendor files, recapture Airbnb metadata, generate the catalog, build the packages, and recapture the upstream tests. The command uses `tsx` and does not install or execute an ESLint engine. Run `pnpm run check` afterward. `pnpm run snapshots:refresh --latest-guide` deliberately advances the guide commit to the current upstream branch before performing the same steps.
 
 `pnpm exec tsx scripts/vendor.ts --source-root .cache/upstream --check` independently proves that all isolated files match their sources and reviewed patches. The refresh validates every port before writing vendor files. Exact context replacements fail on missing or ambiguous context. Generated rule registries and the extracted JSDoc helper have source guards that require review when their upstream inputs change.
+
+Recipes may reference a `patchesFile` containing an ordered JSON array of exact `before`/`after` replacements. These replacements run after the recipe's inline patches, and their files are included in the integrity manifest. This keeps larger reviewed ports separate from the source inventory without weakening context checks.
 
 To update a rule-source version, change its version, ref, and directory in the source lock, review the upstream release and dependency requirements, and remove its old archive digest. Run the refresh with `--record-archives` to record the reviewed new archive. Update the source guards, selected rule registry, relative dependency closure, and compatibility patches in `scripts/vendor-recipes.json` as required. Keep generator provenance and importer source directories consistent with the new lock. These updates require a maintainer; the weekly job advances the guide while retaining the reviewed rule-source versions.
 
