@@ -8,9 +8,7 @@
     "**/node_modules/**",
     "coverage/**",
     "tests/fixtures/**",
-    ".cache/**",
-    "vendor/**/*.js",
-    "vendor/**/*.d.ts"
+    ".cache/**"
   ],
   "overrides": [
     {
@@ -116,8 +114,7 @@
       "files": [
         "packages/oxlint-plugin/src/legacy-context.ts",
         "packages/oxlint-plugin/src/legacy-source.ts",
-        "packages/oxlint-plugin/src/import-parser.ts",
-        "packages/oxlint-plugin/src/remote-source.ts"
+        "packages/oxlint-plugin/src/import-parser.ts"
       ],
       "rules": {
         "ag-compat/no-restricted-syntax": [
@@ -146,8 +143,6 @@
       "files": [
         "packages/oxlint-plugin/src/legacy-context.ts",
         "packages/oxlint-plugin/src/legacy-source.ts",
-        "packages/oxlint-plugin/src/import-resolver.ts",
-        "packages/oxlint-plugin/src/remote-source.ts",
         "scripts/process.ts"
       ],
       "rules": {

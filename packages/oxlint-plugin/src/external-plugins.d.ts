@@ -3,7 +3,3 @@ declare module 'eslint-plugin-jsx-a11y' {
     const plugin: import('@oxlint/plugins').Plugin;
     export default plugin;
 }
-declare module 'eslint-plugin-import' {
-    const plugin: import('@oxlint/plugins').Plugin;
-    export default plugin;
-}

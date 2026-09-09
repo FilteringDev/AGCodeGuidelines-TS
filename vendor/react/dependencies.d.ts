@@ -2,6 +2,13 @@
  * @file Contracts for the pinned CommonJS polyfills used by React rules.
  */
 declare module 'array-includes' {
+    /**
+     * Search an array-like value using the upstream includes semantics.
+     * @param values The values to search.
+     * @param search The value to find.
+     * @param [fromIndex] The first index to inspect.
+     * @returns Whether the value is present.
+     */
     function includes(values: ArrayLike<unknown>, search: unknown, fromIndex?: number): boolean;
     export = includes;
 }

@@ -12,7 +12,7 @@
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "vitest.config.ts",
-    "packages/oxlint-plugin/src/vendor.d.ts",
+    "packages/oxlint-plugin/src/external-plugins.d.ts",
     "vendor/react/dependencies.d.ts",
     "vendor/import/dependencies.d.ts"
   ],

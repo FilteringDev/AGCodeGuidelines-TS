@@ -2,6 +2,12 @@
  * @file Contracts for the pinned CommonJS helpers without published declarations.
  */
 declare module 'is-core-module' {
+    /**
+     * Identify modules provided by the selected Node runtime.
+     * @param name The module specifier.
+     * @param [nodeVersion] The Node version to inspect.
+     * @returns Whether the module is built in.
+     */
     function isCoreModule(name: string, nodeVersion?: string | null): boolean;
     export = isCoreModule;
 }

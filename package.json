@@ -21,7 +21,8 @@
     "snapshots:check": "tsx scripts/airbnb.ts --check && tsx scripts/integrity.ts",
     "snapshots:record": "tsx scripts/integrity.ts --write",
     "snapshots:refresh": "tsx scripts/refresh.ts",
-    "snapshots:airbnb": "tsx scripts/airbnb.ts"
+    "snapshots:airbnb": "tsx scripts/airbnb.ts",
+    "source:check": "tsx scripts/sources.ts"
   },
   "devDependencies": {
     "@agcodeguidelines/oxlint-config": "workspace:*",

@@ -14,6 +14,8 @@ The pnpm workspace contains three reusable packages:
 
 Use Node **24.20.0** and pnpm **12.3.4**. TypeScript **7.0.2** compiles declarations and checks types; **tsx** executes TypeScript maintenance scripts. Vitest runs the unit, conformance, compiler, CLI, and packed-consumer tests.
 
+Maintained source files, including all isolated vendor rules and the executable reference configuration, are TypeScript ES modules. `pnpm run source:check` prevents JavaScript and local CommonJS modules from returning to source directories. Packages still publish compiled JavaScript with declarations. See [snapshot maintenance](docs/maintenance.md) for source reproduction and external dependency boundaries.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm run build
