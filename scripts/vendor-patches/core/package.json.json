@@ -1,0 +1,6 @@
+[
+  {
+    "before": "{\n  \"private\": true,\n  \"type\": \"commonjs\"\n}\n",
+    "after": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"@eslint-community/eslint-utils\": \"4.9.1\",\n    \"@eslint-community/regexpp\": \"4.12.2\",\n    \"debug\": \"3.2.7\",\n    \"doctrine\": \"3.0.0\",\n    \"escape-string-regexp\": \"4.0.0\",\n    \"eslint-visitor-keys\": \"3.4.3\",\n    \"espree\": \"9.6.1\",\n    \"esutils\": \"2.0.3\",\n    \"globals\": \"13.24.0\",\n    \"graphemer\": \"1.4.0\",\n    \"ignore\": \"5.3.2\",\n    \"natural-compare\": \"1.4.0\"\n  }\n}\n"
+  }
+]

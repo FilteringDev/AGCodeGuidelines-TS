@@ -1,0 +1,227 @@
+/**
+ * @file Rule to disallow specified names in exports
+ * @author Milos Djermanovic
+ */
+import dependency0 from './utils/ast-utils';
+import type { LegacyRule, Node } from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<
+    [
+        (
+            | { restrictedNamedExports?: string[] }
+            | {
+                restrictedNamedExports?: string[];
+                restrictDefaultExports?: {
+                    direct?: boolean;
+                    named?: boolean;
+                    defaultFrom?: boolean;
+                    namedFrom?: boolean;
+                    namespaceFrom?: boolean;
+                };
+            }
+        )?,
+    ]
+> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow specified names in exports',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/no-restricted-exports',
+        },
+
+        schema: [
+            {
+                anyOf: [
+                    {
+                        type: 'object',
+                        properties: {
+                            restrictedNamedExports: {
+                                type: 'array',
+                                items: {
+                                    type: 'string',
+                                },
+                                uniqueItems: true,
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                    {
+                        type: 'object',
+                        properties: {
+                            restrictedNamedExports: {
+                                type: 'array',
+                                items: {
+                                    type: 'string',
+                                    pattern: '^(?!default$)',
+                                },
+                                uniqueItems: true,
+                            },
+                            restrictDefaultExports: {
+                                type: 'object',
+                                properties: {
+                                    // Allow/Disallow `export default foo; export default 42; export default
+                                    // function foo() {}` format
+                                    direct: {
+                                        type: 'boolean',
+                                    },
+
+                                    // Allow/Disallow `export { foo as default };` declarations
+                                    named: {
+                                        type: 'boolean',
+                                    },
+
+                                    // Allow/Disallow `export { default } from "mod"; export { default as default }
+                                    // from "mod";` declarations
+                                    defaultFrom: {
+                                        type: 'boolean',
+                                    },
+
+                                    //  Allow/Disallow `export { foo as default } from "mod";` declarations
+                                    namedFrom: {
+                                        type: 'boolean',
+                                    },
+
+                                    //  Allow/Disallow `export * as default from "mod"`; declarations
+                                    namespaceFrom: {
+                                        type: 'boolean',
+                                    },
+                                },
+                                additionalProperties: false,
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                ],
+            },
+        ],
+
+        messages: {
+            restrictedNamed: "'{{name}}' is restricted from being used as an exported name.",
+            restrictedDefault: "Exporting 'default' is restricted.",
+        },
+    },
+
+    create(context) {
+        const restrictedNames = new Set(
+            context.options[0] && context.options[0].restrictedNamedExports,
+        );
+        const restrictDefaultExports = context.options[0]
+            && 'restrictDefaultExports' in context.options[0]
+            && context.options[0].restrictDefaultExports;
+        const { sourceCode } = context;
+
+        /**
+         * Checks and reports given exported name.
+         * @param node exported `Identifier` or string `Literal` node to check.
+         */
+        function checkExportedName(node: Node<'Identifier' | 'Literal'>) {
+            const name = astUtils.getModuleExportName(node);
+
+            if (restrictedNames.has(name)) {
+                context.report({
+                    node,
+                    messageId: 'restrictedNamed',
+                    data: { name },
+                });
+                return;
+            }
+
+            if (name === 'default') {
+                if (node.parent.type === 'ExportAllDeclaration') {
+                    if (restrictDefaultExports && restrictDefaultExports.namespaceFrom) {
+                        context.report({
+                            node,
+                            messageId: 'restrictedDefault',
+                        });
+                    }
+                } else {
+                    // ExportSpecifier
+                    const isSourceSpecified = !!(
+                        node.parent.parent as Node<'ExportNamedDeclaration'>
+                    ).source;
+                    const specifierLocalName = astUtils.getModuleExportName(
+                        (node.parent as Node<'ExportSpecifier'>).local,
+                    );
+
+                    if (
+                        !isSourceSpecified
+                        && restrictDefaultExports
+                        && restrictDefaultExports.named
+                    ) {
+                        context.report({
+                            node,
+                            messageId: 'restrictedDefault',
+                        });
+                        return;
+                    }
+
+                    if (isSourceSpecified && restrictDefaultExports) {
+                        if (
+                            (specifierLocalName === 'default'
+                                && restrictDefaultExports.defaultFrom)
+                            || (specifierLocalName !== 'default'
+                                && restrictDefaultExports.namedFrom)
+                        ) {
+                            context.report({
+                                node,
+                                messageId: 'restrictedDefault',
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return {
+            ExportAllDeclaration(node: Node<'ExportAllDeclaration'>) {
+                if (node.exported) {
+                    checkExportedName(node.exported);
+                }
+            },
+
+            ExportDefaultDeclaration(node: Node<'ExportDefaultDeclaration'>) {
+                if (restrictDefaultExports && restrictDefaultExports.direct) {
+                    context.report({
+                        node,
+                        messageId: 'restrictedDefault',
+                    });
+                }
+            },
+
+            ExportNamedDeclaration(node: Node<'ExportNamedDeclaration'>) {
+                const { declaration } = node;
+
+                if (declaration) {
+                    if (
+                        declaration.type === 'FunctionDeclaration'
+                        || declaration.type === 'ClassDeclaration'
+                    ) {
+                        checkExportedName(declaration.id!);
+                    } else if (declaration.type === 'VariableDeclaration') {
+                        sourceCode
+                            .getDeclaredVariables(declaration)
+                            .map((v) => v.defs.find((d) => d.parent === declaration))
+                            .map((d) => d!.name) // Identifier nodes
+                            .forEach(checkExportedName);
+                    }
+                } else {
+                    node.specifiers.map((s) => s.exported).forEach(checkExportedName);
+                }
+            },
+        };
+    },
+};
+
+export default rule;

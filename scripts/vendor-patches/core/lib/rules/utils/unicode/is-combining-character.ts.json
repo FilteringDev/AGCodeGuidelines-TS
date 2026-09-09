@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\"use strict\";\n\n/**\n * Check whether a given character is a combining mark or not.\n * @param {number} codePoint The character code to check.\n * @returns {boolean} `true` if the character belongs to the category, any of `Mc`, `Me`, and `Mn`.\n */\nmodule.exports = function isCombiningCharacter(codePoint) {\n    return /^[\\p{Mc}\\p{Me}\\p{Mn}]$/u.test(String.fromCodePoint(codePoint));\n};\n",
+    "after": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\n/**\n * Check whether a given character is a combining mark or not.\n * @param codePoint The character code to check.\n * @returns `true` if the character belongs to the category, any of `Mc`, `Me`, and `Mn`.\n */\nexport default function isCombiningCharacter(codePoint: number) {\n    return /^[\\p{Mc}\\p{Me}\\p{Mn}]$/u.test(String.fromCodePoint(codePoint));\n}\n"
+  }
+]

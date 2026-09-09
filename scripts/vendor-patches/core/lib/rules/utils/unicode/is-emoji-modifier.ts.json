@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\"use strict\";\n\n/**\n * Check whether a given character is an emoji modifier.\n * @param {number} code The character code to check.\n * @returns {boolean} `true` if the character is an emoji modifier.\n */\nmodule.exports = function isEmojiModifier(code) {\n    return code >= 0x1F3FB && code <= 0x1F3FF;\n};\n",
+    "after": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\n/**\n * Check whether a given character is an emoji modifier.\n * @param code The character code to check.\n * @returns `true` if the character is an emoji modifier.\n */\nexport default function isEmojiModifier(code: number) {\n    return code >= 0x1f3fb && code <= 0x1f3ff;\n}\n"
+  }
+]

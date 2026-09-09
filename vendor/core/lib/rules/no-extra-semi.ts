@@ -1,0 +1,149 @@
+/**
+ * @file Rule to flag use of unnecessary semicolons
+ * @author Nicholas C. Zakas
+ * @deprecated in ESLint v8.53.0
+ */
+import dependency0 from './utils/fix-tracker';
+import dependency1 from './utils/ast-utils';
+import type {
+    Fixer, LegacyRule, Node, Token,
+} from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const FixTracker = dependency0;
+const astUtils = dependency1;
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        deprecated: true,
+        replacedBy: [],
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow unnecessary semicolons',
+            recommended: true,
+            url: 'https://eslint.org/docs/latest/rules/no-extra-semi',
+        },
+
+        fixable: 'code',
+        schema: [],
+
+        messages: {
+            unexpected: 'Unnecessary semicolon.',
+        },
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+
+        /**
+         * Checks if a node or token is fixable.
+         * A node is fixable if it can be removed without turning a subsequent statement into a directive after
+         * fixing other nodes.
+         * @param nodeOrToken The node or token to check.
+         * @returns Whether or not the node is fixable.
+         */
+        function isFixable(nodeOrToken: Node | Token) {
+            const nextToken = sourceCode.getTokenAfter(nodeOrToken);
+
+            if (!nextToken || nextToken.type !== 'String') {
+                return true;
+            }
+            const stringNode = sourceCode.getNodeByRangeIndex(nextToken.range[0]);
+
+            return !astUtils.isTopLevelExpressionStatement(stringNode!.parent);
+        }
+
+        /**
+         * Reports an unnecessary semicolon error.
+         * @param nodeOrToken A node or a token to be reported.
+         */
+        function report(nodeOrToken: Node | Token) {
+            context.report({
+                node: nodeOrToken,
+                messageId: 'unexpected',
+                fix: isFixable(nodeOrToken)
+                    ? (fixer: Fixer) => {
+                    /**
+                     * Expand the replacement range to include the surrounding
+                     * tokens to avoid conflicting with semi.
+                     * https://github.com/eslint/eslint/issues/7928
+                     */
+                        const tracker = new FixTracker(fixer, context.sourceCode);
+                        return tracker.retainSurroundingTokens(nodeOrToken).remove(nodeOrToken);
+                    }
+                    : null,
+            });
+        }
+
+        /**
+         * Checks for a part of a class body.
+         * This checks tokens from a specified token to a next MethodDefinition or the end of class body.
+         * @param firstToken The first token to check.
+         */
+        function checkForPartOfClassBody(firstToken: Token) {
+            for (
+                let token: Token | Token | null = firstToken;
+                token!.type === 'Punctuator' && !astUtils.isClosingBraceToken(token!);
+                token = sourceCode.getTokenAfter(token!)
+            ) {
+                if (astUtils.isSemicolonToken(token!)) {
+                    report(token!);
+                }
+            }
+        }
+
+        return {
+            /**
+             * Reports this empty statement, except if the parent node is a loop.
+             * @param node A EmptyStatement node to be reported.
+             */
+            EmptyStatement(node: Node<'EmptyStatement'>) {
+                const { parent } = node;
+                const allowedParentTypes = [
+                    'ForStatement',
+                    'ForInStatement',
+                    'ForOfStatement',
+                    'WhileStatement',
+                    'DoWhileStatement',
+                    'IfStatement',
+                    'LabeledStatement',
+                    'WithStatement',
+                ];
+
+                if (!allowedParentTypes.includes(parent.type)) {
+                    report(node);
+                }
+            },
+
+            /**
+             * Checks tokens from the head of this class body to the first MethodDefinition or the end of this class
+             * body.
+             * @param node A ClassBody node to check.
+             */
+            ClassBody(node: Node<'ClassBody'>) {
+                checkForPartOfClassBody(sourceCode.getFirstToken(node, 1)!); // 0 is `{`.
+            },
+
+            /**
+             * Checks tokens from this MethodDefinition to the next MethodDefinition or the end of this class body.
+             * @param node A MethodDefinition node of the start point.
+             */
+            'MethodDefinition, PropertyDefinition, StaticBlock':
+                function onMethodDefinitionPropertyDefinitionStaticBlock(
+                    node: Node<'MethodDefinition' | 'PropertyDefinition' | 'StaticBlock'>,
+                ) {
+                    checkForPartOfClassBody(sourceCode.getTokenAfter(node)!);
+                },
+        };
+    },
+};
+
+export default rule;

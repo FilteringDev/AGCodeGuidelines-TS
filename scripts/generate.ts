@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { basename, relative } from 'node:path';
 import sample from '../docs/reference/eslintrc';
 import { verifyReference } from './reference';
+import builtinRules from '../vendor/core/lib/rules/index';
 
 import type {
     Catalog, Clause, Mapping, RuleMap, RuleSetting,
@@ -36,7 +37,6 @@ const jsdoc = (await import('../vendor/jsdoc/index.js')).default as unknown as P
 const react = ROOT_REQUIRE('../vendor/react/index.js') as Provider;
 const accessibility = await loadPlugin('eslint-plugin-jsx-a11y');
 const imports = (await import('../vendor/import/index.js')).default as unknown as Provider;
-const builtinRules = ROOT_REQUIRE('../vendor/core/lib/rules/index.js') as Map<string, unknown>;
 const nativeList = JSON.parse(
     execFileSync(
         process.execPath,

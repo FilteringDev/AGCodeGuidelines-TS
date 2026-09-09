@@ -14,7 +14,7 @@ To update a rule-source version, change its version, ref, and directory in the s
 
 Port recipes document the following adaptations:
 
-- Core rules retain the pinned implementations. The regex constructor fix preserves literal flag spelling. The standalone JSDoc lookup helper is extracted from its original class.
+- Core rules are strict TypeScript ES modules. Their source patches preserve the pinned implementations, including literal regex flag spelling. The standalone JSDoc lookup and indentation helpers retain their upstream source guards. Shared ESTree contracts and narrow external-library adapters describe the legacy API supplied by Oxlint. The execution-order rule ignores references used only in type annotations.
 - JSDoc handles Oxc's null optional fields and enumerable ClassBody properties.
 - React reports through the modern message contract without discovering an engine installation.
 - Import rules use isolated module utilities, Oxc dependency parsing and TypeScript resolution, and explicit CommonJS/ESM interoperability.
@@ -29,4 +29,4 @@ Review the generated rule catalog, effective sample options and disabled rules, 
 
 Local commits use `git commit -S` and include `Co-authored-by: Codex <codex@openai.com>`. Published packages are prepared with `pnpm pack`; publication is a separate maintainer action.
 
-The repository's own Oxlint overrides permit sequential `for...of` traversal and early `continue` in the scope, context, parser, and comment adapters, where mutable graph traversal is required. Parser nodes are annotated in place. Internal helpers retain named exports, and vendor imports keep explicit JavaScript extensions. Test-capture classes model upstream APIs. These narrowly scoped development exceptions do not change the published presets.
+The repository's own Oxlint overrides permit sequential `for...of` traversal and early `continue` in the scope, context, parser, and comment adapters, where mutable graph traversal is required. Parser nodes are annotated in place. Internal helpers retain named exports. Core TypeScript imports follow the repository extension policy; vendor families awaiting conversion retain explicit JavaScript extensions. Test-capture classes model upstream APIs. These narrowly scoped development exceptions do not change the published presets.

@@ -13,6 +13,7 @@ import { dirname, join, relative } from 'node:path';
 import { runInNewContext } from 'node:vm';
 
 import { transformSync } from 'esbuild';
+import builtinRules from '../vendor/core/lib/rules/index';
 
 import catalog from '../packages/rule-catalog/src/catalog.json' with { type: 'json' };
 
@@ -293,7 +294,7 @@ function evaluate(file: string): Record<string, unknown> {
             return (tester: CaptureTester) => tester.linter;
         }
         if (specifier.includes('getESLintCoreRule')) {
-            return (name: string) => DEPENDENCY_REQUIRE('../../vendor/core/lib/rules/index.js').get(name);
+            return (name: string) => builtinRules.get(name);
         }
         if (specifier === 'tape') {
             return () => {};

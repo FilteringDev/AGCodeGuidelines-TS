@@ -1,0 +1,217 @@
+/**
+ * @file Rule to require newlines before `return` statement
+ * @author Kai Cataldo
+ * @deprecated in ESLint v4.0.0
+ */
+import type {
+    Fixer, LegacyRule, Node, Token,
+} from '../../../types';
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'layout',
+
+        docs: {
+            description: 'Require an empty line before `return` statements',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/newline-before-return',
+        },
+
+        fixable: 'whitespace',
+        schema: [],
+        messages: {
+            expected: 'Expected newline before return statement.',
+        },
+
+        deprecated: true,
+        replacedBy: ['padding-line-between-statements'],
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+
+        //--------------------------------------------------------------------------
+        // Helpers
+        //--------------------------------------------------------------------------
+
+        /**
+         * Tests whether node is preceded by supplied tokens
+         * @param node node to check
+         * @param testTokens array of tokens to test against
+         * @returns Whether or not the node is preceded by one of the supplied tokens
+         */
+        function isPrecededByTokens(node: Node<'ReturnStatement'>, testTokens: string[]) {
+            const tokenBefore = sourceCode.getTokenBefore(node);
+
+            return testTokens.includes(tokenBefore!.value);
+        }
+
+        /**
+         * Checks whether node is the first node after statement or in block
+         * @param node node to check
+         * @returns Whether or not the node is the first node after statement or in block
+         */
+        function isFirstNode(node: Node<'ReturnStatement'>) {
+            const parentType = node.parent.type;
+
+            if ('body' in node.parent && node.parent.body) {
+                return Array.isArray(node.parent.body)
+                    ? node.parent.body[0] === node
+                    : node.parent.body === node;
+            }
+
+            if (parentType === 'IfStatement') {
+                return isPrecededByTokens(node, ['else', ')']);
+            }
+            if (parentType === 'DoWhileStatement') {
+                return isPrecededByTokens(node, ['do']);
+            }
+            if (parentType === 'SwitchCase') {
+                return isPrecededByTokens(node, [':']);
+            }
+            return isPrecededByTokens(node, [')']);
+        }
+
+        /**
+         * Returns the number of lines of comments that precede the node
+         * @param node node to check for overlapping comments
+         * @param lineNumTokenBefore line number of previous token, to check for overlapping comments
+         * @returns Number of lines of comments that precede the node
+         */
+        function calcCommentLines(node: Node<'ReturnStatement'>, lineNumTokenBefore: number) {
+            const comments = sourceCode.getCommentsBefore(node);
+            let numLinesComments = 0;
+
+            if (!comments.length) {
+                return numLinesComments;
+            }
+
+            comments.forEach((comment: Token) => {
+                numLinesComments += 1;
+
+                if (comment.type === 'Block') {
+                    numLinesComments += comment.loc.end.line - comment.loc.start.line;
+                }
+
+                // avoid counting lines with inline comments twice
+                if (comment.loc.start.line === lineNumTokenBefore) {
+                    numLinesComments -= 1;
+                }
+
+                if (comment.loc.end.line === node.loc.start.line) {
+                    numLinesComments -= 1;
+                }
+            });
+
+            return numLinesComments;
+        }
+
+        /**
+         * Returns the line number of the token before the node that is passed in as an argument
+         * @param node The node to use as the start of the calculation
+         * @returns Line number of the token before `node`
+         */
+        function getLineNumberOfTokenBefore(node: Node<'ReturnStatement'>) {
+            const tokenBefore = sourceCode.getTokenBefore(node);
+            let lineNumTokenBefore;
+
+            /**
+             * Global return (at the beginning of a script) is a special case.
+             * If there is no token before `return`, then we expect no line
+             * break before the return. Comments are allowed to occupy lines
+             * before the global return, just no blank lines.
+             * Setting lineNumTokenBefore to zero in that case results in the
+             * desired behavior.
+             */
+            if (tokenBefore) {
+                lineNumTokenBefore = tokenBefore.loc.end.line;
+            } else {
+                lineNumTokenBefore = 0; // global return at beginning of script
+            }
+
+            return lineNumTokenBefore;
+        }
+
+        /**
+         * Checks whether node is preceded by a newline
+         * @param node node to check
+         * @returns Whether or not the node is preceded by a newline
+         */
+        function hasNewlineBefore(node: Node<'ReturnStatement'>) {
+            const lineNumNode = node.loc.start.line;
+            const lineNumTokenBefore = getLineNumberOfTokenBefore(node);
+            const commentLines = calcCommentLines(node, lineNumTokenBefore);
+
+            return lineNumNode - lineNumTokenBefore - commentLines > 1;
+        }
+
+        /**
+         * Checks whether it is safe to apply a fix to a given return statement.
+         *
+         * The fix is not considered safe if the given return statement has leading comments,
+         * as we cannot safely determine if the newline should be added before or after the comments.
+         * For more information, see: https://github.com/eslint/eslint/issues/5958#issuecomment-222767211
+         * @param node The return statement node to check.
+         * @returns `true` if it can fix the node.
+         */
+        function canFix(node: Node<'ReturnStatement'>) {
+            const leadingComments = sourceCode.getCommentsBefore(node);
+            const lastLeadingComment = leadingComments[leadingComments.length - 1];
+            const tokenBefore = sourceCode.getTokenBefore(node);
+
+            if (leadingComments.length === 0) {
+                return true;
+            }
+
+            /**
+             * if the last leading comment ends in the same line as the previous token and
+             * does not share a line with the `return` node, we can consider it safe to fix.
+             * Example:
+             * function a() {
+             *     var b; //comment
+             *     return;
+             * }
+             */
+            if (
+                lastLeadingComment!.loc.end.line === tokenBefore!.loc.end.line
+                && lastLeadingComment!.loc.end.line !== node.loc.start.line
+            ) {
+                return true;
+            }
+
+            return false;
+        }
+
+        //--------------------------------------------------------------------------
+        // Public
+        //--------------------------------------------------------------------------
+
+        return {
+            ReturnStatement(node: Node<'ReturnStatement'>) {
+                if (!isFirstNode(node) && !hasNewlineBefore(node)) {
+                    context.report({
+                        node,
+                        messageId: 'expected',
+                        fix(fixer: Fixer) {
+                            if (canFix(node)) {
+                                const tokenBefore = sourceCode.getTokenBefore(node);
+                                const newlines = node.loc.start.line === tokenBefore!.loc.end.line
+                                    ? '\n\n'
+                                    : '\n';
+
+                                return fixer.insertTextBefore(node, newlines);
+                            }
+                            return null;
+                        },
+                    });
+                }
+            },
+        };
+    },
+};
+
+export default rule;

@@ -1,0 +1,168 @@
+/**
+ * @file Rule to enforce var declarations are only at the top of a function.
+ * @author Danny Fritz
+ * @author Gyandeep Singh
+ */
+import type { LegacyRule, Node } from '../../../types';
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description:
+                'Require `var` declarations be placed at the top of their containing scope',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/vars-on-top',
+        },
+
+        schema: [],
+        messages: {
+            top: "All 'var' declarations must be at the top of the function scope.",
+        },
+    },
+
+    create(context) {
+        //--------------------------------------------------------------------------
+        // Helpers
+        //--------------------------------------------------------------------------
+
+        /**
+         * Has AST suggesting a directive.
+         * @param node any node
+         * @returns whether the given node structurally represents a directive
+         */
+        function looksLikeDirective(node: Node) {
+            return (
+                node.type === 'ExpressionStatement'
+                && node.expression.type === 'Literal'
+                && typeof node.expression.value === 'string'
+            );
+        }
+
+        /**
+         * Check to see if its a ES6 import declaration
+         * @param node any node
+         * @returns whether the given node represents a import declaration
+         */
+        function looksLikeImport(node: Node) {
+            return (
+                node.type === 'ImportDeclaration'
+                || node.type === 'ImportSpecifier'
+                || node.type === 'ImportDefaultSpecifier'
+                || node.type === 'ImportNamespaceSpecifier'
+            );
+        }
+
+        /**
+         * Checks whether a given node is a variable declaration or not.
+         * @param node any node
+         * @returns `true` if the node is a variable declaration.
+         */
+        function isVariableDeclaration(node: Node) {
+            return (
+                node.type === 'VariableDeclaration'
+                || (node.type === 'ExportNamedDeclaration'
+                    && node.declaration
+                    && node.declaration.type === 'VariableDeclaration')
+            );
+        }
+
+        /**
+         * Checks whether this variable is on top of the block body
+         * @param node The node to check
+         * @param statements collection of ASTNodes for the parent node block
+         * @returns True if var is on top otherwise false
+         */
+        function isVarOnTop(
+            node: Node<'ExportNamedDeclaration' | 'VariableDeclaration'>,
+            statements: Node[],
+        ) {
+            const l = statements.length;
+            let i = 0;
+
+            // Skip over directives and imports. Static blocks don't have either.
+            if (node.parent.type !== 'StaticBlock') {
+                for (; i < l; i += 1) {
+                    if (
+                        !looksLikeDirective(statements[i]!)
+                        && !looksLikeImport(statements[i]!)
+                    ) {
+                        break;
+                    }
+                }
+            }
+
+            for (; i < l; i += 1) {
+                if (!isVariableDeclaration(statements[i]!)) {
+                    return false;
+                }
+                if (statements[i] === node) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Checks whether variable is on top at the global level
+         * @param node The node to check
+         * @param parent Parent of the node
+         */
+        function globalVarCheck(
+            node: Node<'ExportNamedDeclaration' | 'VariableDeclaration'>,
+            parent: Node<'Program'>,
+        ) {
+            if (!isVarOnTop(node, parent.body)) {
+                context.report({ node, messageId: 'top' });
+            }
+        }
+
+        /**
+         * Checks whether variable is on top at functional block scope level
+         * @param node The node to check
+         */
+        function blockScopeVarCheck(node: Node<'VariableDeclaration'>) {
+            const { parent } = node;
+
+            if (
+                parent.type === 'BlockStatement'
+                && /Function/u.test(parent.parent.type)
+                && isVarOnTop(node, parent.body)
+            ) {
+                return;
+            }
+
+            if (parent.type === 'StaticBlock' && isVarOnTop(node, parent.body)) {
+                return;
+            }
+
+            context.report({ node, messageId: 'top' });
+        }
+
+        //--------------------------------------------------------------------------
+        // Public API
+        //--------------------------------------------------------------------------
+
+        return {
+            "VariableDeclaration[kind='var']": function onVariableDeclarationKindVar(
+                node: Node<'VariableDeclaration'>,
+            ) {
+                if (node.parent.type === 'ExportNamedDeclaration') {
+                    globalVarCheck(node.parent, node.parent.parent as Node<'Program'>);
+                } else if (node.parent.type === 'Program') {
+                    globalVarCheck(node, node.parent);
+                } else {
+                    blockScopeVarCheck(node);
+                }
+            },
+        };
+    },
+};
+
+export default rule;

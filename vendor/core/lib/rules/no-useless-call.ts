@@ -1,0 +1,98 @@
+/**
+ * @file A rule to disallow unnecessary `.call()` and `.apply()`.
+ * @author Toru Nagashima
+ */
+import dependency0 from './utils/ast-utils';
+import type { LegacyRule, Node, SourceCode } from '../../../types';
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+/**
+ * Checks whether or not a node is a `.call()`/`.apply()`.
+ * @param node A CallExpression node to check.
+ * @returns Whether or not the node is a `.call()`/`.apply()`.
+ */
+function isCallOrNonVariadicApply(node: Node<'CallExpression'>) {
+    // The call/apply guard above established a member callee.
+    const callee = astUtils.skipChainExpression(node.callee) as Node<'MemberExpression'>;
+
+    return (
+        callee.type === 'MemberExpression'
+        && callee.property.type === 'Identifier'
+        && callee.computed === false
+        && ((callee.property.name === 'call' && node.arguments.length >= 1)
+            || (callee.property.name === 'apply'
+                && node.arguments.length === 2
+                && node.arguments[1]!.type === 'ArrayExpression'))
+    );
+}
+
+/**
+ * Checks whether or not `thisArg` is not changed by `.call()`/`.apply()`.
+ * @param expectedThis The node that is the owner of the applied function.
+ * @param thisArg The node that is given to the first argument of the `.call()`/`.apply()`.
+ * @param sourceCode The ESLint source code object.
+ * @returns Whether or not `thisArg` is not changed by `.call()`/`.apply()`.
+ */
+function isValidThisArg(expectedThis: Node | null, thisArg: Node, sourceCode: SourceCode) {
+    if (!expectedThis) {
+        return astUtils.isNullOrUndefined(thisArg);
+    }
+    return astUtils.equalTokens(expectedThis, thisArg, sourceCode);
+}
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow unnecessary calls to `.call()` and `.apply()`',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/no-useless-call',
+        },
+
+        schema: [],
+
+        messages: {
+            unnecessaryCall: "Unnecessary '.{{name}}()'.",
+        },
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+
+        return {
+            CallExpression(node: Node<'CallExpression'>) {
+                if (!isCallOrNonVariadicApply(node)) {
+                    return;
+                }
+
+                // The call/apply guard above established a member callee.
+                const callee = astUtils.skipChainExpression(
+                    node.callee,
+                ) as Node<'MemberExpression'>;
+                const applied = astUtils.skipChainExpression(callee.object);
+                const expectedThis = applied.type === 'MemberExpression' ? applied.object : null;
+                const thisArg = node.arguments[0];
+
+                if (isValidThisArg(expectedThis, thisArg!, sourceCode)) {
+                    context.report({
+                        node,
+                        messageId: 'unnecessaryCall',
+                        data: { name: callee.property.name },
+                    });
+                }
+            },
+        };
+    },
+};
+
+export default rule;

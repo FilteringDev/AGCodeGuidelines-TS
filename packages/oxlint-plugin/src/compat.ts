@@ -2,7 +2,7 @@
  * @file Expose reusable core rule functions to Oxlint; no ESLint engine is run.
  */
 import type { Plugin, Rule, RuleMeta } from '@oxlint/plugins';
-import builtinRules from '../../../vendor/core/lib/rules/index.js';
+import builtinRules from '../../../vendor/core/lib/rules/index';
 
 import { legacyContext } from './legacy-context';
 
@@ -12,7 +12,8 @@ const rules = Object.fromEntries(
         {
             meta: original.meta as RuleMeta,
             create(context) {
-                return legacyContext(original, context);
+                // The context adapter implements the legacy ESTree contract at this boundary.
+                return legacyContext(original as unknown as Rule, context);
             },
         } satisfies Rule,
     ]),

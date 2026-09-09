@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @fileoverview Common utils for directives.\n *\n * This file contains only shared items for directives.\n * If you make a utility for rules, please see `../rules/utils/ast-utils.js`.\n *\n * @author gfyoung <https://github.com/gfyoung>\n */\n\"use strict\";\n\nconst directivesPattern = /^(eslint(?:-env|-enable|-disable(?:(?:-next)?-line)?)?|exported|globals?)(?:\\s|$)/u;\n\nmodule.exports = {\n    directivesPattern\n};\n",
+    "after": "/**\n * @file Common utils for directives.\n *\n * This file contains only shared items for directives.\n * If you make a utility for rules, please see `../rules/utils/ast-utils.js`.\n * @author gfyoung <https://github.com/gfyoung>\n */\n\nconst directivesPattern = /^(eslint(?:-env|-enable|-disable(?:(?:-next)?-line)?)?|exported|globals?)(?:\\s|$)/u;\n\nexport default {\n    directivesPattern,\n};\n"
+  }
+]

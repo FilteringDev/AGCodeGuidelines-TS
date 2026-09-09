@@ -1,0 +1,57 @@
+/**
+ * @file Reports useless `catch` clauses that just rethrow their error.
+ * @author Teddy Katz
+ */
+import type { LegacyRule, Node } from '../../../types';
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow unnecessary `catch` clauses',
+            recommended: true,
+            url: 'https://eslint.org/docs/latest/rules/no-useless-catch',
+        },
+
+        schema: [],
+
+        messages: {
+            unnecessaryCatchClause: 'Unnecessary catch clause.',
+            unnecessaryCatch: 'Unnecessary try/catch wrapper.',
+        },
+    },
+
+    create(context) {
+        return {
+            CatchClause(node: Node<'CatchClause'>) {
+                if (
+                    node.param
+                    && node.param.type === 'Identifier'
+                    && node.body.body.length
+                    && node!.body.body[0]!.type === 'ThrowStatement'
+                    && node!.body.body[0]!.argument.type === 'Identifier'
+                    && node!.body.body[0]!.argument.name === node.param.name
+                ) {
+                    if (node.parent.type === 'TryStatement' && node.parent.finalizer) {
+                        context.report({
+                            node,
+                            messageId: 'unnecessaryCatchClause',
+                        });
+                    } else {
+                        context.report({
+                            node: node.parent,
+                            messageId: 'unnecessaryCatch',
+                        });
+                    }
+                }
+            },
+        };
+    },
+};
+
+export default rule;

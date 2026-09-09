@@ -1,0 +1,188 @@
+import { CALL, CONSTRUCT } from '@eslint-community/eslint-utils';
+/**
+ * @file Rule to enforce requiring named capture groups in regular expression.
+ * @author Pig Fang <https://github.com/g-plane>
+ */
+import * as dependency1 from '@eslint-community/regexpp';
+import dependency0 from '../../compat/eslint-utils';
+import type { Fixer, LegacyRule, Node } from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const { ReferenceTracker, getStringIfConstant } = dependency0;
+const regexpp = dependency1;
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+const parser = new regexpp.RegExpParser();
+
+/**
+ * Creates fixer suggestions for the regex, if statically determinable.
+ * @param groupStart Starting index of the regex group.
+ * @param pattern The regular expression pattern to be checked.
+ * @param rawText Source text of the regexNode.
+ * @param regexNode AST node which contains the regular expression.
+ * @returns Fixer suggestions for the regex, if statically determinable.
+ */
+function suggestIfPossible(
+    groupStart: number,
+    pattern: string,
+    rawText: string,
+    regexNode: Node,
+) {
+    switch (regexNode.type) {
+        case 'Literal':
+            if (typeof regexNode.value === 'string' && rawText.includes('\\')) {
+                return null;
+            }
+            break;
+        case 'TemplateLiteral':
+            if (regexNode.expressions.length || rawText.slice(1, -1) !== pattern) {
+                return null;
+            }
+            break;
+        default:
+            return null;
+    }
+
+    const start = regexNode.range[0] + groupStart + 2;
+
+    return [
+        {
+            fix(fixer: Fixer) {
+                const existingTemps = pattern.match(/temp\d+/gu) || [];
+                const highestTempCount = existingTemps.reduce(
+                    (previous, next) => Math.max(previous, Number(next.slice('temp'.length))),
+                    0,
+                );
+
+                return fixer.insertTextBeforeRange(
+                    [start, start],
+                    `?<temp${highestTempCount + 1}>`,
+                );
+            },
+            messageId: 'addGroupName',
+        },
+        {
+            fix(fixer: Fixer) {
+                return fixer.insertTextBeforeRange([start, start], '?:');
+            },
+            messageId: 'addNonCapture',
+        },
+    ];
+}
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Enforce using named capture group in regular expression',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/prefer-named-capture-group',
+        },
+
+        hasSuggestions: true,
+
+        schema: [],
+
+        messages: {
+            addGroupName: 'Add name to capture group.',
+            addNonCapture: 'Convert group to non-capturing.',
+            required:
+                "Capture group '{{group}}' should be converted to a named or non-capturing group.",
+        },
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+
+        /**
+         * Function to check regular expression.
+         * @param pattern The regular expression pattern to be checked.
+         * @param node AST node which contains the regular expression or a call/new expression.
+         * @param regexNode AST node which contains the regular expression.
+         * @param flags The regular expression flags to be checked.
+         */
+        function checkRegex(
+            pattern: string,
+            node: Node,
+            regexNode: Node,
+            flags: string | null,
+        ) {
+            let ast;
+
+            try {
+                ast = parser.parsePattern(pattern, 0, pattern.length, {
+                    unicode: Boolean(flags && flags.includes('u')),
+                    unicodeSets: Boolean(flags && flags.includes('v')),
+                });
+            } catch {
+                // ignore regex syntax errors
+                return;
+            }
+
+            regexpp.visitRegExpAST(ast, {
+                onCapturingGroupEnter(group) {
+                    if (!group.name) {
+                        const rawText = sourceCode.getText(regexNode);
+                        const suggest = suggestIfPossible(
+                            group.start,
+                            pattern,
+                            rawText,
+                            regexNode,
+                        );
+
+                        context.report({
+                            node,
+                            messageId: 'required',
+                            data: {
+                                group: group.raw,
+                            },
+                            suggest,
+                        });
+                    }
+                },
+            });
+        }
+
+        return {
+            Literal(node: Node<'Literal'>) {
+                if (node.regex) {
+                    checkRegex(node.regex.pattern, node, node, node.regex.flags);
+                }
+            },
+            Program(node: Node<'Program'>) {
+                const scope = sourceCode.getScope(node);
+                const tracker = new ReferenceTracker(scope);
+                const traceMap = {
+                    RegExp: {
+                        [CALL]: true,
+                        [CONSTRUCT]: true,
+                    },
+                };
+
+                Array.from(tracker.iterateGlobalReferences(traceMap)).forEach(
+                    ({ node: refNode }) => {
+                        const regex = getStringIfConstant(refNode.arguments[0]!);
+                        const flags = getStringIfConstant(refNode.arguments[1]!);
+
+                        if (regex) {
+                            checkRegex(regex, refNode, refNode.arguments[0]!, flags);
+                        }
+                    },
+                );
+            },
+        };
+    },
+};
+
+export default rule;

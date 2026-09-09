@@ -1,0 +1,330 @@
+/**
+ * @file A rule to suggest using template literals instead of string concatenation.
+ * @author Toru Nagashima
+ */
+import dependency0 from './utils/ast-utils';
+import type {
+    Fixer, LegacyRule, Node, Token,
+} from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+/**
+ * Checks whether or not a given node is a concatenation.
+ * @param node A node to check.
+ * @returns `true` if the node is a concatenation.
+ */
+function isConcatenation(node: Node): node is Node<'BinaryExpression'> {
+    return node.type === 'BinaryExpression' && node.operator === '+';
+}
+
+/**
+ * Gets the top binary expression node for concatenation in parents of a given node.
+ * @param node A node to get.
+ * @returns the top binary expression node in parents of a given node.
+ */
+function getTopConcatBinaryExpression(node: Node) {
+    let currentNode = node;
+
+    while (isConcatenation(currentNode.parent)) {
+        currentNode = currentNode.parent;
+    }
+    return currentNode;
+}
+
+/**
+ * Checks whether or not a node contains a string literal with an octal or non-octal decimal escape sequence
+ * @param node A node to check
+ * @returns `true` if at least one string literal within the node contains
+ * an octal or non-octal decimal escape sequence
+ */
+function hasOctalOrNonOctalDecimalEscapeSequence(node: Node): boolean {
+    if (isConcatenation(node)) {
+        return (
+            hasOctalOrNonOctalDecimalEscapeSequence(node.left)
+            || hasOctalOrNonOctalDecimalEscapeSequence(node.right)
+        );
+    }
+
+    // No need to check TemplateLiterals – would throw parsing error
+    if (node.type === 'Literal' && typeof node.value === 'string') {
+        return astUtils.hasOctalOrNonOctalDecimalEscapeSequence(node.raw!);
+    }
+
+    return false;
+}
+
+/**
+ * Checks whether or not a given binary expression has string literals.
+ * @param node A node to check.
+ * @returns `true` if the node has string literals.
+ */
+function hasStringLiteral(node: Node): boolean {
+    if (isConcatenation(node)) {
+        // `left` is deeper than `right` normally.
+        return hasStringLiteral(node.right) || hasStringLiteral(node.left);
+    }
+    return astUtils.isStringLiteral(node);
+}
+
+/**
+ * Checks whether or not a given binary expression has non string literals.
+ * @param node A node to check.
+ * @returns `true` if the node has non string literals.
+ */
+function hasNonStringLiteral(node: Node): boolean {
+    if (isConcatenation(node)) {
+        // `left` is deeper than `right` normally.
+        return hasNonStringLiteral(node.right) || hasNonStringLiteral(node.left);
+    }
+    return !astUtils.isStringLiteral(node);
+}
+
+/**
+ * Determines whether a given node will start with a template curly expression (`${}`) when being converted to a
+ * template literal.
+ * @param node The node that will be fixed to a template literal
+ * @returns `true` if the node will start with a template curly.
+ */
+function startsWithTemplateCurly(node: Node) {
+    if (node.type === 'BinaryExpression') {
+        return startsWithTemplateCurly(node.left);
+    }
+    if (node.type === 'TemplateLiteral') {
+        return (
+            node.expressions.length
+            && node.quasis.length
+            && node!.quasis[0]!.range[0] === node!.quasis[0]!.range[1]
+        );
+    }
+    return node.type !== 'Literal' || typeof node.value !== 'string';
+}
+
+/**
+ * Determines whether a given node end with a template curly expression (`${}`) when being converted to a template
+ * literal.
+ * @param node The node that will be fixed to a template literal
+ * @returns `true` if the node will end with a template curly.
+ */
+function endsWithTemplateCurly(node: Node) {
+    if (node.type === 'BinaryExpression') {
+        return startsWithTemplateCurly(node.right);
+    }
+    if (node.type === 'TemplateLiteral') {
+        return (
+            node.expressions.length
+            && node.quasis.length
+            && node!.quasis[node.quasis.length - 1]!.range[0]
+                === node!.quasis[node.quasis.length - 1]!.range[1]
+        );
+    }
+    return node.type !== 'Literal' || typeof node.value !== 'string';
+}
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Require template literals instead of string concatenation',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/prefer-template',
+        },
+
+        schema: [],
+        fixable: 'code',
+
+        messages: {
+            unexpectedStringConcatenation: 'Unexpected string concatenation.',
+        },
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+        let done: Record<number, boolean> = Object.create(null);
+
+        /**
+         * Gets the non-token text between two nodes, ignoring any other tokens that appear between the two tokens.
+         * @param node1 The first node
+         * @param node2 The second node
+         * @returns The text between the nodes, excluding other tokens
+         */
+        function getTextBetween(node1: Node | Token, node2: Node | Token) {
+            const allTokens = [node1, ...sourceCode.getTokensBetween(node1, node2), node2];
+            const sourceText = sourceCode.getText();
+
+            return allTokens
+                .slice(0, -1)
+                .reduce(
+                    (accumulator, token, index) => accumulator
+                        + sourceText.slice(token.range[1], allTokens![index + 1]!.range[0]),
+                    '',
+                );
+        }
+
+        /**
+         * Returns a template literal form of the given node.
+         * @param currentNode A node that should be converted to a template literal
+         * @param textBeforeNode Text that should appear before the node
+         * @param textAfterNode Text that should appear after the node
+         * @returns A string form of this node, represented as a template literal
+         */
+        function getTemplateLiteral(
+            currentNode: Node,
+            textBeforeNode: string | null,
+            textAfterNode: string | null,
+        ): string {
+            if (currentNode.type === 'Literal' && typeof currentNode.value === 'string') {
+                /**
+                 * If the current node is a string literal, escape any instances of ${ or ` to prevent them from
+                 * being interpreted
+                 * as a template placeholder. However, if the code already contains a backslash before the ${ or `
+                 * for some reason, don't add another backslash, because that would change the meaning of the code
+                 * (it would cause
+                 * an actual backslash character to appear before the dollar sign).
+                 */
+                return `\`${currentNode!
+                    .raw!.slice(1, -1)
+                    .replace(/\\*(\$\{|`)/gu, (matched) => {
+                        if (matched.lastIndexOf('\\') % 2) {
+                            return `\\${matched}`;
+                        }
+                        return matched;
+
+                        // Unescape any quotes that appear in the original Literal that no longer need to be
+                        // escaped.
+                    })
+                    .replace(
+                        new RegExp(`\\\\${currentNode!.raw![0]}`, 'gu'),
+                        currentNode!.raw![0]!,
+                    )}\``;
+            }
+
+            if (currentNode.type === 'TemplateLiteral') {
+                return sourceCode.getText(currentNode);
+            }
+
+            if (isConcatenation(currentNode) && hasStringLiteral(currentNode)) {
+                const plusSign = sourceCode.getFirstTokenBetween(
+                    currentNode.left,
+                    currentNode.right,
+                    (token: Token) => token.value === '+',
+                );
+                const textBeforePlus = getTextBetween(currentNode.left, plusSign!);
+                const textAfterPlus = getTextBetween(plusSign!, currentNode.right);
+                const leftEndsWithCurly = endsWithTemplateCurly(currentNode.left);
+                const rightStartsWithCurly = startsWithTemplateCurly(currentNode.right);
+
+                if (leftEndsWithCurly) {
+                    // If the left side of the expression ends with a template curly, add the extra text to the end
+                    // of the curly bracket.
+                    // `foo${bar}` /* comment */ + 'baz' --> `foo${bar /* comment */  }${baz}`
+                    return (
+                        getTemplateLiteral(
+                            currentNode.left,
+                            textBeforeNode,
+                            textBeforePlus + textAfterPlus,
+                        ).slice(0, -1)
+                        + getTemplateLiteral(currentNode.right, null, textAfterNode).slice(1)
+                    );
+                }
+                if (rightStartsWithCurly) {
+                    // Otherwise, if the right side of the expression starts with a template curly, add the text
+                    // there.
+                    // 'foo' /* comment */ + `${bar}baz` --> `foo${ /* comment */  bar}baz`
+                    return (
+                        getTemplateLiteral(currentNode.left, textBeforeNode, null).slice(
+                            0,
+                            -1,
+                        )
+                        + getTemplateLiteral(
+                            currentNode.right,
+                            textBeforePlus + textAfterPlus,
+                            textAfterNode,
+                        ).slice(1)
+                    );
+                }
+
+                /**
+                 * Otherwise, these nodes should not be combined into a template curly, since there is nowhere to
+                 * put
+                 * the text between them.
+                 */
+                return `${getTemplateLiteral(currentNode.left, textBeforeNode, null)}${textBeforePlus}+${textAfterPlus}${getTemplateLiteral(currentNode.right, textAfterNode, null)}`;
+            }
+
+            return `\`\${${textBeforeNode || ''}${sourceCode.getText(currentNode)}${textAfterNode || ''}}\``;
+        }
+
+        /**
+         * Returns a fixer object that converts a non-string binary expression to a template literal
+         * @param fixer The fixer object
+         * @param node A node that should be converted to a template literal
+         * @returns A fix for this binary expression
+         */
+        function fixNonStringBinaryExpression(
+            fixer: Fixer,
+            node: Node<'Literal' | 'TemplateLiteral'>,
+        ) {
+            const topBinaryExpr = getTopConcatBinaryExpression(node.parent);
+
+            if (hasOctalOrNonOctalDecimalEscapeSequence(topBinaryExpr)) {
+                return null;
+            }
+
+            return fixer.replaceText(
+                topBinaryExpr,
+                getTemplateLiteral(topBinaryExpr, null, null),
+            );
+        }
+
+        /**
+         * Reports if a given node is string concatenation with non string literals.
+         * @param node A node to check.
+         */
+        function checkForStringConcat(node: Node<'Literal' | 'TemplateLiteral'>) {
+            if (!astUtils.isStringLiteral(node) || !isConcatenation(node.parent)) {
+                return;
+            }
+
+            const topBinaryExpr = getTopConcatBinaryExpression(node.parent);
+
+            // Checks whether or not this node had been checked already.
+            if (done[topBinaryExpr.range[0]]) {
+                return;
+            }
+            done[topBinaryExpr.range[0]] = true;
+
+            if (hasNonStringLiteral(topBinaryExpr)) {
+                context.report({
+                    node: topBinaryExpr,
+                    messageId: 'unexpectedStringConcatenation',
+                    fix: (fixer: Fixer) => fixNonStringBinaryExpression(fixer, node),
+                });
+            }
+        }
+
+        return {
+            Program() {
+                done = Object.create(null);
+            },
+
+            Literal: checkForStringConcat,
+            TemplateLiteral: checkForStringConcat,
+        };
+    },
+};
+
+export default rule;

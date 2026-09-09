@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\"use strict\";\n\nmodule.exports = {\n    isCombiningCharacter: require(\"./is-combining-character\"),\n    isEmojiModifier: require(\"./is-emoji-modifier\"),\n    isRegionalIndicatorSymbol: require(\"./is-regional-indicator-symbol\"),\n    isSurrogatePair: require(\"./is-surrogate-pair\")\n};\n",
+    "after": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\nimport dependency0 from './is-combining-character';\nimport dependency1 from './is-emoji-modifier';\nimport dependency2 from './is-regional-indicator-symbol';\nimport dependency3 from './is-surrogate-pair';\n\nexport default {\n    isCombiningCharacter: dependency0,\n    isEmojiModifier: dependency1,\n    isRegionalIndicatorSymbol: dependency2,\n    isSurrogatePair: dependency3,\n};\n"
+  }
+]

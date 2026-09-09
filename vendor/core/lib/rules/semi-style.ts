@@ -1,0 +1,173 @@
+/**
+ * @file Rule to enforce location of semicolons.
+ * @author Toru Nagashima
+ * @deprecated in ESLint v8.53.0
+ */
+import dependency0 from './utils/ast-utils';
+import type {
+    Fixer, LegacyRule, Node, Token,
+} from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const SELECTOR = [
+    'BreakStatement',
+    'ContinueStatement',
+    'DebuggerStatement',
+    'DoWhileStatement',
+    'ExportAllDeclaration',
+    'ExportDefaultDeclaration',
+    'ExportNamedDeclaration',
+    'ExpressionStatement',
+    'ImportDeclaration',
+    'ReturnStatement',
+    'ThrowStatement',
+    'VariableDeclaration',
+    'PropertyDefinition',
+].join(',');
+
+/**
+ * Get the child node list of a given node.
+ * This returns `BlockStatement#body`, `StaticBlock#body`, `Program#body`,
+ * `ClassBody#body`, or `SwitchCase#consequent`.
+ * This is used to check whether a node is the first/last child.
+ * @param node A node to get child node list.
+ * @returns The child node list.
+ */
+function getChildren(node: Node) {
+    const t = node.type;
+
+    if (t === 'BlockStatement' || t === 'StaticBlock' || t === 'Program' || t === 'ClassBody') {
+        return node.body;
+    }
+    if (t === 'SwitchCase') {
+        return node.consequent;
+    }
+    return null;
+}
+
+/**
+ * Check whether a given node is the last statement in the parent block.
+ * @param node A node to check.
+ * @returns `true` if the node is the last statement in the parent block.
+ */
+function isLastChild(node: Node) {
+    const t = node.parent.type;
+
+    if (t === 'IfStatement' && node.parent.consequent === node && node.parent.alternate) {
+        // before `else` keyword.
+        return true;
+    }
+    if (t === 'DoWhileStatement') {
+        // before `while` keyword.
+        return true;
+    }
+    const nodeList = getChildren(node.parent);
+
+    return nodeList !== null && nodeList[nodeList.length - 1] === node; // before `}` or etc.
+}
+
+const rule: LegacyRule<[('last' | 'first')?]> = {
+    meta: {
+        deprecated: true,
+        replacedBy: [],
+        type: 'layout',
+
+        docs: {
+            description: 'Enforce location of semicolons',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/semi-style',
+        },
+
+        schema: [{ enum: ['last', 'first'] }],
+        fixable: 'whitespace',
+
+        messages: {
+            expectedSemiColon: 'Expected this semicolon to be at {{pos}}.',
+        },
+    },
+
+    create(context) {
+        const { sourceCode } = context;
+        const option = context.options[0] || 'last';
+
+        /**
+         * Check the given semicolon token.
+         * @param semiToken The semicolon token to check.
+         * @param expected The expected location to check.
+         */
+        function check(semiToken: Token, expected: 'first' | 'last') {
+            const prevToken = sourceCode.getTokenBefore(semiToken);
+            const nextToken = sourceCode.getTokenAfter(semiToken);
+            const prevIsSameLine = !prevToken || astUtils.isTokenOnSameLine(prevToken, semiToken);
+            const nextIsSameLine = !nextToken || astUtils.isTokenOnSameLine(semiToken, nextToken);
+
+            if (
+                (expected === 'last' && !prevIsSameLine)
+                || (expected === 'first' && !nextIsSameLine)
+            ) {
+                context.report({
+                    loc: semiToken.loc,
+                    messageId: 'expectedSemiColon',
+                    data: {
+                        pos:
+                            expected === 'last'
+                                ? 'the end of the previous line'
+                                : 'the beginning of the next line',
+                    },
+                    fix(fixer: Fixer) {
+                        if (
+                            prevToken
+                            && nextToken
+                            && sourceCode.commentsExistBetween(prevToken, nextToken)
+                        ) {
+                            return null;
+                        }
+
+                        const start = prevToken ? prevToken.range[1] : semiToken.range[0];
+                        const end = nextToken ? nextToken.range[0] : semiToken.range[1];
+                        const text = expected === 'last' ? ';\n' : '\n;';
+
+                        return fixer.replaceTextRange([start, end], text);
+                    },
+                });
+            }
+        }
+
+        return {
+            [SELECTOR](node: Node) {
+                if (option === 'first' && isLastChild(node)) {
+                    return;
+                }
+
+                const lastToken = sourceCode.getLastToken(node);
+
+                if (astUtils.isSemicolonToken(lastToken!)) {
+                    check(lastToken!, option);
+                }
+            },
+
+            ForStatement(node: Node<'ForStatement'>) {
+                const firstSemi = node.init && sourceCode.getTokenAfter(node.init, astUtils.isSemicolonToken);
+                const secondSemi = node.test && sourceCode.getTokenAfter(node.test, astUtils.isSemicolonToken);
+
+                if (firstSemi) {
+                    check(firstSemi, 'last');
+                }
+                if (secondSemi) {
+                    check(secondSemi, 'last');
+                }
+            },
+        };
+    },
+};
+
+export default rule;

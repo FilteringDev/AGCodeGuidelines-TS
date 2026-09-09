@@ -1,0 +1,10 @@
+[
+  {
+    "before": "/**\n * @fileoverview Common utils for AST.\n *\n * This file contains only shared items for core and rules.\n * If you make a utility for rules, please see `../rules/utils/ast-utils.js`.\n *\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\"use strict\";\n\nconst breakableTypePattern = /^(?:(?:Do)?While|For(?:In|Of)?|Switch)Statement$/u;\nconst lineBreakPattern = /\\r\\n|[\\r\\n\\u2028\\u2029]/u;\n",
+    "after": "/**\n * @file Common utils for AST.\n *\n * This file contains only shared items for core and rules.\n * If you make a utility for rules, please see `../rules/utils/ast-utils.js`.\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\nconst breakableTypePattern = /^(?:(?:Do)?While|For(?:In|Of)?|Switch)Statement$/u;\nconst lineBreakPattern = /\\r\\n|[\\r\\n\\u2028\\u2029]/u;\n"
+  },
+  {
+    "before": "/**\n * Creates a version of the `lineBreakPattern` regex with the global flag.\n * Global regexes are mutable, so this needs to be a function instead of a constant.\n * @returns {RegExp} A global regular expression that matches line terminators\n */\nfunction createGlobalLinebreakMatcher() {\n    return new RegExp(lineBreakPattern.source, \"gu\");\n}\n\nmodule.exports = {\n    breakableTypePattern,\n    lineBreakPattern,\n    createGlobalLinebreakMatcher,\n    shebangPattern\n};\n",
+    "after": "/**\n * Creates a version of the `lineBreakPattern` regex with the global flag.\n * Global regexes are mutable, so this needs to be a function instead of a constant.\n * @returns A global regular expression that matches line terminators\n */\nfunction createGlobalLinebreakMatcher() {\n    return new RegExp(lineBreakPattern.source, 'gu');\n}\n\nexport default {\n    breakableTypePattern,\n    lineBreakPattern,\n    createGlobalLinebreakMatcher,\n    shebangPattern,\n};\n"
+  }
+]

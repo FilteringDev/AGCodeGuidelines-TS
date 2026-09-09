@@ -1,0 +1,344 @@
+/**
+ * @file Prefer destructuring from arrays and objects
+ * @author Alex LaFroscia
+ */
+import dependency0 from './utils/ast-utils';
+import type {
+    FixFunction, Fixer, LegacyRule, Node,
+} from '../../../types';
+
+type EnabledKinds = { array?: boolean; object?: boolean };
+type EnabledNodes = Partial<
+    Record<'VariableDeclarator' | 'AssignmentExpression', EnabledKinds>
+>;
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+
+const PRECEDENCE_OF_ASSIGNMENT_EXPR = astUtils.getPrecedence({ type: 'AssignmentExpression' });
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<
+    [
+        (
+            | {
+                VariableDeclarator?: { array?: boolean; object?: boolean };
+                AssignmentExpression?: { array?: boolean; object?: boolean };
+            }
+            | { array?: boolean; object?: boolean }
+        )?,
+        { enforceForRenamedProperties?: boolean }?,
+    ]
+> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Require destructuring from arrays and/or objects',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/prefer-destructuring',
+        },
+
+        fixable: 'code',
+
+        schema: [
+            {
+                /**
+                 * old support {array: Boolean, object: Boolean}
+                 * new support {VariableDeclarator: {}, AssignmentExpression: {}}
+                 */
+                oneOf: [
+                    {
+                        type: 'object',
+                        properties: {
+                            VariableDeclarator: {
+                                type: 'object',
+                                properties: {
+                                    array: {
+                                        type: 'boolean',
+                                    },
+                                    object: {
+                                        type: 'boolean',
+                                    },
+                                },
+                                additionalProperties: false,
+                            },
+                            AssignmentExpression: {
+                                type: 'object',
+                                properties: {
+                                    array: {
+                                        type: 'boolean',
+                                    },
+                                    object: {
+                                        type: 'boolean',
+                                    },
+                                },
+                                additionalProperties: false,
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                    {
+                        type: 'object',
+                        properties: {
+                            array: {
+                                type: 'boolean',
+                            },
+                            object: {
+                                type: 'boolean',
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                ],
+            },
+            {
+                type: 'object',
+                properties: {
+                    enforceForRenamedProperties: {
+                        type: 'boolean',
+                    },
+                },
+                additionalProperties: false,
+            },
+        ],
+
+        messages: {
+            preferDestructuring: 'Use {{type}} destructuring.',
+        },
+    },
+    create(context) {
+        const enabledTypes = context.options[0];
+        const enforceForRenamedProperties = context.options[1] && context.options[1].enforceForRenamedProperties;
+        let normalizedOptions: EnabledNodes = {
+            VariableDeclarator: { array: true, object: true },
+            AssignmentExpression: { array: true, object: true },
+        };
+
+        if (enabledTypes) {
+            normalizedOptions = ('array' in enabledTypes && typeof enabledTypes.array !== 'undefined')
+                || ('object' in enabledTypes && typeof enabledTypes.object !== 'undefined')
+                ? { VariableDeclarator: enabledTypes, AssignmentExpression: enabledTypes }
+                : (enabledTypes as EnabledNodes);
+        }
+
+        //--------------------------------------------------------------------------
+        // Helpers
+        //--------------------------------------------------------------------------
+
+        /**
+         * Checks if destructuring type should be checked.
+         * @param nodeType "AssignmentExpression" or "VariableDeclarator"
+         * @param destructuringType "array" or "object"
+         * @returns `true` if the destructuring type should be checked for the given node
+         */
+        function shouldCheck(
+            nodeType: 'VariableDeclarator' | 'AssignmentExpression',
+            destructuringType: 'array' | 'object',
+        ) {
+            return (
+                normalizedOptions
+                && normalizedOptions[nodeType]
+                && normalizedOptions[nodeType][destructuringType]
+            );
+        }
+
+        /**
+         * Determines if the given node is accessing an array index
+         *
+         * This is used to differentiate array index access from object property
+         * access.
+         * @param node the node to evaluate
+         * @returns whether or not the node is an integer
+         */
+        function isArrayIndexAccess(node: Node<'MemberExpression'>) {
+            return Number.isInteger(node.property.value);
+        }
+
+        /**
+         * Report that the given node should use destructuring
+         * @param reportNode the node to report
+         * @param type the type of destructuring that should have been done
+         * @param fix the fix function or null to pass to context.report
+         */
+        function report(
+            reportNode: Node<'AssignmentExpression' | 'VariableDeclarator'>,
+            type: string,
+            fix: FixFunction | null,
+        ) {
+            context.report({
+                node: reportNode,
+                messageId: 'preferDestructuring',
+                data: { type },
+                fix,
+            });
+        }
+
+        /**
+         * Determines if a node should be fixed into object destructuring
+         *
+         * The fixer only fixes the simplest case of object destructuring,
+         * like: `let x = a.x`;
+         *
+         * Assignment expression is not fixed.
+         * Array destructuring is not fixed.
+         * Renamed property is not fixed.
+         * @param node the node to evaluate
+         * @returns whether or not the node should be fixed
+         */
+        function shouldFix(node: Node<'AssignmentExpression' | 'VariableDeclarator'>) {
+            return (
+                node.type === 'VariableDeclarator'
+                && node.id.type === 'Identifier'
+                && node!.init!.type === 'MemberExpression'
+                && !node!.init!.computed
+                && node!.init!.property.type === 'Identifier'
+                && node.id.name === node!.init!.property.name
+            );
+        }
+
+        /**
+         * Fix a node into object destructuring.
+         * This function only handles the simplest case of object destructuring,
+         * see {@link shouldFix}.
+         * @param fixer the fixer object
+         * @param node the node to be fixed.
+         * @returns a fix for the node
+         */
+        function fixIntoObjectDestructuring(fixer: Fixer, node: Node<'VariableDeclarator'>) {
+            // The caller checks that this initializer is a member access before offering the fix.
+            const rightNode = node.init as Node<'MemberExpression'>;
+            const { sourceCode } = context;
+
+            // Don't fix if that would remove any comments. Only comments inside `rightNode.object` can be
+            // preserved.
+            if (
+                sourceCode.getCommentsInside(node).length
+                > sourceCode.getCommentsInside(rightNode.object).length
+            ) {
+                return null;
+            }
+
+            let objectText = sourceCode.getText(rightNode.object);
+
+            if (astUtils.getPrecedence(rightNode.object) < PRECEDENCE_OF_ASSIGNMENT_EXPR) {
+                objectText = `(${objectText})`;
+            }
+
+            return fixer.replaceText(node, `{${rightNode.property.name}} = ${objectText}`);
+        }
+
+        /**
+         * Check that the `prefer-destructuring` rules are followed based on the
+         * given left- and right-hand side of the assignment.
+         *
+         * Pulled out into a separate method so that VariableDeclarators and
+         * AssignmentExpressions can share the same verification logic.
+         * @param leftNode the left-hand side of the assignment
+         * @param rightNode the right-hand side of the assignment
+         * @param reportNode the node to report the error on
+         */
+        function performCheck(
+            leftNode: Node<
+                | 'ArrayPattern'
+                | 'AssignmentPattern'
+                | 'Identifier'
+                | 'MemberExpression'
+                | 'ObjectPattern'
+                | 'RestElement'
+            >,
+            rightNode: Node,
+            reportNode: Node<'AssignmentExpression' | 'VariableDeclarator'>,
+        ) {
+            if (
+                rightNode.type !== 'MemberExpression'
+                || rightNode.object.type === 'Super'
+                || rightNode.property.type === 'PrivateIdentifier'
+            ) {
+                return;
+            }
+
+            if (isArrayIndexAccess(rightNode)) {
+                if (shouldCheck(reportNode.type, 'array')) {
+                    report(reportNode, 'array', null);
+                }
+                return;
+            }
+
+            const fix = shouldFix(reportNode)
+                ? (fixer: Fixer) => fixIntoObjectDestructuring(
+                    fixer,
+                    reportNode as Node<'VariableDeclarator'>,
+                )
+                : null;
+
+            if (shouldCheck(reportNode.type, 'object') && enforceForRenamedProperties) {
+                report(reportNode, 'object', fix);
+                return;
+            }
+
+            if (shouldCheck(reportNode.type, 'object')) {
+                const { property } = rightNode;
+
+                if (
+                    (property.type === 'Literal' && leftNode.name === property.value)
+                    || (property.type === 'Identifier'
+                        && leftNode.name === property.name
+                        && !rightNode.computed)
+                ) {
+                    report(reportNode, 'object', fix);
+                }
+            }
+        }
+
+        /**
+         * Check if a given variable declarator is coming from an property access
+         * that should be using destructuring instead
+         * @param node the variable declarator to check
+         */
+        function checkVariableDeclarator(node: Node<'VariableDeclarator'>) {
+            // Skip if variable is declared without assignment
+            if (!node.init) {
+                return;
+            }
+
+            // We only care about member expressions past this point
+            if (node.init.type !== 'MemberExpression') {
+                return;
+            }
+
+            performCheck(node.id, node.init, node);
+        }
+
+        /**
+         * Run the `prefer-destructuring` check on an AssignmentExpression
+         * @param node the AssignmentExpression node
+         */
+        function checkAssignmentExpression(node: Node<'AssignmentExpression'>) {
+            if (node.operator === '=') {
+                performCheck(node.left, node.right, node);
+            }
+        }
+
+        //--------------------------------------------------------------------------
+        // Public
+        //--------------------------------------------------------------------------
+
+        return {
+            VariableDeclarator: checkVariableDeclarator,
+            AssignmentExpression: checkAssignmentExpression,
+        };
+    },
+};
+
+export default rule;

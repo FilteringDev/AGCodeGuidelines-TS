@@ -1,0 +1,600 @@
+import type { LegacyRule } from '../../../types';
+/**
+ * @file Collects the built-in rules into a map structure so that they can be imported all at once and without
+ * using the file-system directly.
+ * @author Peter (Somogyvari) Metz
+ */
+import dependency0 from './utils/lazy-loading-rule-map';
+import dependency1 from './accessor-pairs';
+import dependency2 from './array-bracket-newline';
+import dependency3 from './array-bracket-spacing';
+import dependency4 from './array-callback-return';
+import dependency5 from './array-element-newline';
+import dependency6 from './arrow-body-style';
+import dependency7 from './arrow-parens';
+import dependency8 from './arrow-spacing';
+import dependency9 from './block-scoped-var';
+import dependency10 from './block-spacing';
+import dependency11 from './brace-style';
+import dependency12 from './callback-return';
+import dependency13 from './camelcase';
+import dependency14 from './capitalized-comments';
+import dependency15 from './class-methods-use-this';
+import dependency16 from './comma-dangle';
+import dependency17 from './comma-spacing';
+import dependency18 from './comma-style';
+import dependency19 from './complexity';
+import dependency20 from './computed-property-spacing';
+import dependency21 from './consistent-return';
+import dependency22 from './consistent-this';
+import dependency23 from './constructor-super';
+import dependency24 from './curly';
+import dependency25 from './default-case';
+import dependency26 from './default-case-last';
+import dependency27 from './default-param-last';
+import dependency28 from './dot-location';
+import dependency29 from './dot-notation';
+import dependency30 from './eol-last';
+import dependency31 from './eqeqeq';
+import dependency32 from './for-direction';
+import dependency33 from './func-call-spacing';
+import dependency34 from './func-name-matching';
+import dependency35 from './func-names';
+import dependency36 from './func-style';
+import dependency37 from './function-call-argument-newline';
+import dependency38 from './function-paren-newline';
+import dependency39 from './generator-star-spacing';
+import dependency40 from './getter-return';
+import dependency41 from './global-require';
+import dependency42 from './grouped-accessor-pairs';
+import dependency43 from './guard-for-in';
+import dependency44 from './handle-callback-err';
+import dependency45 from './id-blacklist';
+import dependency46 from './id-denylist';
+import dependency47 from './id-length';
+import dependency48 from './id-match';
+import dependency49 from './implicit-arrow-linebreak';
+import dependency50 from './indent';
+import dependency51 from './indent-legacy';
+import dependency52 from './init-declarations';
+import dependency53 from './jsx-quotes';
+import dependency54 from './key-spacing';
+import dependency55 from './keyword-spacing';
+import dependency56 from './line-comment-position';
+import dependency57 from './linebreak-style';
+import dependency58 from './lines-around-comment';
+import dependency59 from './lines-around-directive';
+import dependency60 from './lines-between-class-members';
+import dependency61 from './logical-assignment-operators';
+import dependency62 from './max-classes-per-file';
+import dependency63 from './max-depth';
+import dependency64 from './max-len';
+import dependency65 from './max-lines';
+import dependency66 from './max-lines-per-function';
+import dependency67 from './max-nested-callbacks';
+import dependency68 from './max-params';
+import dependency69 from './max-statements';
+import dependency70 from './max-statements-per-line';
+import dependency71 from './multiline-comment-style';
+import dependency72 from './multiline-ternary';
+import dependency73 from './new-cap';
+import dependency74 from './new-parens';
+import dependency75 from './newline-after-var';
+import dependency76 from './newline-before-return';
+import dependency77 from './newline-per-chained-call';
+import dependency78 from './no-alert';
+import dependency79 from './no-array-constructor';
+import dependency80 from './no-async-promise-executor';
+import dependency81 from './no-await-in-loop';
+import dependency82 from './no-bitwise';
+import dependency83 from './no-buffer-constructor';
+import dependency84 from './no-caller';
+import dependency85 from './no-case-declarations';
+import dependency86 from './no-catch-shadow';
+import dependency87 from './no-class-assign';
+import dependency88 from './no-compare-neg-zero';
+import dependency89 from './no-cond-assign';
+import dependency90 from './no-confusing-arrow';
+import dependency91 from './no-console';
+import dependency92 from './no-const-assign';
+import dependency93 from './no-constant-binary-expression';
+import dependency94 from './no-constant-condition';
+import dependency95 from './no-constructor-return';
+import dependency96 from './no-continue';
+import dependency97 from './no-control-regex';
+import dependency98 from './no-debugger';
+import dependency99 from './no-delete-var';
+import dependency100 from './no-div-regex';
+import dependency101 from './no-dupe-args';
+import dependency102 from './no-dupe-class-members';
+import dependency103 from './no-dupe-else-if';
+import dependency104 from './no-dupe-keys';
+import dependency105 from './no-duplicate-case';
+import dependency106 from './no-duplicate-imports';
+import dependency107 from './no-else-return';
+import dependency108 from './no-empty';
+import dependency109 from './no-empty-character-class';
+import dependency110 from './no-empty-function';
+import dependency111 from './no-empty-pattern';
+import dependency112 from './no-empty-static-block';
+import dependency113 from './no-eq-null';
+import dependency114 from './no-eval';
+import dependency115 from './no-ex-assign';
+import dependency116 from './no-extend-native';
+import dependency117 from './no-extra-bind';
+import dependency118 from './no-extra-boolean-cast';
+import dependency119 from './no-extra-label';
+import dependency120 from './no-extra-parens';
+import dependency121 from './no-extra-semi';
+import dependency122 from './no-fallthrough';
+import dependency123 from './no-floating-decimal';
+import dependency124 from './no-func-assign';
+import dependency125 from './no-global-assign';
+import dependency126 from './no-implicit-coercion';
+import dependency127 from './no-implicit-globals';
+import dependency128 from './no-implied-eval';
+import dependency129 from './no-import-assign';
+import dependency130 from './no-inline-comments';
+import dependency131 from './no-inner-declarations';
+import dependency132 from './no-invalid-regexp';
+import dependency133 from './no-invalid-this';
+import dependency134 from './no-irregular-whitespace';
+import dependency135 from './no-iterator';
+import dependency136 from './no-label-var';
+import dependency137 from './no-labels';
+import dependency138 from './no-lone-blocks';
+import dependency139 from './no-lonely-if';
+import dependency140 from './no-loop-func';
+import dependency141 from './no-loss-of-precision';
+import dependency142 from './no-magic-numbers';
+import dependency143 from './no-misleading-character-class';
+import dependency144 from './no-mixed-operators';
+import dependency145 from './no-mixed-requires';
+import dependency146 from './no-mixed-spaces-and-tabs';
+import dependency147 from './no-multi-assign';
+import dependency148 from './no-multi-spaces';
+import dependency149 from './no-multi-str';
+import dependency150 from './no-multiple-empty-lines';
+import dependency151 from './no-native-reassign';
+import dependency152 from './no-negated-condition';
+import dependency153 from './no-negated-in-lhs';
+import dependency154 from './no-nested-ternary';
+import dependency155 from './no-new';
+import dependency156 from './no-new-func';
+import dependency157 from './no-new-native-nonconstructor';
+import dependency158 from './no-new-object';
+import dependency159 from './no-new-require';
+import dependency160 from './no-new-symbol';
+import dependency161 from './no-new-wrappers';
+import dependency162 from './no-nonoctal-decimal-escape';
+import dependency163 from './no-obj-calls';
+import dependency164 from './no-object-constructor';
+import dependency165 from './no-octal';
+import dependency166 from './no-octal-escape';
+import dependency167 from './no-param-reassign';
+import dependency168 from './no-path-concat';
+import dependency169 from './no-plusplus';
+import dependency170 from './no-process-env';
+import dependency171 from './no-process-exit';
+import dependency172 from './no-promise-executor-return';
+import dependency173 from './no-proto';
+import dependency174 from './no-prototype-builtins';
+import dependency175 from './no-redeclare';
+import dependency176 from './no-regex-spaces';
+import dependency177 from './no-restricted-exports';
+import dependency178 from './no-restricted-globals';
+import dependency179 from './no-restricted-imports';
+import dependency180 from './no-restricted-modules';
+import dependency181 from './no-restricted-properties';
+import dependency182 from './no-restricted-syntax';
+import dependency183 from './no-return-assign';
+import dependency184 from './no-return-await';
+import dependency185 from './no-script-url';
+import dependency186 from './no-self-assign';
+import dependency187 from './no-self-compare';
+import dependency188 from './no-sequences';
+import dependency189 from './no-setter-return';
+import dependency190 from './no-shadow';
+import dependency191 from './no-shadow-restricted-names';
+import dependency192 from './no-spaced-func';
+import dependency193 from './no-sparse-arrays';
+import dependency194 from './no-sync';
+import dependency195 from './no-tabs';
+import dependency196 from './no-template-curly-in-string';
+import dependency197 from './no-ternary';
+import dependency198 from './no-this-before-super';
+import dependency199 from './no-throw-literal';
+import dependency200 from './no-trailing-spaces';
+import dependency201 from './no-undef';
+import dependency202 from './no-undef-init';
+import dependency203 from './no-undefined';
+import dependency204 from './no-underscore-dangle';
+import dependency205 from './no-unexpected-multiline';
+import dependency206 from './no-unmodified-loop-condition';
+import dependency207 from './no-unneeded-ternary';
+import dependency208 from './no-unreachable';
+import dependency209 from './no-unreachable-loop';
+import dependency210 from './no-unsafe-finally';
+import dependency211 from './no-unsafe-negation';
+import dependency212 from './no-unsafe-optional-chaining';
+import dependency213 from './no-unused-expressions';
+import dependency214 from './no-unused-labels';
+import dependency215 from './no-unused-private-class-members';
+import dependency216 from './no-unused-vars';
+import dependency217 from './no-use-before-define';
+import dependency218 from './no-useless-backreference';
+import dependency219 from './no-useless-call';
+import dependency220 from './no-useless-catch';
+import dependency221 from './no-useless-computed-key';
+import dependency222 from './no-useless-concat';
+import dependency223 from './no-useless-constructor';
+import dependency224 from './no-useless-escape';
+import dependency225 from './no-useless-rename';
+import dependency226 from './no-useless-return';
+import dependency227 from './no-var';
+import dependency228 from './no-void';
+import dependency229 from './no-warning-comments';
+import dependency230 from './no-whitespace-before-property';
+import dependency231 from './no-with';
+import dependency232 from './nonblock-statement-body-position';
+import dependency233 from './object-curly-newline';
+import dependency234 from './object-curly-spacing';
+import dependency235 from './object-property-newline';
+import dependency236 from './object-shorthand';
+import dependency237 from './one-var';
+import dependency238 from './one-var-declaration-per-line';
+import dependency239 from './operator-assignment';
+import dependency240 from './operator-linebreak';
+import dependency241 from './padded-blocks';
+import dependency242 from './padding-line-between-statements';
+import dependency243 from './prefer-arrow-callback';
+import dependency244 from './prefer-const';
+import dependency245 from './prefer-destructuring';
+import dependency246 from './prefer-exponentiation-operator';
+import dependency247 from './prefer-named-capture-group';
+import dependency248 from './prefer-numeric-literals';
+import dependency249 from './prefer-object-has-own';
+import dependency250 from './prefer-object-spread';
+import dependency251 from './prefer-promise-reject-errors';
+import dependency252 from './prefer-reflect';
+import dependency253 from './prefer-regex-literals';
+import dependency254 from './prefer-rest-params';
+import dependency255 from './prefer-spread';
+import dependency256 from './prefer-template';
+import dependency257 from './quote-props';
+import dependency258 from './quotes';
+import dependency259 from './radix';
+import dependency260 from './require-atomic-updates';
+import dependency261 from './require-await';
+import dependency262 from './require-jsdoc';
+import dependency263 from './require-unicode-regexp';
+import dependency264 from './require-yield';
+import dependency265 from './rest-spread-spacing';
+import dependency266 from './semi';
+import dependency267 from './semi-spacing';
+import dependency268 from './semi-style';
+import dependency269 from './sort-imports';
+import dependency270 from './sort-keys';
+import dependency271 from './sort-vars';
+import dependency272 from './space-before-blocks';
+import dependency273 from './space-before-function-paren';
+import dependency274 from './space-in-parens';
+import dependency275 from './space-infix-ops';
+import dependency276 from './space-unary-ops';
+import dependency277 from './spaced-comment';
+import dependency278 from './strict';
+import dependency279 from './switch-colon-spacing';
+import dependency280 from './symbol-description';
+import dependency281 from './template-curly-spacing';
+import dependency282 from './template-tag-spacing';
+import dependency283 from './unicode-bom';
+import dependency284 from './use-isnan';
+import dependency285 from './valid-jsdoc';
+import dependency286 from './valid-typeof';
+import dependency287 from './vars-on-top';
+import dependency288 from './wrap-iife';
+import dependency289 from './wrap-regex';
+import dependency290 from './yield-star-spacing';
+import dependency291 from './yoda';
+
+/* eslint sort-keys: ["error", "asc"] -- More readable for long list */
+
+const { LazyLoadingRuleMap } = dependency0;
+
+const rules: ReadonlyMap<string, LegacyRule> = new LazyLoadingRuleMap(
+    Object.entries({
+        'accessor-pairs': () => dependency1,
+        'array-bracket-newline': () => dependency2,
+        'array-bracket-spacing': () => dependency3,
+        'array-callback-return': () => dependency4,
+        'array-element-newline': () => dependency5,
+        'arrow-body-style': () => dependency6,
+        'arrow-parens': () => dependency7,
+        'arrow-spacing': () => dependency8,
+        'block-scoped-var': () => dependency9,
+        'block-spacing': () => dependency10,
+        'brace-style': () => dependency11,
+        'callback-return': () => dependency12,
+        camelcase: () => dependency13,
+        'capitalized-comments': () => dependency14,
+        'class-methods-use-this': () => dependency15,
+        'comma-dangle': () => dependency16,
+        'comma-spacing': () => dependency17,
+        'comma-style': () => dependency18,
+        complexity: () => dependency19,
+        'computed-property-spacing': () => dependency20,
+        'consistent-return': () => dependency21,
+        'consistent-this': () => dependency22,
+        'constructor-super': () => dependency23,
+        curly: () => dependency24,
+        'default-case': () => dependency25,
+        'default-case-last': () => dependency26,
+        'default-param-last': () => dependency27,
+        'dot-location': () => dependency28,
+        'dot-notation': () => dependency29,
+        'eol-last': () => dependency30,
+        eqeqeq: () => dependency31,
+        'for-direction': () => dependency32,
+        'func-call-spacing': () => dependency33,
+        'func-name-matching': () => dependency34,
+        'func-names': () => dependency35,
+        'func-style': () => dependency36,
+        'function-call-argument-newline': () => dependency37,
+        'function-paren-newline': () => dependency38,
+        'generator-star-spacing': () => dependency39,
+        'getter-return': () => dependency40,
+        'global-require': () => dependency41,
+        'grouped-accessor-pairs': () => dependency42,
+        'guard-for-in': () => dependency43,
+        'handle-callback-err': () => dependency44,
+        'id-blacklist': () => dependency45,
+        'id-denylist': () => dependency46,
+        'id-length': () => dependency47,
+        'id-match': () => dependency48,
+        'implicit-arrow-linebreak': () => dependency49,
+        indent: () => dependency50,
+        'indent-legacy': () => dependency51,
+        'init-declarations': () => dependency52,
+        'jsx-quotes': () => dependency53,
+        'key-spacing': () => dependency54,
+        'keyword-spacing': () => dependency55,
+        'line-comment-position': () => dependency56,
+        'linebreak-style': () => dependency57,
+        'lines-around-comment': () => dependency58,
+        'lines-around-directive': () => dependency59,
+        'lines-between-class-members': () => dependency60,
+        'logical-assignment-operators': () => dependency61,
+        'max-classes-per-file': () => dependency62,
+        'max-depth': () => dependency63,
+        'max-len': () => dependency64,
+        'max-lines': () => dependency65,
+        'max-lines-per-function': () => dependency66,
+        'max-nested-callbacks': () => dependency67,
+        'max-params': () => dependency68,
+        'max-statements': () => dependency69,
+        'max-statements-per-line': () => dependency70,
+        'multiline-comment-style': () => dependency71,
+        'multiline-ternary': () => dependency72,
+        'new-cap': () => dependency73,
+        'new-parens': () => dependency74,
+        'newline-after-var': () => dependency75,
+        'newline-before-return': () => dependency76,
+        'newline-per-chained-call': () => dependency77,
+        'no-alert': () => dependency78,
+        'no-array-constructor': () => dependency79,
+        'no-async-promise-executor': () => dependency80,
+        'no-await-in-loop': () => dependency81,
+        'no-bitwise': () => dependency82,
+        'no-buffer-constructor': () => dependency83,
+        'no-caller': () => dependency84,
+        'no-case-declarations': () => dependency85,
+        'no-catch-shadow': () => dependency86,
+        'no-class-assign': () => dependency87,
+        'no-compare-neg-zero': () => dependency88,
+        'no-cond-assign': () => dependency89,
+        'no-confusing-arrow': () => dependency90,
+        'no-console': () => dependency91,
+        'no-const-assign': () => dependency92,
+        'no-constant-binary-expression': () => dependency93,
+        'no-constant-condition': () => dependency94,
+        'no-constructor-return': () => dependency95,
+        'no-continue': () => dependency96,
+        'no-control-regex': () => dependency97,
+        'no-debugger': () => dependency98,
+        'no-delete-var': () => dependency99,
+        'no-div-regex': () => dependency100,
+        'no-dupe-args': () => dependency101,
+        'no-dupe-class-members': () => dependency102,
+        'no-dupe-else-if': () => dependency103,
+        'no-dupe-keys': () => dependency104,
+        'no-duplicate-case': () => dependency105,
+        'no-duplicate-imports': () => dependency106,
+        'no-else-return': () => dependency107,
+        'no-empty': () => dependency108,
+        'no-empty-character-class': () => dependency109,
+        'no-empty-function': () => dependency110,
+        'no-empty-pattern': () => dependency111,
+        'no-empty-static-block': () => dependency112,
+        'no-eq-null': () => dependency113,
+        'no-eval': () => dependency114,
+        'no-ex-assign': () => dependency115,
+        'no-extend-native': () => dependency116,
+        'no-extra-bind': () => dependency117,
+        'no-extra-boolean-cast': () => dependency118,
+        'no-extra-label': () => dependency119,
+        'no-extra-parens': () => dependency120,
+        'no-extra-semi': () => dependency121,
+        'no-fallthrough': () => dependency122,
+        'no-floating-decimal': () => dependency123,
+        'no-func-assign': () => dependency124,
+        'no-global-assign': () => dependency125,
+        'no-implicit-coercion': () => dependency126,
+        'no-implicit-globals': () => dependency127,
+        'no-implied-eval': () => dependency128,
+        'no-import-assign': () => dependency129,
+        'no-inline-comments': () => dependency130,
+        'no-inner-declarations': () => dependency131,
+        'no-invalid-regexp': () => dependency132,
+        'no-invalid-this': () => dependency133,
+        'no-irregular-whitespace': () => dependency134,
+        'no-iterator': () => dependency135,
+        'no-label-var': () => dependency136,
+        'no-labels': () => dependency137,
+        'no-lone-blocks': () => dependency138,
+        'no-lonely-if': () => dependency139,
+        'no-loop-func': () => dependency140,
+        'no-loss-of-precision': () => dependency141,
+        'no-magic-numbers': () => dependency142,
+        'no-misleading-character-class': () => dependency143,
+        'no-mixed-operators': () => dependency144,
+        'no-mixed-requires': () => dependency145,
+        'no-mixed-spaces-and-tabs': () => dependency146,
+        'no-multi-assign': () => dependency147,
+        'no-multi-spaces': () => dependency148,
+        'no-multi-str': () => dependency149,
+        'no-multiple-empty-lines': () => dependency150,
+        'no-native-reassign': () => dependency151,
+        'no-negated-condition': () => dependency152,
+        'no-negated-in-lhs': () => dependency153,
+        'no-nested-ternary': () => dependency154,
+        'no-new': () => dependency155,
+        'no-new-func': () => dependency156,
+        'no-new-native-nonconstructor': () => dependency157,
+        'no-new-object': () => dependency158,
+        'no-new-require': () => dependency159,
+        'no-new-symbol': () => dependency160,
+        'no-new-wrappers': () => dependency161,
+        'no-nonoctal-decimal-escape': () => dependency162,
+        'no-obj-calls': () => dependency163,
+        'no-object-constructor': () => dependency164,
+        'no-octal': () => dependency165,
+        'no-octal-escape': () => dependency166,
+        'no-param-reassign': () => dependency167,
+        'no-path-concat': () => dependency168,
+        'no-plusplus': () => dependency169,
+        'no-process-env': () => dependency170,
+        'no-process-exit': () => dependency171,
+        'no-promise-executor-return': () => dependency172,
+        'no-proto': () => dependency173,
+        'no-prototype-builtins': () => dependency174,
+        'no-redeclare': () => dependency175,
+        'no-regex-spaces': () => dependency176,
+        'no-restricted-exports': () => dependency177,
+        'no-restricted-globals': () => dependency178,
+        'no-restricted-imports': () => dependency179,
+        'no-restricted-modules': () => dependency180,
+        'no-restricted-properties': () => dependency181,
+        'no-restricted-syntax': () => dependency182,
+        'no-return-assign': () => dependency183,
+        'no-return-await': () => dependency184,
+        'no-script-url': () => dependency185,
+        'no-self-assign': () => dependency186,
+        'no-self-compare': () => dependency187,
+        'no-sequences': () => dependency188,
+        'no-setter-return': () => dependency189,
+        'no-shadow': () => dependency190,
+        'no-shadow-restricted-names': () => dependency191,
+        'no-spaced-func': () => dependency192,
+        'no-sparse-arrays': () => dependency193,
+        'no-sync': () => dependency194,
+        'no-tabs': () => dependency195,
+        'no-template-curly-in-string': () => dependency196,
+        'no-ternary': () => dependency197,
+        'no-this-before-super': () => dependency198,
+        'no-throw-literal': () => dependency199,
+        'no-trailing-spaces': () => dependency200,
+        'no-undef': () => dependency201,
+        'no-undef-init': () => dependency202,
+        'no-undefined': () => dependency203,
+        'no-underscore-dangle': () => dependency204,
+        'no-unexpected-multiline': () => dependency205,
+        'no-unmodified-loop-condition': () => dependency206,
+        'no-unneeded-ternary': () => dependency207,
+        'no-unreachable': () => dependency208,
+        'no-unreachable-loop': () => dependency209,
+        'no-unsafe-finally': () => dependency210,
+        'no-unsafe-negation': () => dependency211,
+        'no-unsafe-optional-chaining': () => dependency212,
+        'no-unused-expressions': () => dependency213,
+        'no-unused-labels': () => dependency214,
+        'no-unused-private-class-members': () => dependency215,
+        'no-unused-vars': () => dependency216,
+        'no-use-before-define': () => dependency217,
+        'no-useless-backreference': () => dependency218,
+        'no-useless-call': () => dependency219,
+        'no-useless-catch': () => dependency220,
+        'no-useless-computed-key': () => dependency221,
+        'no-useless-concat': () => dependency222,
+        'no-useless-constructor': () => dependency223,
+        'no-useless-escape': () => dependency224,
+        'no-useless-rename': () => dependency225,
+        'no-useless-return': () => dependency226,
+        'no-var': () => dependency227,
+        'no-void': () => dependency228,
+        'no-warning-comments': () => dependency229,
+        'no-whitespace-before-property': () => dependency230,
+        'no-with': () => dependency231,
+        'nonblock-statement-body-position': () => dependency232,
+        'object-curly-newline': () => dependency233,
+        'object-curly-spacing': () => dependency234,
+        'object-property-newline': () => dependency235,
+        'object-shorthand': () => dependency236,
+        'one-var': () => dependency237,
+        'one-var-declaration-per-line': () => dependency238,
+        'operator-assignment': () => dependency239,
+        'operator-linebreak': () => dependency240,
+        'padded-blocks': () => dependency241,
+        'padding-line-between-statements': () => dependency242,
+        'prefer-arrow-callback': () => dependency243,
+        'prefer-const': () => dependency244,
+        'prefer-destructuring': () => dependency245,
+        'prefer-exponentiation-operator': () => dependency246,
+        'prefer-named-capture-group': () => dependency247,
+        'prefer-numeric-literals': () => dependency248,
+        'prefer-object-has-own': () => dependency249,
+        'prefer-object-spread': () => dependency250,
+        'prefer-promise-reject-errors': () => dependency251,
+        'prefer-reflect': () => dependency252,
+        'prefer-regex-literals': () => dependency253,
+        'prefer-rest-params': () => dependency254,
+        'prefer-spread': () => dependency255,
+        'prefer-template': () => dependency256,
+        'quote-props': () => dependency257,
+        quotes: () => dependency258,
+        radix: () => dependency259,
+        'require-atomic-updates': () => dependency260,
+        'require-await': () => dependency261,
+        'require-jsdoc': () => dependency262,
+        'require-unicode-regexp': () => dependency263,
+        'require-yield': () => dependency264,
+        'rest-spread-spacing': () => dependency265,
+        semi: () => dependency266,
+        'semi-spacing': () => dependency267,
+        'semi-style': () => dependency268,
+        'sort-imports': () => dependency269,
+        'sort-keys': () => dependency270,
+        'sort-vars': () => dependency271,
+        'space-before-blocks': () => dependency272,
+        'space-before-function-paren': () => dependency273,
+        'space-in-parens': () => dependency274,
+        'space-infix-ops': () => dependency275,
+        'space-unary-ops': () => dependency276,
+        'spaced-comment': () => dependency277,
+        strict: () => dependency278,
+        'switch-colon-spacing': () => dependency279,
+        'symbol-description': () => dependency280,
+        'template-curly-spacing': () => dependency281,
+        'template-tag-spacing': () => dependency282,
+        'unicode-bom': () => dependency283,
+        'use-isnan': () => dependency284,
+        'valid-jsdoc': () => dependency285,
+        'valid-typeof': () => dependency286,
+        'vars-on-top': () => dependency287,
+        'wrap-iife': () => dependency288,
+        'wrap-regex': () => dependency289,
+        'yield-star-spacing': () => dependency290,
+        yoda: () => dependency291,
+    }),
+);
+
+export default rules;

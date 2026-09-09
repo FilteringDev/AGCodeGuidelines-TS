@@ -1,0 +1,100 @@
+/**
+ * @file Rule to disallow uses of await inside of loops.
+ * @author Nat Mote (nmote)
+ */
+import type { LegacyRule, Node } from '../../../types';
+
+/**
+ * Check whether it should stop traversing ancestors at the given node.
+ * @param node A node to check.
+ * @returns `true` if it should stop traversing.
+ */
+function isBoundary(node: Node) {
+    const t = node.type;
+
+    return (
+        t === 'FunctionDeclaration'
+        || t === 'FunctionExpression'
+        || t === 'ArrowFunctionExpression'
+        /**
+         * Don't report the await expressions on for-await-of loop since it's
+         * asynchronous iteration intentionally.
+         */
+        || (t === 'ForOfStatement' && node.await === true)
+    );
+}
+
+/**
+ * Check whether the given node is in loop.
+ * @param node A node to check.
+ * @param parent A parent node to check.
+ * @returns `true` if the node is in loop.
+ */
+function isLooped(node: Node, parent: Node) {
+    switch (parent.type) {
+        case 'ForStatement':
+            return node === parent.test || node === parent.update || node === parent.body;
+
+        case 'ForOfStatement':
+        case 'ForInStatement':
+            return node === parent.body;
+
+        case 'WhileStatement':
+        case 'DoWhileStatement':
+            return node === parent.test || node === parent.body;
+
+        default:
+            return false;
+    }
+}
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'problem',
+
+        docs: {
+            description: 'Disallow `await` inside of loops',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/no-await-in-loop',
+        },
+
+        schema: [],
+
+        messages: {
+            unexpectedAwait: 'Unexpected `await` inside a loop.',
+        },
+    },
+    create(context) {
+        /**
+         * Validate an await expression.
+         * @param awaitNode An AwaitExpression or ForOfStatement node to validate.
+         */
+        function validate(awaitNode: Node<'AwaitExpression' | 'ForOfStatement'>) {
+            if (awaitNode.type === 'ForOfStatement' && !awaitNode.await) {
+                return;
+            }
+
+            let node: Node = awaitNode;
+            let { parent } = node;
+
+            while (parent && !isBoundary(parent)) {
+                if (isLooped(node, parent)) {
+                    context.report({
+                        node: awaitNode,
+                        messageId: 'unexpectedAwait',
+                    });
+                    return;
+                }
+                node = parent;
+                parent = parent.parent;
+            }
+        }
+
+        return {
+            AwaitExpression: validate,
+            ForOfStatement: validate,
+        };
+    },
+};
+
+export default rule;

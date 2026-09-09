@@ -1,0 +1,209 @@
+/**
+ * @file Rule to flag use of console object
+ * @author Nicholas C. Zakas
+ */
+import dependency0 from './utils/ast-utils';
+import type {
+    Fixer, LegacyRule, Node, Reference,
+} from '../../../types';
+
+//------------------------------------------------------------------------------
+// Requirements
+//------------------------------------------------------------------------------
+
+const astUtils = dependency0;
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[{ allow?: string[] }?]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow the use of `console`',
+            recommended: false,
+            url: 'https://eslint.org/docs/latest/rules/no-console',
+        },
+
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    allow: {
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                        },
+                        minItems: 1,
+                        uniqueItems: true,
+                    },
+                },
+                additionalProperties: false,
+            },
+        ],
+
+        hasSuggestions: true,
+
+        messages: {
+            unexpected: 'Unexpected console statement.',
+            removeConsole: 'Remove the console.{{ propertyName }}().',
+        },
+    },
+
+    create(context) {
+        const options = context.options[0] || {};
+        const allowed = options.allow || [];
+        const { sourceCode } = context;
+
+        /**
+         * Checks whether the given reference is 'console' or not.
+         * @param reference The reference to check.
+         * @returns `true` if the reference is 'console'.
+         */
+        function isConsole(reference: Reference) {
+            const id = reference.identifier;
+
+            return id && id.name === 'console';
+        }
+
+        /**
+         * Checks whether the property name of the given MemberExpression node
+         * is allowed by options or not.
+         * @param node The MemberExpression node to check.
+         * @returns `true` if the property name of the node is allowed.
+         */
+        function isAllowed(node: Node<'MemberExpression'>) {
+            const propertyName = astUtils.getStaticPropertyName(node);
+
+            return propertyName && allowed.includes(propertyName);
+        }
+
+        /**
+         * Checks whether the given reference is a member access which is not
+         * allowed by options or not.
+         * @param reference The reference to check.
+         * @returns `true` if the reference is a member access which
+         *      is not allowed by options.
+         */
+        function isMemberAccessExceptAllowed(reference: Reference) {
+            const node = reference.identifier;
+            const { parent } = node;
+
+            return (
+                parent.type === 'MemberExpression'
+                && parent.object === node
+                && !isAllowed(parent)
+            );
+        }
+
+        /**
+         * Checks if removing the ExpressionStatement node will cause ASI to
+         * break.
+         * eg.
+         * foo()
+         * console.log();
+         * [1, 2, 3].forEach(a => doSomething(a))
+         *
+         * Removing the console.log(); statement should leave two statements, but
+         * here the two statements will become one because [ causes continuation after
+         * foo().
+         * @param node The ExpressionStatement node to check.
+         * @returns `true` if ASI will break after removing the ExpressionStatement
+         *      node.
+         */
+        function maybeAsiHazard(node: Node<'ExpressionStatement'>) {
+            const SAFE_TOKENS_BEFORE = /^[:;{]$/u; // One of :;{
+            const UNSAFE_CHARS_AFTER = /^[-[(/+`]/u; // One of [(/+-`
+
+            const tokenBefore = sourceCode.getTokenBefore(node);
+            const tokenAfter = sourceCode.getTokenAfter(node);
+
+            return (
+                Boolean(tokenAfter)
+                && UNSAFE_CHARS_AFTER.test(tokenAfter!.value)
+                && tokenAfter!.value !== '++'
+                && tokenAfter!.value !== '--'
+                && Boolean(tokenBefore)
+                && !SAFE_TOKENS_BEFORE.test(tokenBefore!.value)
+            );
+        }
+
+        /**
+         * Checks if the MemberExpression node's parent.parent.parent is a
+         * Program, BlockStatement, StaticBlock, or SwitchCase node. This check
+         * is necessary to avoid providing a suggestion that might cause a syntax error.
+         *
+         * eg. if (a) console.log(b), removing console.log() here will lead to a
+         *     syntax error.
+         *     if (a) { console.log(b) }, removing console.log() here is acceptable.
+         *
+         * Additionally, it checks if the callee of the CallExpression node is
+         * the node itself.
+         *
+         * eg. foo(console.log), cannot provide a suggestion here.
+         * @param node The MemberExpression node to check.
+         * @returns `true` if a suggestion can be provided for a node.
+         */
+        function canProvideSuggestions(node: Node) {
+            return (
+                node.parent.type === 'CallExpression'
+                && node.parent.callee === node
+                && node.parent.parent.type === 'ExpressionStatement'
+                && astUtils.STATEMENT_LIST_PARENTS.has(node.parent.parent.parent.type)
+                && !maybeAsiHazard(node.parent.parent)
+            );
+        }
+
+        /**
+         * Reports the given reference as a violation.
+         * @param reference The reference to report.
+         */
+        function report(reference: Reference) {
+            const node = reference.identifier.parent;
+
+            const propertyName = astUtils.getStaticPropertyName(node);
+
+            context.report({
+                node,
+                loc: node.loc,
+                messageId: 'unexpected',
+                suggest: canProvideSuggestions(node)
+                    ? [
+                        {
+                            messageId: 'removeConsole',
+                            data: { propertyName },
+                            fix(fixer: Fixer) {
+                                return fixer.remove(node.parent.parent);
+                            },
+                        },
+                    ]
+                    : [],
+            });
+        }
+
+        return {
+            'Program:exit': function onProgramExit(node: Node<'Program'>) {
+                const scope = sourceCode.getScope(node);
+                const consoleVar = astUtils.getVariableByName(scope, 'console');
+                const shadowed = consoleVar && consoleVar.defs.length > 0;
+
+                /**
+                 * 'scope.through' includes all references to undefined
+                 * variables. If the variable 'console' is not defined, it uses
+                 * 'scope.through'.
+                 */
+                const references = consoleVar
+                    ? consoleVar.references
+                    : scope.through.filter(isConsole);
+
+                if (!shadowed) {
+                    references.filter(isMemberAccessExceptAllowed).forEach(report);
+                }
+            },
+        };
+    },
+};
+
+export default rule;

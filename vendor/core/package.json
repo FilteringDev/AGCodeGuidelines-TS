@@ -1,4 +1,18 @@
 {
   "private": true,
-  "type": "commonjs"
+  "type": "module",
+  "dependencies": {
+    "@eslint-community/eslint-utils": "4.9.1",
+    "@eslint-community/regexpp": "4.12.2",
+    "debug": "3.2.7",
+    "doctrine": "3.0.0",
+    "escape-string-regexp": "4.0.0",
+    "eslint-visitor-keys": "3.4.3",
+    "espree": "9.6.1",
+    "esutils": "2.0.3",
+    "globals": "13.24.0",
+    "graphemer": "1.4.0",
+    "ignore": "5.3.2",
+    "natural-compare": "1.4.0"
+  }
 }

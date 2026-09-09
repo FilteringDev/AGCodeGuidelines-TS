@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\"use strict\";\n\n/**\n * Check whether given two characters are a surrogate pair.\n * @param {number} lead The code of the lead character.\n * @param {number} tail The code of the tail character.\n * @returns {boolean} `true` if the character pair is a surrogate pair.\n */\nmodule.exports = function isSurrogatePair(lead, tail) {\n    return lead >= 0xD800 && lead < 0xDC00 && tail >= 0xDC00 && tail < 0xE000;\n};\n",
+    "after": "/**\n * @author Toru Nagashima <https://github.com/mysticatea>\n */\n\n/**\n * Check whether given two characters are a surrogate pair.\n * @param lead The code of the lead character.\n * @param tail The code of the tail character.\n * @returns `true` if the character pair is a surrogate pair.\n */\nexport default function isSurrogatePair(lead: number, tail: number) {\n    return lead >= 0xd800 && lead < 0xdc00 && tail >= 0xdc00 && tail < 0xe000;\n}\n"
+  }
+]

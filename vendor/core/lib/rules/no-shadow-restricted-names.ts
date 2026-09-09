@@ -1,0 +1,81 @@
+/**
+ * @file Disallow shadowing of NaN, undefined, and Infinity (ES5 section 15.1.1)
+ * @author Michael Ficarra
+ */
+import type { LegacyRule, Node, Variable } from '../../../types';
+
+/**
+ * Determines if a variable safely shadows undefined.
+ * This is the case when a variable named `undefined` is never assigned to a value (i.e. it always shares the same
+ * value
+ * as the global).
+ * @param variable The variable to check
+ * @returns true if this variable safely shadows `undefined`
+ */
+function safelyShadowsUndefined(variable: Variable) {
+    return (
+        variable.name === 'undefined'
+        && variable.references.every((ref) => !ref.isWrite())
+        && variable.defs.every(
+            (def) => def.node.type === 'VariableDeclarator' && def.node.init === null,
+        )
+    );
+}
+
+//------------------------------------------------------------------------------
+// Rule Definition
+//------------------------------------------------------------------------------
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'suggestion',
+
+        docs: {
+            description: 'Disallow identifiers from shadowing restricted names',
+            recommended: true,
+            url: 'https://eslint.org/docs/latest/rules/no-shadow-restricted-names',
+        },
+
+        schema: [],
+
+        messages: {
+            shadowingRestrictedName: "Shadowing of global property '{{name}}'.",
+        },
+    },
+
+    create(context) {
+        const RESTRICTED = new Set(['undefined', 'NaN', 'Infinity', 'arguments', 'eval']);
+        const { sourceCode } = context;
+
+        return {
+            'VariableDeclaration, :function, CatchClause':
+                function onVariableDeclarationFunctionCatchClause(
+                    node: Node<
+                        | 'ArrowFunctionExpression'
+                        | 'CatchClause'
+                        | 'FunctionDeclaration'
+                        | 'FunctionExpression'
+                        | 'VariableDeclaration'
+                    >,
+                ) {
+                    sourceCode.getDeclaredVariables(node).forEach((variable) => {
+                        if (
+                            variable.defs.length > 0
+                            && RESTRICTED.has(variable.name)
+                            && !safelyShadowsUndefined(variable)
+                        ) {
+                            context.report({
+                                node: variable!.defs[0]!.name,
+                                messageId: 'shadowingRestrictedName',
+                                data: {
+                                    name: variable.name,
+                                },
+                            });
+                        }
+                    });
+                },
+        };
+    },
+};
+
+export default rule;

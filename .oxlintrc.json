@@ -9,7 +9,8 @@
     "coverage/**",
     "tests/fixtures/**",
     ".cache/**",
-    "vendor/**"
+    "vendor/**/*.js",
+    "vendor/**/*.d.ts"
   ],
   "overrides": [
     {

@@ -1,6 +1,7 @@
 /** @file Adapt legacy rule context methods to Oxlint's source-code API. */
 import type { CreateRule, ESTree, Rule } from '@oxlint/plugins';
-import getJSDocComment from '../../../vendor/core/compat/get-jsdoc-comment.js';
+import getJSDocComment from '../../../vendor/core/compat/get-jsdoc-comment';
+import type { SourceCode as LegacySourceCode } from '../../../vendor/types';
 import { legacySource } from './legacy-source';
 
 type RuleContext = Parameters<CreateRule['create']>[0];
@@ -31,7 +32,9 @@ export function legacyContext(original: Rule, nativeContext: RuleContext): Retur
         ecmaVersion: version,
     };
     let source = legacySource(context, version, parserOptions);
-    source = Object.create(source, { getJSDocComment: { value: getJSDocComment.bind(source) } }) as typeof source;
+    source = Object.create(source, {
+        getJSDocComment: { value: getJSDocComment.bind(source as unknown as LegacySourceCode) },
+    }) as typeof source;
     const properties: PropertyDescriptorMap = {
         sourceCode: { value: source },
         report: {
