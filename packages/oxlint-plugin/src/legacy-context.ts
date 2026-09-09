@@ -145,13 +145,20 @@ export function legacyContext(original: Rule, nativeContext: RuleContext): Retur
                     current = node as ESTree.Node;
                 }
                 let values = args;
+                let startingSegment: object | undefined;
                 if (/^on(Unreachable)?CodePathSegment/u.test(selector) || selector === 'onCodePathSegmentLoop') {
                     if (selector.endsWith('Start')) {
-                        seen.add(args[0] as object);
+                        startingSegment = args[0] as object;
                     }
                     values = args.map((item) => (item && typeof item === 'object' && 'prevSegments' in item ? adaptSegment(item) : item));
                 }
-                return (visit as (...items: unknown[]) => unknown)(...values);
+                const result = (visit as (...items: unknown[]) => unknown)(...values);
+                if (startingSegment) {
+                    // A loop can point back to its own segment. Expose that edge after
+                    // the rule initializes its state.
+                    seen.add(startingSegment);
+                }
+                return result;
             },
         ]),
     ) as ReturnType<CreateRule['create']>;
