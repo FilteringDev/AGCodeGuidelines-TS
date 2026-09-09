@@ -1,5 +1,6 @@
 /** @file Verify runtime behavior at TypeScript source-port boundaries. */
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { RuleTester } from 'oxlint/plugins-dev';
 import {
     describe, expect, it, vi,
@@ -9,6 +10,7 @@ import compat from '../packages/oxlint-plugin/src/compat';
 import registry from '../vendor/core/lib/rules/utils/lazy-loading-rule-map';
 import strings from '../vendor/core/lib/shared/string-utils';
 import type { LegacyRule } from '../vendor/types';
+import jsdoc from '../vendor/jsdoc/index';
 
 RuleTester.describe = describe;
 RuleTester.it = it;
@@ -78,4 +80,11 @@ it('counts combining sequences and emoji identically under the bundler and nativ
         encoding: 'utf8',
     });
     expect(JSON.parse(output)).toEqual(expected);
+});
+
+it('preserves the pinned JSDoc rule metadata and recommended configuration', () => {
+    const metadata = Object.fromEntries(Object.entries(jsdoc.rules).map(([name, rule]) => [name, rule.meta]));
+    const digest = createHash('sha256').update(JSON.stringify({ configs: jsdoc.configs, metadata })).digest('hex');
+    // Captured from the unmodified isolated sources for eslint-plugin-jsdoc 64.3.6.
+    expect(digest).toBe('13a28b473551bf4794aac303caab7dbb5e9b388679f2bd6fc02541fbb40c1795');
 });

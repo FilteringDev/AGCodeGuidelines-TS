@@ -2092,13 +2092,14 @@
     "provider": "jsdoc",
     "source": "LICENSE"
   },
-  "vendor/jsdoc/index.js": {
+  "vendor/jsdoc/index.ts": {
     "provider": "jsdoc",
     "content": "import {\n  buildForbidRuleDefinition,\n} from './src/buildForbidRuleDefinition.js';\nimport {\n  buildRejectOrPreferRuleDefinition,\n} from './src/buildRejectOrPreferRuleDefinition.js';\nimport checkAccess from './src/rules/checkAccess.js';\nimport checkAlignment from './src/rules/checkAlignment.js';\nimport checkParamNames from './src/rules/checkParamNames.js';\nimport checkPropertyNames from './src/rules/checkPropertyNames.js';\nimport checkTagNames from './src/rules/checkTagNames.js';\nimport checkTypes from './src/rules/checkTypes.js';\nimport checkValues from './src/rules/checkValues.js';\nimport emptyTags from './src/rules/emptyTags.js';\nimport escapeInlineTags from './src/rules/escapeInlineTags.js';\nimport implementsOnClasses from './src/rules/implementsOnClasses.js';\nimport multilineBlocks from './src/rules/multilineBlocks.js';\nimport noDefaults from './src/rules/noDefaults.js';\nimport noMultiAsterisks from './src/rules/noMultiAsterisks.js';\nimport noTypes from './src/rules/noTypes.js';\nimport noUndefinedTypes from './src/rules/noUndefinedTypes.js';\nimport requireFileOverview from './src/rules/requireFileOverview.js';\nimport requireJsdoc from './src/rules/requireJsdoc.js';\nimport requireParam from './src/rules/requireParam.js';\nimport requireParamDescription from './src/rules/requireParamDescription.js';\nimport requireParamName from './src/rules/requireParamName.js';\nimport requireParamType from './src/rules/requireParamType.js';\nimport requireProperty from './src/rules/requireProperty.js';\nimport requirePropertyDescription from './src/rules/requirePropertyDescription.js';\nimport requirePropertyName from './src/rules/requirePropertyName.js';\nimport requirePropertyType from './src/rules/requirePropertyType.js';\nimport requireReturns from './src/rules/requireReturns.js';\nimport requireReturnsCheck from './src/rules/requireReturnsCheck.js';\nimport requireReturnsDescription from './src/rules/requireReturnsDescription.js';\nimport requireReturnsType from './src/rules/requireReturnsType.js';\nimport requireYields from './src/rules/requireYields.js';\nimport requireYieldsCheck from './src/rules/requireYieldsCheck.js';\nimport tagLines from './src/rules/tagLines.js';\nimport tsNoEmptyObjectType from './src/rules/tsNoEmptyObjectType.js';\nimport validTypes from './src/rules/validTypes.js';\nexport default { meta: {name: 'ag-jsdoc'}, configs: {recommended: {\"plugins\":[\"jsdoc\"],\"rules\":{\"jsdoc/check-access\":\"warn\",\"jsdoc/check-alignment\":\"warn\",\"jsdoc/check-examples\":\"off\",\"jsdoc/check-indentation\":\"off\",\"jsdoc/check-line-alignment\":\"off\",\"jsdoc/check-param-names\":\"warn\",\"jsdoc/check-property-names\":\"warn\",\"jsdoc/check-syntax\":\"off\",\"jsdoc/check-tag-names\":\"warn\",\"jsdoc/check-template-names\":\"off\",\"jsdoc/check-types\":\"warn\",\"jsdoc/check-values\":\"warn\",\"jsdoc/convert-to-jsdoc-comments\":\"off\",\"jsdoc/empty-tags\":\"warn\",\"jsdoc/escape-inline-tags\":\"warn\",\"jsdoc/implements-on-classes\":\"warn\",\"jsdoc/imports-as-dependencies\":\"off\",\"jsdoc/informative-docs\":\"off\",\"jsdoc/lines-before-block\":\"off\",\"jsdoc/match-description\":\"off\",\"jsdoc/match-name\":\"off\",\"jsdoc/multiline-blocks\":\"warn\",\"jsdoc/no-bad-blocks\":\"off\",\"jsdoc/no-blank-block-descriptions\":\"off\",\"jsdoc/no-blank-blocks\":\"off\",\"jsdoc/no-defaults\":\"warn\",\"jsdoc/no-missing-syntax\":\"off\",\"jsdoc/no-multi-asterisks\":\"warn\",\"jsdoc/no-restricted-syntax\":\"off\",\"jsdoc/no-types\":\"off\",\"jsdoc/no-undefined-types\":\"warn\",\"jsdoc/no-unnecessary-type-assertion\":\"off\",\"jsdoc/normalize-see-links\":\"off\",\"jsdoc/prefer-import-tag\":\"off\",\"jsdoc/reject-any-type\":\"warn\",\"jsdoc/reject-function-type\":\"warn\",\"jsdoc/require-asterisk-prefix\":\"off\",\"jsdoc/require-description\":\"off\",\"jsdoc/require-description-complete-sentence\":\"off\",\"jsdoc/require-example\":\"off\",\"jsdoc/require-file-overview\":\"off\",\"jsdoc/require-hyphen-before-param-description\":\"off\",\"jsdoc/require-jsdoc\":\"warn\",\"jsdoc/require-next-description\":\"off\",\"jsdoc/require-next-type\":\"warn\",\"jsdoc/require-param\":\"warn\",\"jsdoc/require-param-description\":\"warn\",\"jsdoc/require-param-name\":\"warn\",\"jsdoc/require-param-type\":\"warn\",\"jsdoc/require-property\":\"warn\",\"jsdoc/require-property-description\":\"warn\",\"jsdoc/require-property-name\":\"warn\",\"jsdoc/require-property-type\":\"warn\",\"jsdoc/require-rejects\":\"off\",\"jsdoc/require-returns\":\"warn\",\"jsdoc/require-returns-check\":\"warn\",\"jsdoc/require-returns-description\":\"warn\",\"jsdoc/require-returns-type\":\"warn\",\"jsdoc/require-tags\":\"off\",\"jsdoc/require-template\":\"off\",\"jsdoc/require-template-description\":\"off\",\"jsdoc/require-throws\":\"off\",\"jsdoc/require-throws-description\":\"off\",\"jsdoc/require-throws-type\":\"warn\",\"jsdoc/require-yields\":\"warn\",\"jsdoc/require-yields-check\":\"warn\",\"jsdoc/require-yields-description\":\"off\",\"jsdoc/require-yields-type\":\"warn\",\"jsdoc/sort-tags\":\"off\",\"jsdoc/tag-lines\":\"warn\",\"jsdoc/text-escaping\":\"off\",\"jsdoc/ts-method-signature-style\":\"off\",\"jsdoc/ts-no-empty-object-type\":\"warn\",\"jsdoc/ts-no-unnecessary-template-expression\":\"off\",\"jsdoc/ts-prefer-function-type\":\"off\",\"jsdoc/type-formatting\":\"off\",\"jsdoc/valid-types\":\"warn\"}}}, rules: {'check-access': checkAccess,\n'check-alignment': checkAlignment,\n'check-param-names': checkParamNames,\n'check-property-names': checkPropertyNames,\n'check-tag-names': checkTagNames,\n'check-types': checkTypes,\n'check-values': checkValues,\n'empty-tags': emptyTags,\n'escape-inline-tags': escapeInlineTags,\n'implements-on-classes': implementsOnClasses,\n'multiline-blocks': multilineBlocks,\n'no-defaults': noDefaults,\n'no-multi-asterisks': noMultiAsterisks,\n'no-types': noTypes,\n'no-undefined-types': noUndefinedTypes,\n'reject-any-type': buildRejectOrPreferRuleDefinition({\n    description: 'Reports use of `any` or `*` type',\n    overrideSettings: {\n      '*': {\n        message: 'Prefer a more specific type to `*`',\n        replacement: false,\n        unifyParentAndChildTypeChecks: true,\n      },\n      any: {\n        message: 'Prefer a more specific type to `any`',\n        replacement: false,\n        unifyParentAndChildTypeChecks: true,\n      },\n    },\n    url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/reject-any-type.md#repos-sticky-header',\n  }),\n'reject-function-type': buildRejectOrPreferRuleDefinition({\n    description: 'Reports use of `Function` type',\n    overrideSettings: {\n      Function: {\n        message: 'Prefer a more specific type to `Function`',\n        replacement: false,\n        unifyParentAndChildTypeChecks: true,\n      },\n    },\n    url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/reject-function-type.md#repos-sticky-header',\n  }),\n'require-file-overview': requireFileOverview,\n'require-jsdoc': requireJsdoc,\n'require-next-type': buildForbidRuleDefinition({\n    contexts: [\n      {\n        comment: 'JsdocBlock:has(JsdocTag[tag=next]:not([parsedType.type]))',\n        context: 'any',\n        message: '@next should have a type',\n      },\n    ],\n    description: 'Requires a type for `@next` tags',\n    url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-next-type.md#repos-sticky-header',\n  }),\n'require-param': requireParam,\n'require-param-description': requireParamDescription,\n'require-param-name': requireParamName,\n'require-param-type': requireParamType,\n'require-property': requireProperty,\n'require-property-description': requirePropertyDescription,\n'require-property-name': requirePropertyName,\n'require-property-type': requirePropertyType,\n'require-returns': requireReturns,\n'require-returns-check': requireReturnsCheck,\n'require-returns-description': requireReturnsDescription,\n'require-returns-type': requireReturnsType,\n'require-throws-type': buildForbidRuleDefinition({\n    contexts: [\n      {\n        comment: 'JsdocBlock:has(JsdocTag[tag=/^(?:throws|exception)$/]:not([parsedType.type]))',\n        context: 'any',\n        message: '@throws should have a type',\n      },\n    ],\n    description: 'Requires a type for `@throws` tags',\n    url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-throws-type.md#repos-sticky-header',\n  }),\n'require-yields': requireYields,\n'require-yields-check': requireYieldsCheck,\n'require-yields-type': buildForbidRuleDefinition({\n    contexts: [\n      {\n        comment: 'JsdocBlock:has(JsdocTag[tag=/^yields?$/]:not([parsedType.type]))',\n        context: 'any',\n        message: '@yields should have a type',\n      },\n    ],\n    description: 'Requires a type for `@yields` tags',\n    url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-yields-type.md#repos-sticky-header',\n  }),\n'tag-lines': tagLines,\n'ts-no-empty-object-type': tsNoEmptyObjectType,\n'valid-types': validTypes} };\n",
     "guard": {
       "source": "src/index.js",
       "sha256": "9eb89056d4375fcc2f2a4bdc7451261b4dc43866d37e1b2b1e02de476d3bbf30"
-    }
+    },
+    "patchesFile": "scripts/vendor-patches/jsdoc/index.ts.json"
   },
   "vendor/jsdoc/package.json": {
     "provider": "jsdoc",
@@ -2106,21 +2107,25 @@
     "guard": {
       "source": "package.json",
       "sha256": "c8793e54b31df785aed5027921c9d0c6e15815eea3a8b37afb529bedccfb5726"
-    }
+    },
+    "patchesFile": "scripts/vendor-patches/jsdoc/package.json.json"
   },
-  "vendor/jsdoc/src/WarnSettings.js": {
+  "vendor/jsdoc/src/WarnSettings.ts": {
     "provider": "jsdoc",
-    "source": "src/WarnSettings.js"
+    "source": "src/WarnSettings.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/WarnSettings.ts.json"
   },
-  "vendor/jsdoc/src/buildForbidRuleDefinition.js": {
+  "vendor/jsdoc/src/buildForbidRuleDefinition.ts": {
     "provider": "jsdoc",
-    "source": "src/buildForbidRuleDefinition.js"
+    "source": "src/buildForbidRuleDefinition.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/buildForbidRuleDefinition.ts.json"
   },
-  "vendor/jsdoc/src/buildRejectOrPreferRuleDefinition.js": {
+  "vendor/jsdoc/src/buildRejectOrPreferRuleDefinition.ts": {
     "provider": "jsdoc",
-    "source": "src/buildRejectOrPreferRuleDefinition.js"
+    "source": "src/buildRejectOrPreferRuleDefinition.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/buildRejectOrPreferRuleDefinition.ts.json"
   },
-  "vendor/jsdoc/src/exportParser.js": {
+  "vendor/jsdoc/src/exportParser.ts": {
     "provider": "jsdoc",
     "source": "src/exportParser.js",
     "patches": [
@@ -2128,163 +2133,207 @@
         "before": "  }\n\n  const props = ('props' in block && block.props) || ('body' in block && block.body);\n  for (const propval of Object.values(props || {})) {\n    if (Array.isArray(propval)) {\n      /* c8 ignore next 5 */\n      if (propval.some((val) => {\n        return findNode(node, val, blockCache);\n      })) {\n        return true;\n      }\n    } else if (findNode(node, propval, blockCache)) {\n      return true;\n    }\n  }\n\n  return false;\n};\n\nconst exportTypes = new Set([\n  'ExportDefaultDeclaration', 'ExportNamedDeclaration',\n]);\nconst ignorableNestedTypes = new Set([\n  'ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',\n]);\n\n/**\n * @param {import('eslint').Rule.Node} nde\n * @returns {import('eslint').Rule.Node|false}\n */\nconst getExportAncestor = function (nde) {\n  /** @type {import('eslint').Rule.Node|null} */\n  let node = nde;\n  let idx = 0;\n  const ignorableIfDeep = ignorableNestedTypes.has(nde?.type);\n  while (node) {\n    // Ignore functions nested more deeply than say `export default function () {}`\n    if (idx >= 2 && ignorableIfDeep) {\n      break;\n    }\n\n    if (exportTypes.has(node.type)) {\n      return node;\n    }\n\n    node = node.parent;\n    idx++;\n  }\n\n  return false;\n};\n\nconst canBeExportedByAncestorType = new Set([\n  'ClassProperty',\n  'Method',\n  'PropertyDefinition',\n  'TSMethodSignature',\n  'TSPropertySignature',\n]);\n\nconst canExportChildrenType = new Set([\n  'ClassBody',\n  'ClassDeclaration',\n  'ClassDefinition',\n  'ClassExpression',\n  'Program',\n  'TSInterfaceBody',\n  'TSInterfaceDeclaration',\n  'TSTypeAliasDeclaration',\n  'TSTypeLiteral',\n  'TSTypeParameterInstantiation',\n  'TSTypeReference',\n]);\n\n/**\n * @param {import('eslint').Rule.Node} nde\n * @returns {false|import('eslint').Rule.Node}\n */\nconst isExportByAncestor = function (nde) {\n  if (!canBeExportedByAncestorType.has(nde.type)) {\n    return false;\n  }\n\n  let node = nde.parent;\n  while (node) {\n    if (exportTypes.has(node.type)) {\n      return node;\n    }\n\n    if (!canExportChildrenType.has(node.type)) {\n      return false;\n    }\n\n    node = node.parent;\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {CreatedNode} block\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode[]} [cache] Currently unused\n * @returns {boolean}\n */\nconst findExportedNode = function (block, node, cache) {\n  /* c8 ignore next 3 */\n  if (block === null) {\n    return false;\n  }\n\n  const blockCache = cache || [];\n  const {\n    props,\n  } = block;\n  for (const propval of Object.values(props)) {\n    const pval = /** @type {CreatedNode} */ (propval);\n    blockCache.push(pval);\n    if (pval.exported && (node === pval.value || findNode(node, pval.value))) {\n      return true;\n    }\n\n    // No need to check `propval` for exported nodes as ESM\n    //  exports are only global\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode} globals\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opt\n * @returns {boolean}\n */\nconst isNodeExported = function (node, globals, opt) {\n  const moduleExports = globals.props.module?.props?.exports;\n  if (\n    opt.initModuleExports && moduleExports && findNode(node, moduleExports)\n  ) {\n    return true;\n  }\n\n  if (opt.initWindow && globals.props.window && findNode(node, globals.props.window)) {\n    return true;\n  }\n\n  if (opt.esm && findExportedNode(globals, node)) {\n    return true;\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode} globalVars\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opts\n * @returns {boolean}\n */\nconst parseRecursive = function (node, globalVars, opts) {\n  // Iterate from top using recursion - stop at first processed node from top\n  if (node.parent && parseRecursive(node.parent, globalVars, opts)) {\n    return true;\n  }\n\n  return mapVariables(node, globalVars, opts);\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} ast\n * @param {import('eslint').Rule.Node} node\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opt\n * @returns {CreatedNode}\n */\nconst parse = function (ast, node, opt) {\n  /* c8 ignore next 6 */\n  const opts = opt || {\n    ancestorsOnly: false,\n    esm: true,\n    initModuleExports: true,\n    initWindow: true,\n  };\n\n  const globalVars = createNode();\n  if (opts.initModuleExports) {\n    globalVars.props.module = createNode();\n    globalVars.props.module.props.exports = createNode();\n    globalVars.props.exports = globalVars.props.module.props.exports;\n  }\n\n  if (opts.initWindow) {\n    globalVars.props.window = createNode();\n    globalVars.props.window.special = true;\n  }\n\n  if (opts.ancestorsOnly) {\n    parseRecursive(node, globalVars, opts);\n  } else {\n    initVariables(ast, globalVars, opts);\n    mapVariables(ast, globalVars, opts);\n  }\n\n  return {\n    globalVars,\n    props: {},\n  };\n};\n\nconst accessibilityNodes = new Set([\n  'MethodDefinition',\n  'PropertyDefinition',\n]);\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @returns {boolean}\n */\nconst isPrivate = (node) => {\n  return accessibilityNodes.has(node.type) &&\n    (\n      'accessibility' in node &&\n      node.accessibility !== 'public' && node.accessibility !== undefined\n    ) ||\n  'key' in node &&\n    node.key.type === 'PrivateIdentifier';",
         "after": "  }\n\n  const props = ('props' in block && block.props) || ('body' in block && block.body);\n  for (const propval of (props && props.type === 'ClassBody' ? props.body : Object.values(props || {}))) {\n    if (Array.isArray(propval)) {\n      /* c8 ignore next 5 */\n      if (propval.some((val) => {\n        return findNode(node, val, blockCache);\n      })) {\n        return true;\n      }\n    } else if (findNode(node, propval, blockCache)) {\n      return true;\n    }\n  }\n\n  return false;\n};\n\nconst exportTypes = new Set([\n  'ExportDefaultDeclaration', 'ExportNamedDeclaration',\n]);\nconst ignorableNestedTypes = new Set([\n  'ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',\n]);\n\n/**\n * @param {import('eslint').Rule.Node} nde\n * @returns {import('eslint').Rule.Node|false}\n */\nconst getExportAncestor = function (nde) {\n  /** @type {import('eslint').Rule.Node|null} */\n  let node = nde;\n  let idx = 0;\n  const ignorableIfDeep = ignorableNestedTypes.has(nde?.type);\n  while (node) {\n    // Ignore functions nested more deeply than say `export default function () {}`\n    if (idx >= 2 && ignorableIfDeep) {\n      break;\n    }\n\n    if (exportTypes.has(node.type)) {\n      return node;\n    }\n\n    node = node.parent;\n    idx++;\n  }\n\n  return false;\n};\n\nconst canBeExportedByAncestorType = new Set([\n  'ClassProperty',\n  'Method',\n  'PropertyDefinition',\n  'TSMethodSignature',\n  'TSPropertySignature',\n]);\n\nconst canExportChildrenType = new Set([\n  'ClassBody',\n  'ClassDeclaration',\n  'ClassDefinition',\n  'ClassExpression',\n  'Program',\n  'TSInterfaceBody',\n  'TSInterfaceDeclaration',\n  'TSTypeAliasDeclaration',\n  'TSTypeLiteral',\n  'TSTypeParameterInstantiation',\n  'TSTypeReference',\n]);\n\n/**\n * @param {import('eslint').Rule.Node} nde\n * @returns {false|import('eslint').Rule.Node}\n */\nconst isExportByAncestor = function (nde) {\n  if (!canBeExportedByAncestorType.has(nde.type)) {\n    return false;\n  }\n\n  let node = nde.parent;\n  while (node) {\n    if (exportTypes.has(node.type)) {\n      return node;\n    }\n\n    if (!canExportChildrenType.has(node.type)) {\n      return false;\n    }\n\n    node = node.parent;\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {CreatedNode} block\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode[]} [cache] Currently unused\n * @returns {boolean}\n */\nconst findExportedNode = function (block, node, cache) {\n  /* c8 ignore next 3 */\n  if (block === null) {\n    return false;\n  }\n\n  const blockCache = cache || [];\n  const {\n    props,\n  } = block;\n  for (const propval of Object.values(props)) {\n    const pval = /** @type {CreatedNode} */ (propval);\n    blockCache.push(pval);\n    if (pval.exported && (node === pval.value || findNode(node, pval.value))) {\n      return true;\n    }\n\n    // No need to check `propval` for exported nodes as ESM\n    //  exports are only global\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode} globals\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opt\n * @returns {boolean}\n */\nconst isNodeExported = function (node, globals, opt) {\n  const moduleExports = globals.props.module?.props?.exports;\n  if (\n    opt.initModuleExports && moduleExports && findNode(node, moduleExports)\n  ) {\n    return true;\n  }\n\n  if (opt.initWindow && globals.props.window && findNode(node, globals.props.window)) {\n    return true;\n  }\n\n  if (opt.esm && findExportedNode(globals, node)) {\n    return true;\n  }\n\n  return false;\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @param {CreatedNode} globalVars\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opts\n * @returns {boolean}\n */\nconst parseRecursive = function (node, globalVars, opts) {\n  // Iterate from top using recursion - stop at first processed node from top\n  if (node.parent && parseRecursive(node.parent, globalVars, opts)) {\n    return true;\n  }\n\n  return mapVariables(node, globalVars, opts);\n};\n\n/**\n *\n * @param {import('eslint').Rule.Node} ast\n * @param {import('eslint').Rule.Node} node\n * @param {import('./rules/requireJsdoc.js').RequireJsdocOpts} opt\n * @returns {CreatedNode}\n */\nconst parse = function (ast, node, opt) {\n  /* c8 ignore next 6 */\n  const opts = opt || {\n    ancestorsOnly: false,\n    esm: true,\n    initModuleExports: true,\n    initWindow: true,\n  };\n\n  const globalVars = createNode();\n  if (opts.initModuleExports) {\n    globalVars.props.module = createNode();\n    globalVars.props.module.props.exports = createNode();\n    globalVars.props.exports = globalVars.props.module.props.exports;\n  }\n\n  if (opts.initWindow) {\n    globalVars.props.window = createNode();\n    globalVars.props.window.special = true;\n  }\n\n  if (opts.ancestorsOnly) {\n    parseRecursive(node, globalVars, opts);\n  } else {\n    initVariables(ast, globalVars, opts);\n    mapVariables(ast, globalVars, opts);\n  }\n\n  return {\n    globalVars,\n    props: {},\n  };\n};\n\nconst accessibilityNodes = new Set([\n  'MethodDefinition',\n  'PropertyDefinition',\n]);\n\n/**\n *\n * @param {import('eslint').Rule.Node} node\n * @returns {boolean}\n */\nconst isPrivate = (node) => {\n  return accessibilityNodes.has(node.type) &&\n    (\n      'accessibility' in node &&\n      node.accessibility !== 'public' && node.accessibility != null\n    ) ||\n  'key' in node &&\n    node.key.type === 'PrivateIdentifier';"
       }
-    ]
+    ],
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/exportParser.ts.json"
   },
-  "vendor/jsdoc/src/getDefaultTagStructureForMode.js": {
+  "vendor/jsdoc/src/getDefaultTagStructureForMode.ts": {
     "provider": "jsdoc",
-    "source": "src/getDefaultTagStructureForMode.js"
+    "source": "src/getDefaultTagStructureForMode.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/getDefaultTagStructureForMode.ts.json"
   },
-  "vendor/jsdoc/src/iterateJsdoc.js": {
+  "vendor/jsdoc/src/iterateJsdoc.ts": {
     "provider": "jsdoc",
-    "source": "src/iterateJsdoc.js"
+    "source": "src/iterateJsdoc.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/iterateJsdoc.ts.json"
   },
-  "vendor/jsdoc/src/jsdocUtils.js": {
+  "vendor/jsdoc/src/jsdocUtils.ts": {
     "provider": "jsdoc",
-    "source": "src/jsdocUtils.js"
+    "source": "src/jsdocUtils.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/jsdocUtils.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkAccess.js": {
+  "vendor/jsdoc/src/rules/checkAccess.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkAccess.js"
+    "source": "src/rules/checkAccess.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkAccess.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkAlignment.js": {
+  "vendor/jsdoc/src/rules/checkAlignment.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkAlignment.js"
+    "source": "src/rules/checkAlignment.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkAlignment.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkParamNames.js": {
+  "vendor/jsdoc/src/rules/checkParamNames.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkParamNames.js"
+    "source": "src/rules/checkParamNames.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkParamNames.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkPropertyNames.js": {
+  "vendor/jsdoc/src/rules/checkPropertyNames.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkPropertyNames.js"
+    "source": "src/rules/checkPropertyNames.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkPropertyNames.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkTagNames.js": {
+  "vendor/jsdoc/src/rules/checkTagNames.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkTagNames.js"
+    "source": "src/rules/checkTagNames.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkTagNames.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkTypes.js": {
+  "vendor/jsdoc/src/rules/checkTypes.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkTypes.js"
+    "source": "src/rules/checkTypes.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkTypes.ts.json"
   },
-  "vendor/jsdoc/src/rules/checkValues.js": {
+  "vendor/jsdoc/src/rules/checkValues.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/checkValues.js"
+    "source": "src/rules/checkValues.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/checkValues.ts.json"
   },
-  "vendor/jsdoc/src/rules/emptyTags.js": {
+  "vendor/jsdoc/src/rules/emptyTags.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/emptyTags.js"
+    "source": "src/rules/emptyTags.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/emptyTags.ts.json"
   },
-  "vendor/jsdoc/src/rules/escapeInlineTags.js": {
+  "vendor/jsdoc/src/rules/escapeInlineTags.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/escapeInlineTags.js"
+    "source": "src/rules/escapeInlineTags.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/escapeInlineTags.ts.json"
   },
-  "vendor/jsdoc/src/rules/implementsOnClasses.js": {
+  "vendor/jsdoc/src/rules/implementsOnClasses.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/implementsOnClasses.js"
+    "source": "src/rules/implementsOnClasses.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/implementsOnClasses.ts.json"
   },
-  "vendor/jsdoc/src/rules/multilineBlocks.js": {
+  "vendor/jsdoc/src/rules/multilineBlocks.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/multilineBlocks.js"
+    "source": "src/rules/multilineBlocks.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/multilineBlocks.ts.json"
   },
-  "vendor/jsdoc/src/rules/noDefaults.js": {
+  "vendor/jsdoc/src/rules/noDefaults.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/noDefaults.js"
+    "source": "src/rules/noDefaults.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/noDefaults.ts.json"
   },
-  "vendor/jsdoc/src/rules/noMultiAsterisks.js": {
+  "vendor/jsdoc/src/rules/noMultiAsterisks.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/noMultiAsterisks.js"
+    "source": "src/rules/noMultiAsterisks.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/noMultiAsterisks.ts.json"
   },
-  "vendor/jsdoc/src/rules/noTypes.js": {
+  "vendor/jsdoc/src/rules/noTypes.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/noTypes.js"
+    "source": "src/rules/noTypes.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/noTypes.ts.json"
   },
-  "vendor/jsdoc/src/rules/noUndefinedTypes.js": {
+  "vendor/jsdoc/src/rules/noUndefinedTypes.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/noUndefinedTypes.js"
+    "source": "src/rules/noUndefinedTypes.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/noUndefinedTypes.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireFileOverview.js": {
+  "vendor/jsdoc/src/rules/requireFileOverview.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireFileOverview.js"
+    "source": "src/rules/requireFileOverview.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireFileOverview.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireJsdoc.js": {
+  "vendor/jsdoc/src/rules/requireJsdoc.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireJsdoc.js"
+    "source": "src/rules/requireJsdoc.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireJsdoc.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireParam.js": {
+  "vendor/jsdoc/src/rules/requireParam.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireParam.js"
+    "source": "src/rules/requireParam.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireParam.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireParamDescription.js": {
+  "vendor/jsdoc/src/rules/requireParamDescription.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireParamDescription.js"
+    "source": "src/rules/requireParamDescription.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireParamDescription.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireParamName.js": {
+  "vendor/jsdoc/src/rules/requireParamName.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireParamName.js"
+    "source": "src/rules/requireParamName.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireParamName.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireParamType.js": {
+  "vendor/jsdoc/src/rules/requireParamType.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireParamType.js"
+    "source": "src/rules/requireParamType.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireParamType.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireProperty.js": {
+  "vendor/jsdoc/src/rules/requireProperty.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireProperty.js"
+    "source": "src/rules/requireProperty.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireProperty.ts.json"
   },
-  "vendor/jsdoc/src/rules/requirePropertyDescription.js": {
+  "vendor/jsdoc/src/rules/requirePropertyDescription.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requirePropertyDescription.js"
+    "source": "src/rules/requirePropertyDescription.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requirePropertyDescription.ts.json"
   },
-  "vendor/jsdoc/src/rules/requirePropertyName.js": {
+  "vendor/jsdoc/src/rules/requirePropertyName.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requirePropertyName.js"
+    "source": "src/rules/requirePropertyName.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requirePropertyName.ts.json"
   },
-  "vendor/jsdoc/src/rules/requirePropertyType.js": {
+  "vendor/jsdoc/src/rules/requirePropertyType.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requirePropertyType.js"
+    "source": "src/rules/requirePropertyType.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requirePropertyType.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireReturns.js": {
+  "vendor/jsdoc/src/rules/requireReturns.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireReturns.js"
+    "source": "src/rules/requireReturns.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireReturns.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireReturnsCheck.js": {
+  "vendor/jsdoc/src/rules/requireReturnsCheck.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireReturnsCheck.js"
+    "source": "src/rules/requireReturnsCheck.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireReturnsCheck.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireReturnsDescription.js": {
+  "vendor/jsdoc/src/rules/requireReturnsDescription.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireReturnsDescription.js"
+    "source": "src/rules/requireReturnsDescription.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireReturnsDescription.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireReturnsType.js": {
+  "vendor/jsdoc/src/rules/requireReturnsType.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireReturnsType.js"
+    "source": "src/rules/requireReturnsType.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireReturnsType.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireYields.js": {
+  "vendor/jsdoc/src/rules/requireYields.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireYields.js"
+    "source": "src/rules/requireYields.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireYields.ts.json"
   },
-  "vendor/jsdoc/src/rules/requireYieldsCheck.js": {
+  "vendor/jsdoc/src/rules/requireYieldsCheck.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/requireYieldsCheck.js"
+    "source": "src/rules/requireYieldsCheck.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/requireYieldsCheck.ts.json"
   },
-  "vendor/jsdoc/src/rules/tagLines.js": {
+  "vendor/jsdoc/src/rules/tagLines.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/tagLines.js"
+    "source": "src/rules/tagLines.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/tagLines.ts.json"
   },
-  "vendor/jsdoc/src/rules/tsNoEmptyObjectType.js": {
+  "vendor/jsdoc/src/rules/tsNoEmptyObjectType.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/tsNoEmptyObjectType.js"
+    "source": "src/rules/tsNoEmptyObjectType.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/tsNoEmptyObjectType.ts.json"
   },
-  "vendor/jsdoc/src/rules/validTypes.js": {
+  "vendor/jsdoc/src/rules/validTypes.ts": {
     "provider": "jsdoc",
-    "source": "src/rules/validTypes.js"
+    "source": "src/rules/validTypes.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/rules/validTypes.ts.json"
   },
-  "vendor/jsdoc/src/tagNames.js": {
+  "vendor/jsdoc/src/tagNames.ts": {
     "provider": "jsdoc",
-    "source": "src/tagNames.js"
+    "source": "src/tagNames.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/tagNames.ts.json"
   },
-  "vendor/jsdoc/src/utils/hasReturnValue.js": {
+  "vendor/jsdoc/src/utils/hasReturnValue.ts": {
     "provider": "jsdoc",
-    "source": "src/utils/hasReturnValue.js"
+    "source": "src/utils/hasReturnValue.js",
+    "patchesFile": "scripts/vendor-patches/jsdoc/src/utils/hasReturnValue.ts.json"
+  },
+  "vendor/jsdoc/types.ts": {
+    "provider": "jsdoc",
+    "content": "/** @file Configuration contracts at the validated JSDoc rule boundary. */\nimport type { Rule as ESLintRule } from 'eslint';\nimport type { Settings } from './src/iterateJsdoc';\n\nexport type Context = Omit<ESLintRule.RuleContext, 'options' | 'settings'> & {\n    options: readonly unknown[];\n    settings: { jsdoc?: Partial<Settings>; [name: string]: unknown };\n};\nexport type Rule = Omit<ESLintRule.RuleModule, 'create'> & {\n    create(context: Context): ESLintRule.RuleListener;\n};\nexport interface SharedOptions {\n    contexts?: import('./src/iterateJsdoc').Context[];\n    match?: import('./src/iterateJsdoc').Context[];\n    exemptedBy?: string[];\n    tags?: string[];\n    [name: string]: unknown;\n}\n"
   },
   "vendor/react/LICENSE": {
     "provider": "react",
@@ -4958,7 +5007,7 @@
   },
   "vendor/tsconfig.json": {
     "provider": "core",
-    "content": "{\n  \"extends\": \"../tsconfig.base.json\",\n  \"compilerOptions\": {\n    \"rootDir\": \".\",\n    \"outDir\": \"../.cache/vendor-types\",\n    \"tsBuildInfoFile\": \"../.cache/vendor-types.tsbuildinfo\"\n  },\n  \"include\": [\"types.ts\", \"core/**/*.ts\"],\n  \"references\": [{ \"path\": \"../packages/oxlint-plugin/tsconfig.runtime.json\" }]\n}\n"
+    "content": "{\n  \"extends\": \"../tsconfig.base.json\",\n  \"compilerOptions\": {\n    \"rootDir\": \".\",\n    \"outDir\": \"../.cache/vendor-types\",\n    \"tsBuildInfoFile\": \"../.cache/vendor-types.tsbuildinfo\"\n  },\n  \"include\": [\n    \"types.ts\",\n    \"core/**/*.ts\",\n    \"jsdoc/**/*.ts\"\n  ],\n  \"references\": [\n    {\n      \"path\": \"../packages/oxlint-plugin/tsconfig.runtime.json\"\n    }\n  ]\n}\n"
   },
   "vendor/types.ts": {
     "provider": "core",

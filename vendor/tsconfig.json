@@ -5,6 +5,14 @@
     "outDir": "../.cache/vendor-types",
     "tsBuildInfoFile": "../.cache/vendor-types.tsbuildinfo"
   },
-  "include": ["types.ts", "core/**/*.ts"],
-  "references": [{ "path": "../packages/oxlint-plugin/tsconfig.runtime.json" }]
+  "include": [
+    "types.ts",
+    "core/**/*.ts",
+    "jsdoc/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../packages/oxlint-plugin/tsconfig.runtime.json"
+    }
+  ]
 }

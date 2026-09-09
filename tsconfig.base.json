@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2024"],
+    "target": "ES2024",
+    "lib": [
+      "ES2024"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
@@ -14,6 +16,8 @@
     "emitDeclarationOnly": true,
     "composite": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   }
 }

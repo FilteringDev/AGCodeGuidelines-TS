@@ -1,4 +1,14 @@
 {
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@es-joy/jsdoccomment": "0.97.0",
+    "comment-parser": "1.4.8",
+    "debug": "3.2.7",
+    "escape-string-regexp": "4.0.0",
+    "esquery": "1.7.0",
+    "parse-imports-exports": "0.2.4",
+    "semver": "6.3.1",
+    "spdx-expression-parse": "5.0.0"
+  }
 }

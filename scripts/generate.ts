@@ -33,7 +33,7 @@ const loadPlugin = async (name: string): Promise<Provider> => {
     return loaded.default ?? loaded;
 };
 const style = await loadPlugin('@stylistic/eslint-plugin');
-const jsdoc = (await import('../vendor/jsdoc/index.js')).default as unknown as Provider;
+const jsdoc = (await import('../vendor/jsdoc/index')).default as unknown as Provider;
 const react = ROOT_REQUIRE('../vendor/react/index.js') as Provider;
 const accessibility = await loadPlugin('eslint-plugin-jsx-a11y');
 const imports = (await import('../vendor/import/index.js')).default as unknown as Provider;

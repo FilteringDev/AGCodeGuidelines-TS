@@ -1,0 +1,79 @@
+// Options are validated against this rule's metadata schema before execution.
+import iterateJsdoc from '../iterateJsdoc';
+
+type Options = [{ innerIndent?: number }?];
+
+export default iterateJsdoc(
+    ({
+        context, indent, jsdocNode, report, sourceCode,
+    }) => {
+        const { innerIndent = 1 } = (context.options as Options)[0] || {};
+
+        // `indent` is whitespace from line 1 (`/**`), so slice and account for "/".
+        const indentLevel = indent.length + innerIndent;
+        const sourceLines = sourceCode
+            .getText(jsdocNode)
+            .split('\n')
+            .slice(1)
+            .map((line, number) => ({
+                line: line.split('*')[0],
+                number,
+            }))
+            .filter(({ line }) => !line!.trimStart().length);
+
+        const fix: import('eslint').Rule.ReportFixer = (fixer) => {
+            const replacement = sourceCode
+                .getText(jsdocNode)
+                .split('\n')
+                .map((line, index) => {
+                    // Ignore the first line and all lines not starting with `*`
+                    const ignored = !index || line.split('*')[0]!.trimStart().length;
+
+                    return ignored
+                        ? line
+                        : `${indent}${''.padStart(innerIndent, ' ')}${line.trimStart()}`;
+                })
+                .join('\n');
+
+            return fixer.replaceText(jsdocNode, replacement);
+        };
+
+        sourceLines.some(({ line, number }) => {
+            if (line!.length !== indentLevel) {
+                report('Expected JSDoc block to be aligned.', fix, {
+                    line: number + 1,
+                });
+
+                return true;
+            }
+
+            return false;
+        });
+    },
+    {
+        iterateAllJsdocs: true,
+        meta: {
+            docs: {
+                description:
+                    'Reports invalid alignment of JSDoc block asterisks.',
+                url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/check-alignment.md#repos-sticky-header',
+            },
+            fixable: 'code',
+            schema: [
+                {
+                    additionalProperties: false,
+                    properties: {
+                        innerIndent: {
+                            default: 1,
+                            description: `Set to 0 if you wish to avoid the normal requirement for an inner indentation of
+one space. Defaults to 1 (one space of normal inner indentation).`,
+                            type: 'integer',
+                        },
+                    },
+                    type: 'object',
+                },
+            ],
+            type: 'layout',
+        },
+    },
+);
