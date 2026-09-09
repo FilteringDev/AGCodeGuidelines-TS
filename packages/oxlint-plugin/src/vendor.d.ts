@@ -7,7 +7,3 @@ declare module 'eslint-plugin-import' {
     const plugin: import('@oxlint/plugins').Plugin;
     export default plugin;
 }
-declare module '*vendor/import/index.js' {
-    const plugin: import('@oxlint/plugins').Plugin;
-    export default plugin;
-}

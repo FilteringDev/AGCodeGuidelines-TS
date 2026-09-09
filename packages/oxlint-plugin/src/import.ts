@@ -1,6 +1,6 @@
 /** @file Run the isolated import rules through Oxlint with an Oxc dependency parser. */
 import type { Plugin, Rule } from '@oxlint/plugins';
-import plugin from '../../../vendor/import/index.js';
+import plugin from '../../../vendor/import/index';
 import { legacyContext } from './legacy-context';
 import { remoteParser } from './import-parser';
 
@@ -15,7 +15,7 @@ export default {
                     const adapted = Object.create(context, {
                         languageOptions: { value: { ...context.languageOptions, parser: remoteParser } },
                     });
-                    return legacyContext(rule, adapted);
+                    return legacyContext(rule as unknown as Rule, adapted);
                 },
             } satisfies Rule,
         ]),

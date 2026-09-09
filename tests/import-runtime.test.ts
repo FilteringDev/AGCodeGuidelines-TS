@@ -6,12 +6,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { RuleTester } from 'oxlint/plugins-dev';
-import { describe, expect, it } from 'vitest';
+import {
+    afterAll, describe, expect, it,
+} from 'vitest';
 
 import imports from '../packages/oxlint-plugin/src/import';
 import { parseRemote } from '../packages/oxlint-plugin/src/import-parser';
-import { typescriptResolver } from '../packages/oxlint-plugin/src/import-resolver';
-import { RemoteSourceCode } from '../packages/oxlint-plugin/src/remote-source';
+import typescriptResolver from '../vendor/import/compat/import-resolver';
+import RemoteSourceCode from '../vendor/import/compat/remote-source';
 
 type Parsed = {
     body: { type: string; range: [number, number]; loc: { start: { line: number; column: number } } }[];
@@ -112,4 +114,35 @@ new RuleTester().run('dependency rule adapter', imports.rules['no-webpack-loader
             ],
         },
     ],
+});
+
+describe('configured dependency directories', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ag-dependency-dirs-'));
+    afterAll(() => rmSync(root, { recursive: true, force: true }));
+    const directories = ['first', 'second'].map((name) => join(root, name));
+    directories.forEach((directory, index) => {
+        mkdirSync(directory);
+        writeFileSync(join(directory, 'package.json'), JSON.stringify({ dependencies: { [`dep${index}`]: '1' } }));
+    });
+    ['dep0', 'dep1', 'missing'].forEach((name) => {
+        const directory = join(root, 'node_modules', name);
+        mkdirSync(directory, { recursive: true });
+        writeFileSync(join(directory, 'package.json'), JSON.stringify({ name, main: 'index.js' }));
+        writeFileSync(join(directory, 'index.js'), 'export default 1;');
+    });
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'consumer' }));
+    const filename = join(root, 'entry.js');
+    writeFileSync(filename, '');
+    const options = [{ packageDir: directories }];
+    new RuleTester().run('import dependencies from multiple package directories', imports.rules['no-extraneous-dependencies']!, {
+        valid: [
+            { filename, options, code: 'import first from "dep0"; import second from "dep1";' },
+        ],
+        invalid: [{
+            filename,
+            options,
+            code: 'import missing from "missing";',
+            errors: [{ message: /'missing' should be listed in the project's dependencies/u }],
+        }],
+    });
 });

@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
-    "tsBuildInfoFile": "../../.cache/import-runtime.tsbuildinfo"
-  },
-  "include": ["src/import-resolver.ts", "src/remote-source.ts"]
-}

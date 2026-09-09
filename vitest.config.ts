@@ -15,7 +15,7 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reportOnFailure: true,
-            include: ['packages/*/src/**/*.ts'],
+            include: ['packages/*/src/**/*.ts', 'vendor/import/compat/**/*.ts'],
             exclude: ['**/*.d.ts'],
             reporter: ['text', 'json', 'html'],
             thresholds: {

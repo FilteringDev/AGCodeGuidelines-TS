@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\nexports.__esModule=true;\nexports.default=function moduleRequire(specifier){return require(specifier);};\n\n// Preserve Babel default exports when the isolated sources are bundled as native ESM.\nif (exports.default && (typeof exports.default === \"function\" || typeof exports.default === \"object\")) {\n  module.exports = Object.assign(exports.default, exports);\n}\n",
+    "after": "import { createRequire } from 'node:module';\n/**\n * @file Load an external dependency parser through its CommonJS entrypoint.\n */\n\nconst requireExternal = createRequire(import.meta.url);\n\n/**\n * Load the configured external module; callers establish the parser contract.\n * @param specifier The configured module path.\n * @returns The module's CommonJS export.\n */\nexport default function moduleRequire(specifier: string): unknown {\n    return requireExternal(specifier) as unknown;\n}\n"
+  }
+]

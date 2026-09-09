@@ -9,11 +9,8 @@
     "types.ts",
     "core/**/*.ts",
     "jsdoc/**/*.ts",
-    "react/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "../packages/oxlint-plugin/tsconfig.runtime.json"
-    }
+    "react/**/*.ts",
+    "import/**/*.ts",
+    "import/package.json"
   ]
 }

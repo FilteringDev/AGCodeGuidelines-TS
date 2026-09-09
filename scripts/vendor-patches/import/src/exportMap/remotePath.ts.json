@@ -1,0 +1,6 @@
+[
+  {
+    "before": "import resolve from '../../utils/resolve.js';\n\nexport class RemotePath {\n  constructor(path, context) {\n    this.path = path;\n    this.context = context;\n  }\n\n  resolve(value) {\n    return resolve.relative(value, this.path, this.context.settings);\n  }\n}\n",
+    "after": "import type { ParserContext } from '../../types';\nimport { relative } from '../../utils/resolve';\n\nexport default class RemotePath {\n    path: string;\n\n    context: ParserContext;\n\n    constructor(path: string, context: ParserContext) {\n        this.path = path;\n        this.context = context;\n    }\n\n    resolve(value: string) {\n        return relative(value, this.path, this.context.settings);\n    }\n}\n"
+  }
+]

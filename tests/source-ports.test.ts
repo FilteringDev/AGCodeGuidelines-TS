@@ -13,6 +13,8 @@ import strings from '../vendor/core/lib/shared/string-utils';
 import type { LegacyRule } from '../vendor/types';
 import jsdoc from '../vendor/jsdoc/index';
 import react from '../vendor/react/index';
+import importRules from '../vendor/import/index';
+import enumerableKeys from '../vendor/import/utils/enumerableKeys';
 
 RuleTester.describe = describe;
 RuleTester.it = it;
@@ -112,4 +114,22 @@ tester.run('React URL protocol control characters', reactPlugin.rules['jsx-no-sc
         code: `<a href="${url}" />;`,
         errors: [{ messageId: 'noScriptURL' }],
     })),
+});
+
+it('preserves the pinned import rule metadata', () => {
+    const metadata = Object.fromEntries(Object.entries(importRules.rules).map(([name, rule]) => [name, rule.meta]));
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the unmodified isolated sources for eslint-plugin-import 2.32.0.
+    expect(digest).toBe('2fa6a82bfb814f7cdef374b9413ee49aed2d2879251a7537c4fed78a4b3e7160');
+});
+
+it('retains inherited configuration keys and non-enumerable shadowing', () => {
+    const inherited = { inherited: true, shadowed: true, repeated: true };
+    const settings = Object.create(inherited) as Record<string, unknown>;
+    settings.local = true;
+    settings.repeated = false;
+    Object.defineProperty(settings, 'shadowed', { value: false, enumerable: false });
+    Object.defineProperty(settings, Symbol('private'), { value: true, enumerable: true });
+    expect(enumerableKeys(settings)).toEqual(['local', 'repeated', 'inherited']);
+    expect(enumerableKeys(null)).toEqual([]);
 });

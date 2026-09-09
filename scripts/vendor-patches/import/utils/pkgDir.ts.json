@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\nconst path = require('path');\nconst pkgUp = require('./pkgUp').default;\n\nexports.__esModule = true;\n\n/** @type {import('./pkgDir').default} */\nexports.default = function (cwd) {\n  const fp = pkgUp({ cwd });\n  return fp ? path.dirname(fp) : null;\n};\n\n// Preserve Babel default exports when the isolated sources are bundled as native ESM.\nif (exports.default && (typeof exports.default === \"function\" || typeof exports.default === \"object\")) {\n  module.exports = Object.assign(exports.default, exports);\n}\n",
+    "after": "import path from 'node:path';\nimport pkgUp from './pkgUp';\n\n/**\n * Inspect node.\n * @param [cwd] The cwd value.\n * @returns The result of this check.\n */\nexport default function packageDirectory(cwd?: string) {\n    const fp = pkgUp({ cwd });\n    return fp ? path.dirname(fp) : null;\n}\n"
+  }
+]

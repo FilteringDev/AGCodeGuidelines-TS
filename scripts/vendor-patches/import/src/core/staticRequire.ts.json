@@ -1,0 +1,6 @@
+[
+  {
+    "before": "// todo: merge with module visitor\nexport default function isStaticRequire(node) {\n  return node\n    && node.callee\n    && node.callee.type === 'Identifier'\n    && node.callee.name === 'require'\n    && node.arguments.length === 1\n    && node.arguments[0].type === 'Literal'\n    && typeof node.arguments[0].value === 'string';\n}\n",
+    "after": "import type { Node } from '../../types';\n\n// todo: merge with module visitor\n\n/**\n * Is static require.\n * @param node The node to inspect.\n * @returns The result of this check.\n */\nexport default function isStaticRequire(node: Node) {\n    return (\n        node\n        && node.callee\n        && node.callee.type === 'Identifier'\n        && node.callee.name === 'require'\n        && node.arguments!.length === 1\n        && node.arguments![0]!.type === 'Literal'\n        && typeof node.arguments![0]!.value === 'string'\n    );\n}\n"
+  }
+]

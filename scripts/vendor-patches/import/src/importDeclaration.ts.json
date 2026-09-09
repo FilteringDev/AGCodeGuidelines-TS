@@ -1,0 +1,6 @@
+[
+  {
+    "before": "import { getAncestors } from '../utils/contextCompat.js';\n\nexport default function importDeclaration(context, node) {\n  const ancestors = getAncestors(context, node);\n  return ancestors[ancestors.length - 1];\n}\n",
+    "after": "import type { RuleContext, ModuleSource, Node } from '../types';\nimport { getAncestors } from '../utils/contextCompat';\n\n/**\n * Import declaration.\n * @param context The rule context.\n * @param node The node to inspect.\n * @returns The result of this check.\n */\nexport default function importDeclaration(context: RuleContext, node: Node) {\n    const ancestors = getAncestors(context, node);\n    return ancestors[ancestors.length - 1]! as Node<'ImportDeclaration' | 'ExportNamedDeclaration'> & {\n        source: ModuleSource;\n    };\n}\n"
+  }
+]

@@ -1,0 +1,6 @@
+[
+  {
+    "before": "{\"private\":true,\"type\":\"commonjs\"}\n",
+    "after": "{\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"debug\": \"3.2.7\",\n    \"eslint-import-resolver-node\": \"0.4.0\"\n  }\n}\n"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "before": "'use strict';\n\nexports.__esModule = true;\n\nconst pattern = /(^|[;})])\\s*(export|import)((\\s+\\w)|(\\s*[{*=]))|import\\(/m;\n/**\n * detect possible imports/exports without a full parse.\n",
+    "after": "import type { Node } from '../types';\n\nconst pattern = /(^|[;})])\\s*(export|import)((\\s+\\w)|(\\s*[{*=]))|import\\(/m;\n/**\n * detect possible imports/exports without a full parse.\n"
+  },
+  {
+    "before": " *\n * Not perfect, just a fast way to disqualify large non-ES6 modules and\n * avoid a parse.\n * @type {import('./unambiguous').test}\n */\nexports.test = function isMaybeUnambiguousModule(content) {\n  return pattern.test(content);\n};\n\n// future-/Babel-proof at the expense of being a little loose\n",
+    "after": " *\n * Not perfect, just a fast way to disqualify large non-ES6 modules and\n * avoid a parse.\n * @param content The content value.\n * @returns The result of this check.\n */\nexport const test = function isMaybeUnambiguousModule(content: string) {\n    return pattern.test(content);\n};\n\n// future-/Babel-proof at the expense of being a little loose\n"
+  },
+  {
+    "before": "\n/**\n * Given an AST, return true if the AST unambiguously represents a module.\n * @type {import('./unambiguous').isModule}\n */\nexports.isModule = function isUnambiguousModule(ast) {\n  return ast.body && ast.body.some((node) => unambiguousNodeType.test(node.type));\n};\n",
+    "after": "\n/**\n * Given an AST, return true if the AST unambiguously represents a module.\n * @param ast The ast value.\n * @returns The result of this check.\n */\nexport const isModule = function isUnambiguousModule(ast: Node<'Program'>) {\n    return ast.body && ast.body.some((node: Node) => unambiguousNodeType.test(node.type));\n};\n"
+  }
+]

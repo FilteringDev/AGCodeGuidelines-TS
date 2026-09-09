@@ -35,7 +35,7 @@ const style = await loadPlugin('@stylistic/eslint-plugin');
 const jsdoc = (await import('../vendor/jsdoc/index')).default as unknown as Provider;
 const react = (await import('../vendor/react/index')).default as unknown as Provider;
 const accessibility = await loadPlugin('eslint-plugin-jsx-a11y');
-const imports = (await import('../vendor/import/index.js')).default as unknown as Provider;
+const imports = (await import('../vendor/import/index')).default as unknown as Provider;
 const nativeList = JSON.parse(
     execFileSync(
         process.execPath,

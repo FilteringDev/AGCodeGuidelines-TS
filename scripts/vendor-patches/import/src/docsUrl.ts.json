@@ -1,0 +1,6 @@
+[
+  {
+    "before": "\nconst repoUrl = 'https://github.com/import-js/eslint-plugin-import';\n\nexport default function docsUrl(ruleName, commitish = `v${pkg.version}`) {\n  return `${repoUrl}/blob/${commitish}/docs/rules/${ruleName}.md`;\n}\n",
+    "after": "\nconst repoUrl = 'https://github.com/import-js/eslint-plugin-import';\n\n/**\n * Docs url.\n * @param ruleName The rule name value.\n * @param commitish The commitish value.\n * @returns The result of this check.\n */\nexport default function docsUrl(ruleName: string, commitish = `v${pkg.version}`) {\n    return `${repoUrl}/blob/${commitish}/docs/rules/${ruleName}.md`;\n}\n"
+  }
+]

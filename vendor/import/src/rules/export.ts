@@ -1,0 +1,298 @@
+import includes from 'array-includes';
+import type { Node, LegacyRule } from '../../types';
+import ExportMapBuilder from '../exportMap/builder';
+import recursivePatternCapture from '../exportMap/patternCapture';
+import docsUrl from '../docsUrl';
+
+/**
+ * Notes on TypeScript namespaces aka TSModuleDeclaration:
+ *
+ * There are two forms:
+ * - active namespaces: namespace Foo {} / module Foo {}
+ * - ambient modules; declare module "eslint-plugin-import" {}
+ *
+ * active namespaces:
+ * - cannot contain a default export
+ * - cannot contain an export all
+ * - cannot contain a multi name export (export { a, b })
+ * - can have active namespaces nested within them
+ *
+ * ambient namespaces:
+ * - can only be defined in .d.ts files
+ * - cannot be nested within active namespaces
+ * - have no other restrictions
+ */
+
+const rootProgram = 'root';
+const tsTypePrefix = 'type:';
+
+/**
+ * remove function overloads like:
+ * ```ts
+ * export function foo(a: number);
+ * export function foo(a: string);
+ * ```
+ * @param nodes The nodes to inspect.
+ */
+function removeTypescriptFunctionOverloads(nodes: Set<Node>) {
+    nodes.forEach((node) => {
+        const declType: string = node.type === 'ExportDefaultDeclaration' ? node.declaration.type : node.parent.type;
+        if (
+            // eslint 6+
+            declType === 'TSDeclareFunction'
+            // eslint 4-5
+            || declType === 'TSEmptyBodyFunctionDeclaration'
+        ) {
+            nodes.delete(node);
+        }
+    });
+}
+
+/**
+ * Detect merging Namespaces with Classes, Functions, or Enums like:
+ * ```ts
+ * export class Foo { }
+ * export namespace Foo { }
+ * ```
+ * @param nodes The nodes to inspect.
+ * @returns The result of this check.
+ */
+function isTypescriptNamespaceMerging(nodes: Set<Node>) {
+    const types = new Set(Array.from(nodes, (node: Node) => node.parent.type));
+    const noNamespaceNodes = Array.from(nodes).filter(
+        (node) => node.parent.type !== 'TSModuleDeclaration',
+    );
+
+    return (
+        types.has('TSModuleDeclaration')
+        && (types.size === 1
+            // Merging with functions
+            || (types.size === 2 && (types.has('FunctionDeclaration') || types.has('TSDeclareFunction')))
+            || (types.size === 3 && types.has('FunctionDeclaration') && types.has('TSDeclareFunction'))
+            // Merging with classes or enums
+            || (types.size === 2
+                && (types.has('ClassDeclaration') || types.has('TSEnumDeclaration'))
+                && noNamespaceNodes.length === 1))
+    );
+}
+
+/**
+ * Detect if a typescript namespace node should be reported as multiple export:
+ * ```ts
+ * export class Foo { }
+ * export function Foo();
+ * export namespace Foo { }
+ * ```
+ * @param node The node to inspect.
+ * @param nodes The nodes to inspect.
+ * @returns The result of this check.
+ */
+function shouldSkipTypescriptNamespace(node: Node, nodes: Set<Node>) {
+    const types = new Set(Array.from(nodes, (selectedNode: Node) => selectedNode.parent.type));
+
+    return (
+        !isTypescriptNamespaceMerging(nodes)
+        && node.parent.type === 'TSModuleDeclaration'
+        && (types.has('TSEnumDeclaration')
+            || types.has('ClassDeclaration')
+            || types.has('FunctionDeclaration')
+            || types.has('TSDeclareFunction'))
+    );
+}
+
+const rule: LegacyRule<[]> = {
+    meta: {
+        type: 'problem',
+        docs: {
+            category: 'Helpful warnings',
+            description: 'Forbid any invalid exports, i.e. re-export of the same name.',
+            url: docsUrl('export'),
+        },
+        schema: [],
+    },
+
+    create(context) {
+        const namespace = new Map<Node | string, Map<string, Set<Node>>>([[rootProgram, new Map()]]);
+
+        /**
+         * Add named.
+         * @param name The name to inspect.
+         * @param node The node to inspect.
+         * @param parent The parent value.
+         * @param [isType] The is type value.
+         */
+        function addNamed(name: string, node: Node, parent: Node | string, isType?: boolean) {
+            if (!namespace.has(parent)) {
+                namespace.set(parent, new Map());
+            }
+            const named = namespace.get(parent)!;
+
+            const key = isType ? `${tsTypePrefix}${name}` : name;
+            let nodes = named.get(key);
+
+            if (nodes == null) {
+                nodes = new Set();
+                named.set(key, nodes);
+            }
+
+            nodes.add(node);
+        }
+
+        /**
+         * Get parent.
+         * @param node The node to inspect.
+         * @returns The result of this check.
+         */
+        function getParent(node: Node) {
+            if (node.parent && node.parent.type === 'TSModuleBlock') {
+                return node.parent.parent;
+            }
+
+            // just in case somehow a non-ts namespace export declaration isn't directly
+            // parented to the root Program node
+            return rootProgram;
+        }
+
+        return {
+            ExportDefaultDeclaration(node: Node<'ExportDefaultDeclaration'>) {
+                addNamed('default', node, getParent(node));
+            },
+
+            ExportSpecifier(node: Node<'ExportSpecifier'>) {
+                addNamed(
+                    (node.exported!.name || node.exported!.value) as string,
+                    node.exported,
+                    getParent(node.parent),
+                );
+            },
+
+            ExportNamedDeclaration(node: Node<'ExportNamedDeclaration'>) {
+                if (node.declaration == null) {
+                    return;
+                }
+
+                const parent = getParent(node);
+                // support for old TypeScript versions
+                const isTypeVariableDecl = node.declaration.kind === 'type';
+
+                if (node.declaration.id != null) {
+                    if (
+                        includes(
+                            ['TSTypeAliasDeclaration', 'TSInterfaceDeclaration'],
+                            node.declaration.type,
+                        )
+                    ) {
+                        addNamed(node.declaration.id.name!, node.declaration.id, parent, true);
+                    } else {
+                        addNamed(
+                            node.declaration.id.name!,
+                            node.declaration.id,
+                            parent,
+                            isTypeVariableDecl,
+                        );
+                    }
+                }
+
+                if (node.declaration.declarations != null) {
+                    const entryIterator0 = node.declaration.declarations[Symbol.iterator]();
+                    for (
+                        let entryStep1 = entryIterator0.next();
+                        !entryStep1.done;
+                        entryStep1 = entryIterator0.next()
+                    ) {
+                        const declaration = entryStep1.value;
+                        recursivePatternCapture(declaration.id, (v) => {
+                            addNamed(v.name, v, parent, isTypeVariableDecl);
+                        });
+                    }
+                }
+            },
+
+            ExportAllDeclaration(node: Node<'ExportAllDeclaration'>) {
+                if (node.source == null) {
+                    return;
+                } // not sure if this is ever true
+
+                // `export * as X from 'path'` does not conflict
+                if (node.exported && node.exported.name) {
+                    return;
+                }
+
+                const remoteExports = ExportMapBuilder.get(node.source.value, context);
+                if (remoteExports == null) {
+                    return;
+                }
+
+                if (remoteExports.errors.length) {
+                    remoteExports.reportErrors(context, node);
+                    return;
+                }
+
+                const parent = getParent(node);
+
+                let any = false;
+                remoteExports.forEach((v, name) => {
+                    if (name !== 'default') {
+                        any = true; // poor man's filter
+                        addNamed(name, node, parent);
+                    }
+                });
+
+                if (!any) {
+                    context.report(
+                        node.source,
+                        `No named exports found in module '${node.source.value}'.`,
+                    );
+                }
+            },
+
+            'Program:exit': function onProgramExit() {
+                const entryIterator1 = namespace[Symbol.iterator]();
+                for (
+                    let entryStep2 = entryIterator1.next();
+                    !entryStep2.done;
+                    entryStep2 = entryIterator1.next()
+                ) {
+                    const [, named] = entryStep2.value;
+
+                    const entryIterator2 = named[Symbol.iterator]();
+                    for (
+                        let entryStep3 = entryIterator2.next();
+                        !entryStep3.done;
+                        entryStep3 = entryIterator2.next()
+                    ) {
+                        const [name, nodes] = entryStep3.value;
+                        removeTypescriptFunctionOverloads(nodes);
+
+                        if (!(nodes.size <= 1)) {
+                            if (!isTypescriptNamespaceMerging(nodes)) {
+                                const entryIterator3 = nodes[Symbol.iterator]();
+                                for (
+                                    let entryStep4 = entryIterator3.next();
+                                    !entryStep4.done;
+                                    entryStep4 = entryIterator3.next()
+                                ) {
+                                    const node = entryStep4.value;
+                                    if (!shouldSkipTypescriptNamespace(node, nodes)) {
+                                        if (name === 'default') {
+                                            context.report(
+                                                node,
+                                                'Multiple default exports.',
+                                            );
+                                        } else {
+                                            context.report(
+                                                node,
+                                                `Multiple exports of name '${name.replace(tsTypePrefix, '')}'.`,
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        };
+    },
+};
+export default rule;
