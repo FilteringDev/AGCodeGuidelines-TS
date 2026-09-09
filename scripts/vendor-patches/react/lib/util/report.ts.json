@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\nconst getMessageData = require('./message');\n\nmodule.exports = function report(context, message, messageId, data) {\n  context.report(\n    Object.assign(\n      getMessageData(messageId, message),\n      data\n    )\n  );\n};\n",
+    "after": "import type { RuleContext, ReportDetails } from '../../types';\n\nimport dependency0 from './message';\n\nconst getMessageData = dependency0;\n\n/**\n * @param context The rule context.\n * @param message The message value.\n * @param messageId The message id value.\n * @param data The data value.\n */\nexport default function report(\n    context: RuleContext,\n    message: string,\n    messageId: string | false | null | undefined,\n    data: ReportDetails,\n) {\n    context.report(Object.assign(getMessageData(messageId, message), data));\n}\n"
+  }
+]

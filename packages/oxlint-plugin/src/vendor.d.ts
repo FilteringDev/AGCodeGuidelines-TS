@@ -11,7 +11,3 @@ declare module '*vendor/import/index.js' {
     const plugin: import('@oxlint/plugins').Plugin;
     export default plugin;
 }
-declare module '*vendor/react/index.js' {
-    const plugin: import('@oxlint/plugins').Plugin;
-    export default plugin;
-}

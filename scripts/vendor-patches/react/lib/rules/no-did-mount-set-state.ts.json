@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @fileoverview Prevent usage of setState in componentDidMount\n * @author Yannick Croissant\n */\n\n'use strict';\n\nconst makeNoMethodSetStateRule = require('../util/makeNoMethodSetStateRule');\n\n/** @type {import('eslint').Rule.RuleModule} */\nmodule.exports = makeNoMethodSetStateRule('componentDidMount');\n",
+    "after": "/**\n * @file Prevent usage of setState in componentDidMount\n * @author Yannick Croissant\n */\nimport dependency0 from '../util/makeNoMethodSetStateRule';\nimport type { LegacyRule } from '../../types';\n\nconst makeNoMethodSetStateRule = dependency0;\n\nconst rule: LegacyRule<['disallow-in-func'?]> = makeNoMethodSetStateRule('componentDidMount');\n\nexport default rule;\n"
+  }
+]

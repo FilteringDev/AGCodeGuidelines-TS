@@ -118,6 +118,9 @@ importers:
       '@agcodeguidelines/rule-catalog':
         specifier: workspace:*
         version: link:packages/rule-catalog
+      '@babel/types':
+        specifier: 7.29.8
+        version: 7.29.8
       '@es-joy/jsdoccomment':
         specifier: 0.97.0
         version: 0.97.0
@@ -178,12 +181,21 @@ importers:
       '@types/lodash.merge':
         specifier: 4.6.9
         version: 4.6.9
+      '@types/minimatch':
+        specifier: 5.1.2
+        version: 5.1.2
       '@types/natural-compare':
         specifier: 1.4.3
         version: 1.4.3
       '@types/node':
         specifier: 24.10.1
         version: 24.10.1
+      '@types/prop-types':
+        specifier: 15.7.15
+        version: 15.7.15
+      '@types/resolve':
+        specifier: 1.20.6
+        version: 1.20.6
       '@types/semver':
         specifier: 7.8.0
         version: 7.8.0
@@ -388,6 +400,9 @@ importers:
       '@oxlint/plugins':
         specifier: 1.82.0
         version: 1.82.0
+      es-iterator-helpers:
+        specifier: 1.4.0
+        version: 1.4.0
       oxc-parser:
         specifier: 0.149.0
         version: 0.149.0
@@ -1139,6 +1154,9 @@ packages:
   '@types/lodash@4.17.25':
     resolution: {integrity: sha512-+K1NIO8I+F9/wNulfVvu23QYd0Pe9/OCqRrim4NoYIf1VoEDL90Ve4ClzpyqBLc7NpGGWRvYNCKZ1BE/Jpf8dQ==}
 
+  '@types/minimatch@5.1.2':
+    resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
+
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
@@ -1150,6 +1168,12 @@ packages:
 
   '@types/node@26.5.0':
     resolution: {integrity: sha512-dVSGpriSoCgz8WnDNTuSSuSv1PC/ALXihO4ulRZt7Md8k9mlbdin3lGOcDE8SnWOgf513ByWlXd7BK4azmyg/A==}
+
+  '@types/prop-types@15.7.15':
+    resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
+
+  '@types/resolve@1.20.6':
+    resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
 
   '@types/semver@7.8.0':
     resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
@@ -2819,6 +2843,8 @@ snapshots:
 
   '@types/lodash@4.17.25': {}
 
+  '@types/minimatch@5.1.2': {}
+
   '@types/ms@2.1.0': {}
 
   '@types/natural-compare@1.4.3': {}
@@ -2830,6 +2856,10 @@ snapshots:
   '@types/node@26.5.0':
     dependencies:
       undici-types: 8.9.0
+
+  '@types/prop-types@15.7.15': {}
+
+  '@types/resolve@1.20.6': {}
 
   '@types/semver@7.8.0': {}
 

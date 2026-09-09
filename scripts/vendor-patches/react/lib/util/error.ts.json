@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\n/**\n * Logs out a message if there is no format option set.\n * @param {string} message - Message to log.\n */\nfunction error(message) {\n  if (!/=-(f|-format)=/.test(process.argv.join('='))) {\n    // eslint-disable-next-line no-console\n    console.error(message);\n  }\n}\n\nmodule.exports = error;\n",
+    "after": "import { error as writeError } from 'node:console';\n/**\n * Logs out a message if there is no format option set.\n * @param message - Message to log.\n */\nfunction error(message: string) {\n    if (!/=-(f|-format)=/.test(process.argv.join('='))) {\n        writeError(message);\n    }\n}\n\nexport default error;\n"
+  }
+]

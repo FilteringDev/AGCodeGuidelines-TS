@@ -7,10 +7,12 @@ import {
 } from 'vitest';
 
 import compat from '../packages/oxlint-plugin/src/compat';
+import reactPlugin from '../packages/oxlint-plugin/src/react';
 import registry from '../vendor/core/lib/rules/utils/lazy-loading-rule-map';
 import strings from '../vendor/core/lib/shared/string-utils';
 import type { LegacyRule } from '../vendor/types';
 import jsdoc from '../vendor/jsdoc/index';
+import react from '../vendor/react/index';
 
 RuleTester.describe = describe;
 RuleTester.it = it;
@@ -87,4 +89,27 @@ it('preserves the pinned JSDoc rule metadata and recommended configuration', () 
     const digest = createHash('sha256').update(JSON.stringify({ configs: jsdoc.configs, metadata })).digest('hex');
     // Captured from the unmodified isolated sources for eslint-plugin-jsdoc 64.3.6.
     expect(digest).toBe('13a28b473551bf4794aac303caab7dbb5e9b388679f2bd6fc02541fbb40c1795');
+});
+
+it('preserves the pinned React rule metadata', () => {
+    const metadata = Object.fromEntries(Object.entries(react.rules).map(([name, rule]) => [name, rule.meta]));
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the unmodified isolated sources for eslint-plugin-react 7.37.5.
+    expect(digest).toBe('8214a8bc3bbe58dd098c9cb8c8792982219310f5f53c2f600241eb0e55c8183d');
+});
+
+tester.run('React URL protocol control characters', reactPlugin.rules['jsx-no-script-url']!, {
+    valid: [
+        { filename: 'links.jsx', code: '<a href="https://example.com" />;' },
+        { filename: 'links.jsx', code: '<a href="!javascript:alert(1)" />;' },
+    ],
+    invalid: [
+        ['javascript', 'alert(1)'].join(':'),
+        '\u0000\u0001\u001f JaVaScRiPt:alert(1)',
+        'j\ta\nv\ra\ts\nc\rr\ti\np\rt:alert(1)',
+    ].map((url) => ({
+        filename: 'links.jsx',
+        code: `<a href="${url}" />;`,
+        errors: [{ messageId: 'noScriptURL' }],
+    })),
 });

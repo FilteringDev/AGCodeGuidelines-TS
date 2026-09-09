@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\nfunction docsUrl(ruleName) {\n  return `https://github.com/jsx-eslint/eslint-plugin-react/tree/master/docs/rules/${ruleName}.md`;\n}\n\nmodule.exports = docsUrl;\n",
+    "after": "/**\n * @param ruleName The rule name value.\n * @returns The result of this check.\n */\nfunction docsUrl(ruleName: string) {\n    return `https://github.com/jsx-eslint/eslint-plugin-react/tree/master/docs/rules/${ruleName}.md`;\n}\n\nexport default docsUrl;\n"
+  }
+]

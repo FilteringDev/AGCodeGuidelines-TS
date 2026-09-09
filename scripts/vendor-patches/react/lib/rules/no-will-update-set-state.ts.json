@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @fileoverview Prevent usage of setState in componentWillUpdate\n * @author Yannick Croissant\n */\n\n'use strict';\n\nconst makeNoMethodSetStateRule = require('../util/makeNoMethodSetStateRule');\nconst testReactVersion = require('../util/version').testReactVersion;\n\n/** @type {import('eslint').Rule.RuleModule} */\nmodule.exports = makeNoMethodSetStateRule(\n  'componentWillUpdate',\n  (context) => testReactVersion(context, '>= 16.3.0')\n);\n",
+    "after": "/**\n * @file Prevent usage of setState in componentWillUpdate\n * @author Yannick Croissant\n */\nimport dependency0 from '../util/makeNoMethodSetStateRule';\nimport dependency1 from '../util/version';\nimport type { LegacyRule } from '../../types';\n\nconst makeNoMethodSetStateRule = dependency0;\nconst { testReactVersion } = dependency1;\n\nconst rule: LegacyRule<['disallow-in-func'?]> = makeNoMethodSetStateRule(\n    'componentWillUpdate',\n    (context) => testReactVersion(context, '>= 16.3.0'),\n);\n\nexport default rule;\n"
+  }
+]

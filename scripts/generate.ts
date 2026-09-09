@@ -26,7 +26,6 @@ interface Provider {
     configs: Record<string, LegacyConfig>;
 }
 
-const ROOT_REQUIRE = createRequire(import.meta.url);
 const PLUGIN_REQUIRE = createRequire(new URL('../packages/oxlint-plugin/package.json', import.meta.url));
 const loadPlugin = async (name: string): Promise<Provider> => {
     const loaded = await import(PLUGIN_REQUIRE.resolve(name));
@@ -34,7 +33,7 @@ const loadPlugin = async (name: string): Promise<Provider> => {
 };
 const style = await loadPlugin('@stylistic/eslint-plugin');
 const jsdoc = (await import('../vendor/jsdoc/index')).default as unknown as Provider;
-const react = ROOT_REQUIRE('../vendor/react/index.js') as Provider;
+const react = (await import('../vendor/react/index')).default as unknown as Provider;
 const accessibility = await loadPlugin('eslint-plugin-jsx-a11y');
 const imports = (await import('../vendor/import/index.js')).default as unknown as Provider;
 const nativeList = JSON.parse(

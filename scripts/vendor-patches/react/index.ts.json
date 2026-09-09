@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\nmodule.exports={meta:{name:'ag-react'},rules:require('./lib/rules')};\n",
+    "after": "import dependency0 from './lib/rules';\n\nexport default { meta: { name: 'ag-react' }, rules: dependency0 };\n"
+  }
+]

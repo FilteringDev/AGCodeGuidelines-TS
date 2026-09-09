@@ -2,7 +2,7 @@
  * @file React rule fallback for behavior not provided natively by Oxlint.
  */
 import type { Plugin, Rule, RuleMeta } from '@oxlint/plugins';
-import react from '../../../vendor/react/index.js';
+import react from '../../../vendor/react/index';
 
 import { legacyContext } from './legacy-context';
 
@@ -17,7 +17,7 @@ const rules = Object.fromEntries(
                     react: context.settings.agReact ?? context.settings.react ?? { version: 'detect' },
                 };
                 const adapted = Object.create(context, { settings: { value: settings } }) as typeof context;
-                const visitors = legacyContext(original, adapted);
+                const visitors = legacyContext(original as unknown as Rule, adapted);
                 if (name === 'jsx-props-no-multi-spaces') {
                     const visit = visitors.JSXOpeningElement!;
                     return {

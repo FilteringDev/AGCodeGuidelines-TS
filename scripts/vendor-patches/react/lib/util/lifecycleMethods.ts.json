@@ -1,0 +1,6 @@
+[
+  {
+    "before": "/**\n * @fileoverview lifecycle methods\n * @author Tan Nguyen\n */\n\n'use strict';\n\nmodule.exports = {\n  instance: [\n    'getDefaultProps',\n    'getInitialState',\n    'getChildContext',\n    'componentWillMount',\n    'UNSAFE_componentWillMount',\n    'componentDidMount',\n    'componentWillReceiveProps',\n    'UNSAFE_componentWillReceiveProps',\n    'shouldComponentUpdate',\n    'componentWillUpdate',\n    'UNSAFE_componentWillUpdate',\n    'getSnapshotBeforeUpdate',\n    'componentDidUpdate',\n    'componentDidCatch',\n    'componentWillUnmount',\n    'render',\n  ],\n  static: [\n    'getDerivedStateFromProps',\n  ],\n};\n",
+    "after": "/**\n * @file lifecycle methods\n * @author Tan Nguyen\n */\n\nexport default {\n    instance: [\n        'getDefaultProps',\n        'getInitialState',\n        'getChildContext',\n        'componentWillMount',\n        'UNSAFE_componentWillMount',\n        'componentDidMount',\n        'componentWillReceiveProps',\n        'UNSAFE_componentWillReceiveProps',\n        'shouldComponentUpdate',\n        'componentWillUpdate',\n        'UNSAFE_componentWillUpdate',\n        'getSnapshotBeforeUpdate',\n        'componentDidUpdate',\n        'componentDidCatch',\n        'componentWillUnmount',\n        'render',\n    ],\n    static: ['getDerivedStateFromProps'],\n};\n"
+  }
+]

@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\n/**\n * Check if the first letter of a string is capitalized.\n * @param {string} word String to check\n * @returns {boolean} True if first letter is capitalized.\n */\nmodule.exports = function isFirstLetterCapitalized(word) {\n  if (!word) {\n    return false;\n  }\n  const firstLetter = word.replace(/^_+/, '').charAt(0);\n  return firstLetter.toUpperCase() === firstLetter;\n};\n",
+    "after": "/**\n * Check if the first letter of a string is capitalized.\n * @param word String to check\n * @returns True if first letter is capitalized.\n */\nexport default function isFirstLetterCapitalized(word: string | null | undefined) {\n    if (!word) {\n        return false;\n    }\n    const firstLetter = word.replace(/^_+/, '').charAt(0);\n    return firstLetter.toUpperCase() === firstLetter;\n}\n"
+  }
+]

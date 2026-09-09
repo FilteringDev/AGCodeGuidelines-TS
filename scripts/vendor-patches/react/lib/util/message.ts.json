@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n// Oxlint implements the modern messageId reporting contract.\nmodule.exports=function getMessageData(messageId,message){return messageId?{messageId}:{message};};\n",
+    "after": "/**\n * @file Message descriptors for the modern Oxlint reporting API.\n */\nimport type { ReportMessage } from '../../types';\n\n/**\n * @param messageId The message id value.\n * @param message The message value.\n * @returns The result of this check.\n */\nexport default function getMessageData(\n    messageId: string | false | null | undefined,\n    message: string,\n): ReportMessage {\n    return messageId ? { messageId } : { message };\n}\n"
+  }
+]

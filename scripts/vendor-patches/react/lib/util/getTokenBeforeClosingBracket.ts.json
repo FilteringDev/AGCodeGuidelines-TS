@@ -1,0 +1,6 @@
+[
+  {
+    "before": "'use strict';\n\n/**\n * Find the token before the closing bracket.\n * @param {ASTNode} node - The JSX element node.\n * @returns {Token} The token before the closing bracket.\n */\nfunction getTokenBeforeClosingBracket(node) {\n  const attributes = node.attributes;\n  if (!attributes || attributes.length === 0) {\n    return node.name;\n  }\n  return attributes[attributes.length - 1];\n}\n\nmodule.exports = getTokenBeforeClosingBracket;\n",
+    "after": "import type { Node } from '../../types';\n\n/**\n * Find the token before the closing bracket.\n * @param node - The JSX element node.\n * @returns The token before the closing bracket.\n */\nfunction getTokenBeforeClosingBracket(node: Node<'JSXOpeningElement' | 'JSXClosingElement'>) {\n    const { attributes } = node;\n    if (!attributes || attributes.length === 0) {\n        return node.name;\n    }\n    return attributes[attributes.length - 1];\n}\n\nexport default getTokenBeforeClosingBracket;\n"
+  }
+]
