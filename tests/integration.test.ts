@@ -116,7 +116,13 @@ describe('public configuration API', () => {
 
     it('preserves explicit disabled settings and inherited options', () => {
         expect(catalog.baseline['no-await-in-loop']).toBe('off');
-        expect(catalog.baseline['jsdoc/require-file-overview']).toBe('off');
+        expect(catalog.baseline['jsdoc/require-file-overview']).toBeUndefined();
+        expect(catalog.rules['ag-jsdoc/require-file-overview']).toBe('error');
+        expect(catalog.rules['ag-jsdoc/require-description']).toBe('error');
+        expect(catalog.rules['ag-jsdoc/require-description-complete-sentence']).toBe('error');
+        expect(catalog.rules['ag-jsdoc/require-hyphen-before-param-description']).toEqual(['error', 'never']);
+        expect(catalog.rules['ag-jsdoc/require-throws']).toBe('error');
+        expect(catalog.rules['ag-jsdoc/sort-tags']).toBe('error');
         expect(catalog.baseline['brace-style']).toEqual(['error', '1tbs', { allowSingleLine: false }]);
         expect(catalog.baseline.indent).toEqual(['error', 4, { SwitchCase: 1 }]);
         expect(catalog.baseline['react/jsx-indent']).toEqual(['error', 2]);

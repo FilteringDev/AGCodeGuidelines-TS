@@ -9,6 +9,7 @@ import { basename, relative } from 'node:path';
 import sample from '../docs/reference/eslintrc';
 import { verifyReference } from './reference';
 import builtinRules from '../vendor/core/lib/rules/index';
+import { severity } from '../packages/rule-catalog/src/index';
 
 import type {
     Catalog, Clause, Mapping, RuleMap, RuleSetting,
@@ -101,6 +102,11 @@ apply(sample, 'eslintrc.cjs');
 
 const additions: RuleMap = {
     'jsdoc/require-file-overview': 'error',
+    'jsdoc/require-description': 'error',
+    'jsdoc/require-description-complete-sentence': 'error',
+    'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
+    'jsdoc/require-throws': 'error',
+    'jsdoc/sort-tags': 'error',
     'unicorn/prefer-node-protocol': 'error',
     'unicorn/no-this-assignment': 'error',
     'ag/no-accessors': 'error',
@@ -131,7 +137,14 @@ const extraClauses: Record<string, string[]> = {
     'control-statement--value-selection': ['no-unused-expressions'],
     'comments--multiline': ['ag/require-docblock'],
     'comments--singleline': ['line-comment-position', 'lines-around-comment'],
-    'comments-jsdoc': ['jsdoc/require-file-overview'],
+    'comments-jsdoc': [
+        'jsdoc/require-file-overview',
+        'jsdoc/require-description',
+        'jsdoc/require-description-complete-sentence',
+        'jsdoc/require-hyphen-before-param-description',
+        'jsdoc/require-throws',
+        'jsdoc/sort-tags',
+    ],
     'whitespace--after-blocks': ['padding-line-between-statements'],
     'coercion--comment-deviations': ['no-bitwise'],
     'naming--self-this': ['unicorn/no-this-assignment'],
@@ -278,13 +291,22 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
 }
 
 Object.entries(baseline).forEach(([name, setting]) => mapRule(name, setting, origins[name] ?? 'baseline'));
-Object.entries(additions)
-    .filter(([name]) => baseline[name] === undefined)
-    .forEach(([name, setting]) => {
-        if (baseline[name] === undefined) {
-            mapRule(name, setting, 'Javascript.md');
+Object.entries(additions).forEach(([name, setting]) => {
+    if (baseline[name] === undefined || severity(baseline[name]) === 0) {
+        delete baseline[name];
+        const existing = mappings.findIndex((mapping) => mapping.source === name);
+        if (existing !== -1) {
+            mappings.splice(existing, 1);
         }
-    });
+        mapRule(name, setting, 'Javascript.md');
+    }
+});
+for (let index = mappings.length - 1; index >= 0; index -= 1) {
+    const mapping = mappings[index]!;
+    if (mapping.implementation === 'disabled' && rules[mapping.source] !== undefined) {
+        mappings.splice(index, 1);
+    }
+}
 
 clauses.forEach((clause) => {
     if (clause.id.startsWith('typescript--tsconfig')) {

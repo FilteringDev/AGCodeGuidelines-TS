@@ -15,7 +15,10 @@ import noDefaults from './src/rules/noDefaults';
 import noMultiAsterisks from './src/rules/noMultiAsterisks';
 import noTypes from './src/rules/noTypes';
 import noUndefinedTypes from './src/rules/noUndefinedTypes';
+import requireDescription from './src/rules/requireDescription';
+import requireDescriptionCompleteSentence from './src/rules/requireDescriptionCompleteSentence';
 import requireFileOverview from './src/rules/requireFileOverview';
+import requireHyphenBeforeParamDescription from './src/rules/requireHyphenBeforeParamDescription';
 import requireJsdoc from './src/rules/requireJsdoc';
 import requireParam from './src/rules/requireParam';
 import requireParamDescription from './src/rules/requireParamDescription';
@@ -29,8 +32,10 @@ import requireReturns from './src/rules/requireReturns';
 import requireReturnsCheck from './src/rules/requireReturnsCheck';
 import requireReturnsDescription from './src/rules/requireReturnsDescription';
 import requireReturnsType from './src/rules/requireReturnsType';
+import requireThrows from './src/rules/requireThrows';
 import requireYields from './src/rules/requireYields';
 import requireYieldsCheck from './src/rules/requireYieldsCheck';
+import sortTags from './src/rules/sortTags';
 import tagLines from './src/rules/tagLines';
 import tsNoEmptyObjectType from './src/rules/tsNoEmptyObjectType';
 import validTypes from './src/rules/validTypes';
@@ -165,6 +170,7 @@ export default {
             url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/reject-function-type.md#repos-sticky-header',
         }),
         'require-file-overview': requireFileOverview,
+        'require-hyphen-before-param-description': requireHyphenBeforeParamDescription,
         'require-jsdoc': requireJsdoc,
         'require-next-type': buildForbidRuleDefinition({
             contexts: [
@@ -189,6 +195,8 @@ export default {
         'require-returns': requireReturns,
         'require-returns-check': requireReturnsCheck,
         'require-returns-description': requireReturnsDescription,
+        'require-description': requireDescription,
+        'require-description-complete-sentence': requireDescriptionCompleteSentence,
         'require-returns-type': requireReturnsType,
         'require-throws-type': buildForbidRuleDefinition({
             contexts: [
@@ -202,6 +210,7 @@ export default {
             description: 'Requires a type for `@throws` tags',
             url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-throws-type.md#repos-sticky-header',
         }),
+        'require-throws': requireThrows,
         'require-yields': requireYields,
         'require-yields-check': requireYieldsCheck,
         'require-yields-type': buildForbidRuleDefinition({
@@ -216,6 +225,7 @@ export default {
             description: 'Requires a type for `@yields` tags',
             url: 'https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/require-yields-type.md#repos-sticky-header',
         }),
+        'sort-tags': sortTags,
         'tag-lines': tagLines,
         'ts-no-empty-object-type': tsNoEmptyObjectType,
         'valid-types': validTypes,

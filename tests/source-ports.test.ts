@@ -89,8 +89,10 @@ it('counts combining sequences and emoji identically under the bundler and nativ
 it('preserves the pinned JSDoc rule metadata and recommended configuration', () => {
     const metadata = Object.fromEntries(Object.entries(jsdoc.rules).map(([name, rule]) => [name, rule.meta]));
     const digest = createHash('sha256').update(JSON.stringify({ configs: jsdoc.configs, metadata })).digest('hex');
-    // Captured from the unmodified isolated sources for eslint-plugin-jsdoc 64.3.6.
-    expect(digest).toBe('13a28b473551bf4794aac303caab7dbb5e9b388679f2bd6fc02541fbb40c1795');
+    // Captured from the isolated sources for eslint-plugin-jsdoc 64.3.6
+    // (updated for require-description, require-description-complete-sentence,
+    // require-hyphen-before-param-description, require-throws, sort-tags).
+    expect(digest).toBe('e72deb2d9ff7e0ad9fed398c16037ca6cd35185c2e2f6e3e299aba6d8206a2d9');
 });
 
 it('preserves the pinned React rule metadata', () => {

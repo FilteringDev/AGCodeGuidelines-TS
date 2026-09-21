@@ -2023,11 +2023,7 @@
     "jsdoc/reject-any-type": "warn",
     "jsdoc/reject-function-type": "warn",
     "jsdoc/require-asterisk-prefix": "off",
-    "jsdoc/require-description": "off",
-    "jsdoc/require-description-complete-sentence": "off",
     "jsdoc/require-example": "off",
-    "jsdoc/require-file-overview": "off",
-    "jsdoc/require-hyphen-before-param-description": "off",
     "jsdoc/require-jsdoc": "warn",
     "jsdoc/require-next-description": "off",
     "jsdoc/require-next-type": "warn",
@@ -2047,14 +2043,12 @@
     "jsdoc/require-tags": "off",
     "jsdoc/require-template": "off",
     "jsdoc/require-template-description": "off",
-    "jsdoc/require-throws": "off",
     "jsdoc/require-throws-description": "off",
     "jsdoc/require-throws-type": "warn",
     "jsdoc/require-yields": "warn",
     "jsdoc/require-yields-check": "warn",
     "jsdoc/require-yields-description": "off",
     "jsdoc/require-yields-type": "warn",
-    "jsdoc/sort-tags": "off",
     "jsdoc/tag-lines": "warn",
     "jsdoc/text-escaping": "off",
     "jsdoc/ts-method-signature-style": "off",
@@ -7086,35 +7080,7 @@
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
-      "source": "jsdoc/require-description",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
-      "source": "jsdoc/require-description-complete-sentence",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
       "source": "jsdoc/require-example",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
-      "source": "jsdoc/require-file-overview",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
-      "source": "jsdoc/require-hyphen-before-param-description",
       "target": null,
       "setting": "off",
       "implementation": "disabled",
@@ -7254,13 +7220,6 @@
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
-      "source": "jsdoc/require-throws",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
       "source": "jsdoc/require-throws-description",
       "target": null,
       "setting": "off",
@@ -7300,13 +7259,6 @@
       "target": "ag-jsdoc/require-yields-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
-    },
-    {
-      "source": "jsdoc/sort-tags",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
@@ -7364,6 +7316,51 @@
       "setting": "warn",
       "implementation": "javascript",
       "origin": "jsdoc@64.3.6/recommended"
+    },
+    {
+      "source": "jsdoc/require-file-overview",
+      "target": "ag-jsdoc/require-file-overview",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "jsdoc/require-description",
+      "target": "ag-jsdoc/require-description",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "jsdoc/require-description-complete-sentence",
+      "target": "ag-jsdoc/require-description-complete-sentence",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "jsdoc/require-hyphen-before-param-description",
+      "target": "ag-jsdoc/require-hyphen-before-param-description",
+      "setting": [
+        "error",
+        "never"
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "jsdoc/require-throws",
+      "target": "ag-jsdoc/require-throws",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "jsdoc/sort-tags",
+      "target": "ag-jsdoc/sort-tags",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "Javascript.md"
     },
     {
       "source": "unicorn/prefer-node-protocol",
@@ -8354,10 +8351,15 @@
       "text": "To force right style of comments every eslint config should connect [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc). With all recommended rules + `jsdoc/require-file-overview`",
       "line": 1988,
       "rules": [
-        "jsdoc/require-file-overview"
+        "jsdoc/require-file-overview",
+        "jsdoc/require-description",
+        "jsdoc/require-description-complete-sentence",
+        "jsdoc/require-hyphen-before-param-description",
+        "jsdoc/require-throws",
+        "jsdoc/sort-tags"
       ],
-      "enforcement": "overridden",
-      "reason": "Sample precedence: jsdoc/require-file-overview retains its inherited/explicit options and severity."
+      "enforcement": "javascript",
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
     },
     {
       "id": "whitespace--spaces",
@@ -10496,6 +10498,15 @@
     "ag-jsdoc/tag-lines": "warn",
     "ag-jsdoc/ts-no-empty-object-type": "warn",
     "ag-jsdoc/valid-types": "warn",
+    "ag-jsdoc/require-file-overview": "error",
+    "ag-jsdoc/require-description": "error",
+    "ag-jsdoc/require-description-complete-sentence": "error",
+    "ag-jsdoc/require-hyphen-before-param-description": [
+      "error",
+      "never"
+    ],
+    "ag-jsdoc/require-throws": "error",
+    "ag-jsdoc/sort-tags": "error",
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-this-assignment": "error",
     "ag/no-accessors": "error",
