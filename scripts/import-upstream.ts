@@ -9,7 +9,13 @@ import { createHash } from 'node:crypto';
 import { readdir, writeFile } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, relative } from 'node:path';
+import {
+    basename,
+    dirname,
+    isAbsolute,
+    join,
+    relative,
+} from 'node:path';
 import { runInNewContext } from 'node:vm';
 
 import { transformSync } from 'esbuild';
@@ -48,6 +54,26 @@ function dedent(strings: TemplateStringsArray | string, ...values: unknown[]): s
     const lengths = lines.filter((line) => line.trim()).map((line) => /^\s*/u.exec(line)?.[0].length ?? 0);
     const width = Math.min(...lengths);
     return lines.map((line) => line.slice(width)).join('\n');
+}
+
+/**
+ * Normalize upstream filenames to portable values before serialization.
+ * @param filename - Raw filename captured from an upstream assertion.
+ * @returns A cwd-independent filename, or undefined when absent.
+ */
+function normalizeFilename(filename: unknown): string | undefined {
+    if (typeof filename !== 'string') {
+        return undefined;
+    }
+    const portable = filename.replaceAll(SOURCE_ROOT!, '<upstream>');
+    if (!isAbsolute(portable)) {
+        return portable;
+    }
+    const cwdRelative = relative(process.cwd(), portable);
+    if (cwdRelative && !cwdRelative.startsWith('..') && !isAbsolute(cwdRelative)) {
+        return cwdRelative;
+    }
+    return basename(portable);
 }
 
 /**
@@ -118,8 +144,8 @@ function save(item: unknown, invalid: boolean, defaults: Record<string, unknown>
         settings: value.settings ?? defaults.settings ?? {},
         ecmaVersion: language.ecmaVersion ?? parser.ecmaVersion ?? (currentRule.startsWith('jsdoc/') ? 2022 : 5),
         env: value.env ?? defaults.env ?? {},
-        ...(typeof value.filename === 'string'
-            ? { filename: value.filename.replaceAll(SOURCE_ROOT!, '<upstream>') }
+        ...(normalizeFilename(value.filename) !== undefined
+            ? { filename: normalizeFilename(value.filename) }
             : {}),
         globals: language.globals ?? value.globals ?? defaults.globals ?? {},
         sourceType,

@@ -3,6 +3,7 @@
  */
 
 import assert from 'node:assert/strict';
+import { isAbsolute, join } from 'node:path';
 import type { CreateRule, ESTree, Rule } from '@oxlint/plugins';
 import type { RuleTester } from 'oxlint/plugins-dev';
 import { legacyContext } from '../packages/oxlint-plugin/src/legacy-context';
@@ -111,6 +112,24 @@ function normalizeSuggestions(fixture: Fixture, suggestions: Fixture['errors'][n
 }
 
 /**
+ * Anchor a portable fixture filename at the current working directory.
+ * @param filename - Filename stored in a serialized upstream scenario.
+ * @returns An absolute filename whose relative globs resolve identically on any runner.
+ */
+export function resolveFixtureFilename(filename: string | undefined): string | undefined {
+    if (filename === undefined || isAbsolute(filename)) {
+        return filename;
+    }
+    if (filename.startsWith('<') && filename.endsWith('>')) {
+        return filename;
+    }
+    if (!filename.includes('/') && !filename.includes('\\')) {
+        return filename;
+    }
+    return join(process.cwd(), filename);
+}
+
+/**
  * Preserve upstream diagnostics and options in Oxlint's test-case format.
  * @param fixture - Serialized upstream scenario.
  * @returns An Oxlint RuleTester case.
@@ -124,7 +143,7 @@ export function testCase(fixture: Fixture): RuleTester.ValidTestCase | RuleTeste
             ...fixture.settings,
             agEcmaVersion: fixture.ecmaVersion ?? 2022,
             agParserOptions: fixture.parserOptions ?? {},
-            fixtureFilename: fixture.filename,
+            fixtureFilename: resolveFixtureFilename(fixture.filename),
             fixtureErrors: fixture.errors,
             fixtureRules: fixture.supplementalRules ?? {},
         },
