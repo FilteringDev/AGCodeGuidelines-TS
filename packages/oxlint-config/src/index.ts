@@ -118,6 +118,13 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
                     'ag-jsdoc/require-throws-type': 'off',
                     'ag-jsdoc/no-undefined-types': 'off',
                     'ag-jsdoc/no-types': 'error',
+                    // Syntax-only @typescript-eslint subset backed by Oxlint's
+                    // native typescript plugin (no type-aware rules).
+                    ...Object.fromEntries(
+                        catalog.mappings
+                            .filter((mapping) => mapping.target?.startsWith('typescript/') ?? false)
+                            .map((mapping) => [mapping.target as string, mapping.setting]),
+                    ),
                 },
             },
         ];

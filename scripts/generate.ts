@@ -144,6 +144,26 @@ const additions: RuleMap = {
     }],
     'notice/notice': 'off',
     '@adguard/logger-context/require-logger-context': ['error', { contextModuleName: 'ext' }],
+    // Syntax-only @typescript-eslint subset backed by Oxlint's native
+    // typescript plugin (no type-aware rules; tsc provides types).
+    '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+    '@typescript-eslint/consistent-type-exports': ['error', { fixMixedExportsWithInlineTypeSpecifier: true }],
+    '@typescript-eslint/explicit-function-return-type': 'error',
+    '@typescript-eslint/explicit-member-accessibility': ['error', {
+        accessibility: 'explicit',
+        overrides: {
+            accessors: 'explicit',
+            constructors: 'no-public',
+            methods: 'explicit',
+            properties: 'off',
+            parameterProperties: 'explicit',
+        },
+    }],
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-var-requires': 'error',
+    '@typescript-eslint/ban-ts-comment': 'error',
+    '@typescript-eslint/dot-notation': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     'unicorn/prefer-node-protocol': 'error',
     'unicorn/no-this-assignment': 'error',
     'ag/no-accessors': 'error',
@@ -308,6 +328,9 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
         target = `ag-notice/${source.slice(7)}`;
     } else if (source.startsWith('@adguard/logger-context/') && logger.rules[source.slice('@adguard/logger-context/'.length)]) {
         target = `ag-logger/${source.slice('@adguard/logger-context/'.length)}`;
+    } else if (source.startsWith('@typescript-eslint/') && native.has(`typescript/${source.slice('@typescript-eslint/'.length)}`)) {
+        target = `typescript/${source.slice('@typescript-eslint/'.length)}`;
+        implementation = 'native';
     } else if (style.rules[source]) {
         target = `ag-style/${source}`;
     } else if (native.has(source)) {
@@ -326,6 +349,11 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
         }
     }
     rules[target] = setting;
+    if (target.startsWith('typescript/')) {
+        // TypeScript-only rules live in the preset override; keep them out of
+        // the shared root so plain JavaScript consumers stay unaffected.
+        delete rules[target];
+    }
     mappings.push({
         source,
         target,

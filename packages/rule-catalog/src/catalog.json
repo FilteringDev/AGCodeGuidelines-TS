@@ -7420,6 +7420,91 @@
       "origin": "Javascript.md"
     },
     {
+      "source": "@typescript-eslint/consistent-type-imports",
+      "target": "typescript/consistent-type-imports",
+      "setting": [
+        "error",
+        {
+          "fixStyle": "inline-type-imports"
+        }
+      ],
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/consistent-type-exports",
+      "target": "typescript/consistent-type-exports",
+      "setting": [
+        "error",
+        {
+          "fixMixedExportsWithInlineTypeSpecifier": true
+        }
+      ],
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/explicit-function-return-type",
+      "target": "typescript/explicit-function-return-type",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/explicit-member-accessibility",
+      "target": "typescript/explicit-member-accessibility",
+      "setting": [
+        "error",
+        {
+          "accessibility": "explicit",
+          "overrides": {
+            "accessors": "explicit",
+            "constructors": "no-public",
+            "methods": "explicit",
+            "properties": "off",
+            "parameterProperties": "explicit"
+          }
+        }
+      ],
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/no-explicit-any",
+      "target": "typescript/no-explicit-any",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/no-var-requires",
+      "target": "typescript/no-var-requires",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/ban-ts-comment",
+      "target": "typescript/ban-ts-comment",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/dot-notation",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@typescript-eslint/no-non-null-assertion",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "Javascript.md"
+    },
+    {
       "source": "unicorn/prefer-node-protocol",
       "target": "unicorn/prefer-node-protocol",
       "setting": "error",

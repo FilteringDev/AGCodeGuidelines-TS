@@ -33,6 +33,12 @@ const scenarios = [
     ['rest sibling', 'const source = { omit: 1, keep: 2 }; const { omit, ...rest } = source; export { rest };', 0],
     ['typed indentation', 'export interface Value {\n    value: string;\n}\n', 0],
     ['incorrect typed indentation', 'export interface Value {\n  value: string;\n}\n', 1],
+    ['explicit any rejected', 'export const value: any = 1;', 1],
+    ['unknown accepted', 'export const value: unknown = 1;', 0],
+    ['missing return type', 'export function read() { return 1; }', 1],
+    ['annotated return type', 'export function read(): number { return 1; }', 0],
+    ['require call rejected', 'export const value = require("./dependency");', 1],
+    ['ts-ignore rejected', 'export const value = 1; // @ts-ignore', 1],
 ] as const;
 const extensions = ['ts', 'tsx', 'mts', 'cts'];
 let counts: Map<string, number>;
@@ -46,6 +52,10 @@ beforeAll(async () => {
         'eslint/no-useless-constructor',
         'eslint/no-empty-function',
         'ag-style/indent',
+        'typescript/no-explicit-any',
+        'typescript/explicit-function-return-type',
+        'typescript/no-var-requires',
+        'typescript/ban-ts-comment',
     ];
     const config = {
         ...preset,

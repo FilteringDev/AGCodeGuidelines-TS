@@ -30,9 +30,14 @@
       "files": [
         "scripts/**/*.ts",
         "tests/**/*.ts",
-        "vitest.config.ts"
+        "vitest.config.ts",
+        "packages/**/*.ts"
       ],
       "rules": {
+        "typescript/explicit-function-return-type": "off",
+        "typescript/explicit-member-accessibility": "off",
+        "typescript/consistent-type-imports": "off",
+        "typescript/consistent-type-exports": "off",
         "ag-import/no-extraneous-dependencies": [
           "error",
           {
@@ -77,7 +82,14 @@
         "ag-newlines/enforce": "off",
         "ag-jsdoc/require-param-description": "off",
         "ag-jsdoc/check-param-names": "off",
-        "ag-jsdoc/require-param": "off"
+        "ag-jsdoc/require-param": "off",
+        "typescript/consistent-type-imports": "off",
+        "typescript/consistent-type-exports": "off",
+        "typescript/explicit-function-return-type": "off",
+        "typescript/explicit-member-accessibility": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-var-requires": "off",
+        "typescript/ban-ts-comment": "off"
       }
     },
     {
