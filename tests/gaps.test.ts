@@ -4,7 +4,10 @@
 import { createRequire } from 'node:module';
 
 import {
-    beforeAll, describe, expect, it,
+    beforeAll,
+    describe,
+    expect,
+    it,
 } from 'vitest';
 
 import { createConfig } from '../packages/oxlint-config/src/index';
@@ -30,6 +33,17 @@ beforeAll(async () => {
                     .filter((provider) => target.startsWith(`${provider.name}/`))
                     .map((provider) => ({ ...provider, specifier: REQUIRE.resolve(provider.specifier) })),
                 rules: { [target]: mapping.setting },
+                ...(example.language === 'typescript'
+                    ? {
+                        settings: {
+                            ...(base.settings as Record<string, unknown>),
+                            'import/resolver': {
+                                typescript: true,
+                                node: { extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.mts', '.cts'] },
+                            },
+                        },
+                    }
+                    : {}),
             };
             const filename = `main.${example.extension ?? 'js'}`;
             try {
@@ -40,7 +54,12 @@ beforeAll(async () => {
                     ...(kind === 'valid' ? example.validFiles : example.invalidFiles),
                     [filename]: example[kind],
                 });
-                outcomes.set(`${example.rule}/${kind}`, result.get(filename) ?? []);
+                const extra = kind === 'valid' ? example.validFiles : example.invalidFiles;
+                const names = extra ? Object.keys(extra) : [filename];
+                outcomes.set(
+                    `${example.rule}/${kind}`,
+                    names.flatMap((name) => result.get(name) ?? []),
+                );
             } catch (error: unknown) {
                 outcomes.set(`${example.rule}/${kind}`, [{ severity: 'error', message: String(error) }]);
             }

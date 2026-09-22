@@ -3,14 +3,22 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
-    mkdtemp, readdir, readFile, rm, writeFile,
+    mkdtemp,
+    readdir,
+    readFile,
+    rm,
+    writeFile,
 } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 import {
-    afterAll, beforeAll, describe, expect, it,
+    afterAll,
+    beforeAll,
+    describe,
+    expect,
+    it,
 } from 'vitest';
 
 import { execPnpm } from '../scripts/process';

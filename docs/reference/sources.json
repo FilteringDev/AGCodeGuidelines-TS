@@ -45,6 +45,34 @@
       "ref": "v5.10.0",
       "directory": "eslint-stylistic-5.10.0",
       "archiveSha256": "73776b7c13f561d40da170ca67cc7293ab37e50ce44ba187fb845d4c999cc252"
+    },
+    "import-newlines": {
+      "repository": "SeinopSys/eslint-plugin-import-newlines",
+      "version": "1.4.0",
+      "ref": "v1.4.0",
+      "directory": "eslint-plugin-import-newlines-1.4.0",
+      "archiveSha256": "2be9dc68163fe946956148824b846e5751499a5ecaf63fa35dfb0f3b48f0307e"
+    },
+    "boundaries": {
+      "repository": "javierbrea/eslint-plugin-boundaries",
+      "version": "5.0.1",
+      "ref": "v5.0.1",
+      "directory": "eslint-plugin-boundaries-5.0.1",
+      "archiveSha256": "96f41648a57f58e1bbb0ab75d8e08bd9b7bd995285a6a0fedec5fa8672e56b1f"
+    },
+    "notice": {
+      "repository": "nickdeis/eslint-plugin-notice",
+      "version": "1.0.0",
+      "ref": "1.0.0",
+      "directory": "eslint-plugin-notice-1.0.0",
+      "archiveSha256": "fa5eaeefe812381d2ba3cb6c2215616f4f64bd202e2796e9cc0570fe0953c380"
+    },
+    "logger-context": {
+      "repository": "AdguardTeam/tsurlfilter",
+      "version": "1.0.1",
+      "ref": "v1.0.1",
+      "directory": "adguard-eslint-plugin-logger-context-1.0.1",
+      "archiveSha256": "862a099a34a0c4c4dd2070cfa1fe47072345976156cff5c3028a87e572ed36a2"
     }
   }
 }

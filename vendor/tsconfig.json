@@ -11,6 +11,11 @@
     "jsdoc/**/*.ts",
     "react/**/*.ts",
     "import/**/*.ts",
-    "import/package.json"
+    "import/package.json",
+    "import-newlines/**/*.ts",
+    "boundaries/**/*.ts",
+    "boundaries/package.json",
+    "notice/**/*.ts",
+    "logger-context/**/*.ts"
   ]
 }

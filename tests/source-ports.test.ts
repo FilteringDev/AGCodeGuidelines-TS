@@ -3,7 +3,10 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { RuleTester } from 'oxlint/plugins-dev';
 import {
-    describe, expect, it, vi,
+    describe,
+    expect,
+    it,
+    vi,
 } from 'vitest';
 
 import compat from '../packages/oxlint-plugin/src/compat';
@@ -14,6 +17,10 @@ import type { LegacyRule } from '../vendor/types';
 import jsdoc from '../vendor/jsdoc/index';
 import react from '../vendor/react/index';
 import importRules from '../vendor/import/index';
+import newlinesRules from '../vendor/import-newlines/index';
+import boundariesRules from '../vendor/boundaries/index';
+import noticeRules from '../vendor/notice/index';
+import loggerRules from '../vendor/logger-context/index';
 import enumerableKeys from '../vendor/import/utils/enumerableKeys';
 
 RuleTester.describe = describe;
@@ -124,6 +131,42 @@ it('preserves the pinned import rule metadata', () => {
     // Captured from the isolated sources for eslint-plugin-import 2.32.0
     // (updated for no-unassigned-import).
     expect(digest).toBe('a88df00f5c3d652fce9700afcbd8933edeae591254376995ecadbbe2db636b5b');
+});
+
+it('preserves the pinned import-newlines rule metadata', () => {
+    const metadata = Object.fromEntries(
+        Object.entries(newlinesRules.rules).map(([name, rule]) => [name, rule.meta]),
+    );
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the isolated sources for eslint-plugin-import-newlines 1.4.0.
+    expect(digest).toBe('ebe06486deff1fdfa2e6176840bfb9fe965fe9049eddc16b098eacd6933f5d3b');
+});
+
+it('preserves the pinned boundaries rule metadata', () => {
+    const metadata = Object.fromEntries(
+        Object.entries(boundariesRules.rules).map(([name, rule]) => [name, rule.meta]),
+    );
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the isolated sources for eslint-plugin-boundaries 5.0.1 (element-types only).
+    expect(digest).toBe('88be61a6ca16444d15e92ab7fa6c32fcb83f0a7bb54b5180260c09791bcf1426');
+});
+
+it('preserves the pinned notice rule metadata', () => {
+    const metadata = Object.fromEntries(
+        Object.entries(noticeRules.rules).map(([name, rule]) => [name, rule.meta]),
+    );
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the isolated sources for eslint-plugin-notice 1.0.0.
+    expect(digest).toBe('856e1ff711c8ee04e8cf569199d501250a9729698a492a41fb7f361c576448b8');
+});
+
+it('preserves the pinned logger-context rule metadata', () => {
+    const metadata = Object.fromEntries(
+        Object.entries(loggerRules.rules).map(([name, rule]) => [name, rule.meta]),
+    );
+    const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
+    // Captured from the isolated sources for @adguard/logger-context port 1.0.1.
+    expect(digest).toBe('9aa8f4480a6b2498f483761404f36b0900ee58f57ed45163329cd82bd85dc7b7');
 });
 
 it('retains inherited configuration keys and non-enumerable shadowing', () => {

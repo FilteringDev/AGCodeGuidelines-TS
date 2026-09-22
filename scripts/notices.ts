@@ -1,6 +1,9 @@
 /** @file Include the license notices for bundled dependencies and rule sources. */
 import {
-    readdir, readFile, stat, writeFile,
+    readdir,
+    readFile,
+    stat,
+    writeFile,
 } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 

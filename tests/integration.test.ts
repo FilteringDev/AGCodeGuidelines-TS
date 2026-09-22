@@ -4,7 +4,10 @@
 import { createRequire } from 'node:module';
 
 import {
-    beforeAll, describe, expect, it,
+    beforeAll,
+    describe,
+    expect,
+    it,
 } from 'vitest';
 
 import { createConfig, node } from '../packages/oxlint-config/src/index';

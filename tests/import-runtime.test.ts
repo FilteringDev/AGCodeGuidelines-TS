@@ -1,13 +1,19 @@
 /** @file Verify dependency parsing, documentation, and resolution in the Vitest process. */
 import {
-    mkdirSync, mkdtempSync, rmSync, writeFileSync,
+    mkdirSync,
+    mkdtempSync,
+    rmSync,
+    writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { RuleTester } from 'oxlint/plugins-dev';
 import {
-    afterAll, describe, expect, it,
+    afterAll,
+    describe,
+    expect,
+    it,
 } from 'vitest';
 
 import imports from '../packages/oxlint-plugin/src/import';

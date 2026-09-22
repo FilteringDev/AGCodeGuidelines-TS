@@ -12,6 +12,10 @@ import react from '../packages/oxlint-plugin/src/react';
 import stylistic from '../packages/oxlint-plugin/src/stylistic';
 import a11y from '../packages/oxlint-plugin/src/jsx-a11y';
 import imports from '../packages/oxlint-plugin/src/import';
+import newlines from '../packages/oxlint-plugin/src/newlines';
+import boundaries from '../packages/oxlint-plugin/src/boundaries';
+import notice from '../packages/oxlint-plugin/src/notice';
+import logger from '../packages/oxlint-plugin/src/logger';
 
 export interface Fixture {
     id: string;
@@ -62,7 +66,15 @@ function resolveRule(fixture: Pick<Fixture, 'sourceRule' | 'target'>): Rule {
                     ? a11y
                     : fixture.sourceRule.startsWith('import/')
                         ? imports
-                        : compat;
+                        : fixture.sourceRule.startsWith('import-newlines/')
+                            ? newlines
+                            : fixture.sourceRule.startsWith('boundaries/')
+                                ? boundaries
+                                : fixture.sourceRule.startsWith('notice/')
+                                    ? notice
+                                    : fixture.sourceRule.startsWith('@adguard/logger-context/')
+                                        ? logger
+                                        : compat;
     const available = provider.rules as Record<string, Rule>;
     const rule = available[targetName] ?? available[name];
     if (!rule) {

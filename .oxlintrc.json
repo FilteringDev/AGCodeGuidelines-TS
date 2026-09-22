@@ -73,7 +73,11 @@
       "rules": {
         "ag-jsdoc/require-file-overview": "off",
         "ag-compat/no-constant-condition": "off",
-        "ag-compat/sort-imports": "off"
+        "ag-compat/sort-imports": "off",
+        "ag-newlines/enforce": "off",
+        "ag-jsdoc/require-param-description": "off",
+        "ag-jsdoc/check-param-names": "off",
+        "ag-jsdoc/require-param": "off"
       }
     },
     {

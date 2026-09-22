@@ -6,6 +6,7 @@ export interface GapCase {
     valid: string;
     invalid: string;
     extension?: string;
+    language?: 'javascript' | 'typescript';
     files?: Record<string, string>;
     validFiles?: Record<string, string>;
     invalidFiles?: Record<string, string>;
@@ -255,5 +256,29 @@ export const gapCases: GapCase[] = [
         rule: 'no-restricted-imports',
         valid: 'import value from "./allowed";',
         invalid: 'import value from "./feature-mv2";',
+    },
+    {
+        rule: 'import-newlines/enforce',
+        valid: 'import { a } from "./dependency";',
+        invalid: 'import { a, b, c, d } from "./dependency";',
+    },
+    {
+        rule: 'boundaries/element-types',
+        // Resolves extensionless '../src/index' to src/index.ts via the
+        // TypeScript-aware import resolver.
+        language: 'typescript',
+        valid: 'import value from "../src/helper";',
+        invalid: 'import value from "../src/index";',
+        files: {
+            'src/index.ts': 'export const value = 1;',
+            'src/helper.ts': 'export const value = 1;',
+        },
+        validFiles: { 'test/main.js': 'import value from "../src/helper";' },
+        invalidFiles: { 'test/main.js': 'import value from "../src/index";' },
+    },
+    {
+        rule: '@adguard/logger-context/require-logger-context',
+        valid: 'logger.error("[ext.main]: message");',
+        invalid: 'logger.error("message");',
     },
 ];

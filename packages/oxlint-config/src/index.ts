@@ -39,6 +39,10 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
         'ag-react': '@agcodeguidelines/oxlint-plugin/react',
         'ag-a11y': '@agcodeguidelines/oxlint-plugin/jsx-a11y',
         'ag-import': '@agcodeguidelines/oxlint-plugin/import',
+        'ag-newlines': '@agcodeguidelines/oxlint-plugin/newlines',
+        'ag-boundaries': '@agcodeguidelines/oxlint-plugin/boundaries',
+        'ag-notice': '@agcodeguidelines/oxlint-plugin/notice',
+        'ag-logger': '@agcodeguidelines/oxlint-plugin/logger',
     };
     // Oxlint's native React settings schema cannot represent version detection.
     settings.agReact = settings.react;

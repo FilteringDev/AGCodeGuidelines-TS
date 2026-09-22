@@ -1,6 +1,9 @@
 /** @file Prevent source-format regressions without misreading fixtures or external declarations. */
 import {
-    mkdir, mkdtemp, rm, writeFile,
+    mkdir,
+    mkdtemp,
+    rm,
+    writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

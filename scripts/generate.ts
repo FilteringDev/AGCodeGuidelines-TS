@@ -12,7 +12,11 @@ import builtinRules from '../vendor/core/lib/rules/index';
 import { severity } from '../packages/rule-catalog/src/index';
 
 import type {
-    Catalog, Clause, Mapping, RuleMap, RuleSetting,
+    Catalog,
+    Clause,
+    Mapping,
+    RuleMap,
+    RuleSetting,
 } from '../packages/rule-catalog/src/index';
 
 interface LegacyConfig {
@@ -37,6 +41,10 @@ const jsdoc = (await import('../vendor/jsdoc/index')).default as unknown as Prov
 const react = (await import('../vendor/react/index')).default as unknown as Provider;
 const accessibility = await loadPlugin('eslint-plugin-jsx-a11y');
 const imports = (await import('../vendor/import/index')).default as unknown as Provider;
+const newlines = (await import('../vendor/import-newlines/index')).default as unknown as Provider;
+const boundaries = (await import('../vendor/boundaries/index')).default as unknown as Provider;
+const notice = (await import('../vendor/notice/index')).default as unknown as Provider;
+const logger = (await import('../vendor/logger-context/index')).default as unknown as Provider;
 const nativeList = JSON.parse(
     execFileSync(
         process.execPath,
@@ -93,6 +101,11 @@ apply(airbnb, 'airbnb@19.0.4/base@15.0.0');
 hash('airbnb.json', airbnbText);
 apply(jsdoc.configs.recommended ?? {}, 'jsdoc@64.3.6/recommended');
 hash('jsdoc@64.3.6/recommended', JSON.stringify(jsdoc.configs.recommended));
+// Default boundary elements for the catalog (consumers override via settings).
+settings['boundaries/elements'] = [
+    { type: 'src-index', pattern: 'src/index.ts', mode: 'file' },
+    { type: 'test-folder', pattern: 'test', mode: 'folder' },
+];
 const sampleText = await readFile('docs/reference/eslintrc.upstream.txt', 'utf8');
 const guideText = await readFile('docs/reference/Javascript.md', 'utf8');
 hash('Javascript.md', guideText);
@@ -120,6 +133,17 @@ const additions: RuleMap = {
         }],
     }],
     'import/no-unassigned-import': ['error', { allow: ['**/*.pcss'] }],
+    'import-newlines/enforce': ['error', { items: 3, 'max-len': 120 }],
+    'boundaries/element-types': ['error', {
+        default: 'allow',
+        rules: [{
+            from: 'test-folder',
+            disallow: ['src-index'],
+            message: 'Do not import directly from src/. Use specific submodules like src/utils instead.',
+        }],
+    }],
+    'notice/notice': 'off',
+    '@adguard/logger-context/require-logger-context': ['error', { contextModuleName: 'ext' }],
     'unicorn/prefer-node-protocol': 'error',
     'unicorn/no-this-assignment': 'error',
     'ag/no-accessors': 'error',
@@ -276,6 +300,14 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
         target = `ag-a11y/${source.slice(9)}`;
     } else if (source.startsWith('import/') && imports.rules[source.slice(7)]) {
         target = `ag-import/${source.slice(7)}`;
+    } else if (source.startsWith('import-newlines/') && newlines.rules[source.slice('import-newlines/'.length)]) {
+        target = `ag-newlines/${source.slice('import-newlines/'.length)}`;
+    } else if (source.startsWith('boundaries/') && boundaries.rules[source.slice('boundaries/'.length)]) {
+        target = `ag-boundaries/${source.slice('boundaries/'.length)}`;
+    } else if (source.startsWith('notice/') && notice.rules[source.slice(7)]) {
+        target = `ag-notice/${source.slice(7)}`;
+    } else if (source.startsWith('@adguard/logger-context/') && logger.rules[source.slice('@adguard/logger-context/'.length)]) {
+        target = `ag-logger/${source.slice('@adguard/logger-context/'.length)}`;
     } else if (style.rules[source]) {
         target = `ag-style/${source}`;
     } else if (native.has(source)) {

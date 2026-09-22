@@ -1,6 +1,11 @@
 /** @file Bundle portable ESM packages and emit TypeScript 7 declarations. */
 import {
-    copyFile, mkdir, readdir, readFile, rm, writeFile,
+    copyFile,
+    mkdir,
+    readdir,
+    readFile,
+    rm,
+    writeFile,
 } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

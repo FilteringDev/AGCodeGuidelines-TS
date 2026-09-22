@@ -1,12 +1,18 @@
 /** @file Verify complete configuration materialization and non-destructive CLI behavior. */
 import {
-    mkdtemp, readFile, rm, writeFile,
+    mkdtemp,
+    readFile,
+    rm,
+    writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
-    describe, expect, it, vi,
+    describe,
+    expect,
+    it,
+    vi,
 } from 'vitest';
 
 import { parseArguments, runCli, usage } from '../packages/oxlint-config/src/cli';

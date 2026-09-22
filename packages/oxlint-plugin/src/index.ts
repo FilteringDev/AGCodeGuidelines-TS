@@ -5,7 +5,10 @@ import { definePlugin, defineRule } from '@oxlint/plugins';
 
 import type { ESTree, RuleMeta } from '@oxlint/plugins';
 import {
-    isDefaultMutation, isPascalCase, memberName, writesPrototype,
+    isDefaultMutation,
+    isPascalCase,
+    memberName,
+    writesPrototype,
 } from './helpers';
 
 /**

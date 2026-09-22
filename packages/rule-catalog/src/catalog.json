@@ -2064,6 +2064,18 @@
       "forbidExtraProps",
       "exact",
       "Object.freeze"
+    ],
+    "boundaries/elements": [
+      {
+        "type": "src-index",
+        "pattern": "src/index.ts",
+        "mode": "file"
+      },
+      {
+        "type": "test-folder",
+        "pattern": "test",
+        "mode": "folder"
+      }
     ]
   },
   "env": {
@@ -7355,6 +7367,59 @@
       "origin": "Javascript.md"
     },
     {
+      "source": "import-newlines/enforce",
+      "target": "ag-newlines/enforce",
+      "setting": [
+        "error",
+        {
+          "items": 3,
+          "max-len": 120
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "boundaries/element-types",
+      "target": "ag-boundaries/element-types",
+      "setting": [
+        "error",
+        {
+          "default": "allow",
+          "rules": [
+            {
+              "from": "test-folder",
+              "disallow": [
+                "src-index"
+              ],
+              "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
+            }
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "notice/notice",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "@adguard/logger-context/require-logger-context",
+      "target": "ag-logger/require-logger-context",
+      "setting": [
+        "error",
+        {
+          "contextModuleName": "ext"
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
       "source": "unicorn/prefer-node-protocol",
       "target": "unicorn/prefer-node-protocol",
       "setting": "error",
@@ -10533,6 +10598,34 @@
         "allow": [
           "**/*.pcss"
         ]
+      }
+    ],
+    "ag-newlines/enforce": [
+      "error",
+      {
+        "items": 3,
+        "max-len": 120
+      }
+    ],
+    "ag-boundaries/element-types": [
+      "error",
+      {
+        "default": "allow",
+        "rules": [
+          {
+            "from": "test-folder",
+            "disallow": [
+              "src-index"
+            ],
+            "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
+          }
+        ]
+      }
+    ],
+    "ag-logger/require-logger-context": [
+      "error",
+      {
+        "contextModuleName": "ext"
       }
     ],
     "unicorn/prefer-node-protocol": "error",
