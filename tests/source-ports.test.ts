@@ -13,6 +13,7 @@ import compat from '../packages/oxlint-plugin/src/compat';
 import reactPlugin from '../packages/oxlint-plugin/src/react';
 import newlines from '../packages/oxlint-plugin/src/newlines';
 import boundaries from '../packages/oxlint-plugin/src/boundaries';
+import notice from '../packages/oxlint-plugin/src/notice';
 import logger from '../packages/oxlint-plugin/src/logger';
 import registry from '../vendor/core/lib/rules/utils/lazy-loading-rule-map';
 import strings from '../vendor/core/lib/shared/string-utils';
@@ -157,6 +158,30 @@ tester.run('logger wrapper requires a context tag', logger.rules!['require-logge
         errors: [{ messageId: 'missingContextTag' }],
         output: 'logger.error(\'[ext.main]: message\');',
     }],
+});
+
+tester.run('notice wrapper enforces the configured header', notice.rules!.notice!, {
+    valid: [{
+        code: '// Copyright 2026\nconst value = 1;',
+        options: [{ mustMatch: 'Copyright' }],
+    }],
+    invalid: [{
+        code: 'const value = 1;',
+        options: [{ mustMatch: 'Copyright' }],
+        errors: [{ message: /notice header/u }],
+    }],
+});
+
+tester.run('boundaries wrapper invokes the vendored visitor', boundaries.rules!['element-types']!, {
+    valid: [{
+        filename: 'test/main.js',
+        code: 'const value = 1;',
+        options: [{ default: 'allow', rules: [] }],
+        settings: {
+            'boundaries/elements': [{ type: 'test-folder', pattern: 'test', mode: 'folder' }],
+        },
+    }],
+    invalid: [],
 });
 
 it('preserves the pinned import rule metadata', () => {

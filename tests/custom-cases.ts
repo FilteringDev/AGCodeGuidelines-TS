@@ -185,6 +185,7 @@ for (const [name, valid] of enumNames) {
     }
     add('enum-name', `quoted member ${name}`, `enum Color { '${name}' = 'arbitrary value' }`, valid ? 0 : 1, 'tsx');
 }
+add('enum-name', 'template member', 'enum Color { [`Key`] = \'red\' }', 0, 'tsx');
 
 const catchForms = [
     ['catch {}', 0],

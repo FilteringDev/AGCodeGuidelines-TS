@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { basename, relative } from 'node:path';
+import { relative } from 'node:path';
 import sample from '../docs/reference/eslintrc';
 import { verifyReference } from './reference';
 import builtinRules from '../vendor/core/lib/rules/index';
@@ -463,5 +463,5 @@ for (const [file, content] of [
     }
 }
 process.stdout.write(
-    `Catalog: ${clauses.length} clauses; ${Object.keys(rules).length} enabled rules; ${basename(import.meta.filename)}\n`,
+    `Catalog: ${clauses.length} clauses; ${Object.keys(rules).length} enabled rules; generate.ts\n`,
 );

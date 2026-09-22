@@ -14,8 +14,12 @@ import {
     it,
     vi,
 } from 'vitest';
-
-import { parseArguments, runCli, usage } from '../packages/oxlint-config/src/cli';
+import {
+    parseArguments,
+    reportEntryError,
+    runCli,
+    usage,
+} from '../packages/oxlint-config/src/cli';
 import { createConfig } from '../packages/oxlint-config/src/index';
 
 it('provides documented defaults', () => {
@@ -92,6 +96,20 @@ it('requires an explicit force flag before replacing an existing file', async ()
         expect(messages).toHaveLength(2);
     } finally {
         await rm(directory, { recursive: true, force: true });
+    }
+});
+
+it('reports entry-point failures through the shared handler', () => {
+    const messages: string[] = [];
+    const { exitCode } = process;
+    try {
+        reportEntryError(new TypeError('Unknown option: --language'), (text) => messages.push(text));
+        expect(messages).toEqual(['Unknown option: --language\n']);
+        expect(process.exitCode).toBe(1);
+        reportEntryError('plain failure', (text) => messages.push(text));
+        expect(messages).toEqual(['Unknown option: --language\n', 'plain failure\n']);
+    } finally {
+        process.exitCode = exitCode;
     }
 });
 

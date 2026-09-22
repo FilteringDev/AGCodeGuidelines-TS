@@ -89,9 +89,18 @@ export async function runCli(
     print(`Created ${output}\n`);
 }
 
+/**
+ * Report entry-point failures without leaking a stack trace to consumers.
+ * @param error - Rejection from the CLI entry point.
+ * @param write - Destination for the failure message.
+ */
+export function reportEntryError(error: unknown, write: (text: string) => void): void {
+    write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+}
+
 if (import.meta.main) {
     await runCli(process.argv.slice(2)).catch((error: unknown) => {
-        process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-        process.exitCode = 1;
+        reportEntryError(error, (text) => process.stderr.write(text));
     });
 }

@@ -108,3 +108,8 @@ tester.run('production globals use the current Oxlint environment', compat.rules
         },
     ],
 });
+
+tester.run('scope analysis results are cached per source', compat.rules['no-undef']!, {
+    valid: ['const first = 1; const second = 2; first; second;'],
+    invalid: [],
+});
