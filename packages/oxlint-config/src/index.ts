@@ -5,10 +5,13 @@ import type { OxlintConfig } from 'oxlint';
 
 export type Language = 'javascript' | 'typescript';
 export type Environment = 'browser' | 'node' | 'both';
+export type Policy = 'compatibility' | 'guideline';
 export interface ConfigOptions {
     language?: Language;
     environment?: Environment;
     sourceType?: 'module' | 'script' | 'commonjs';
+    typeAware?: boolean;
+    policy?: Policy;
 }
 
 /**
@@ -21,13 +24,19 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
         language = 'javascript',
         environment = 'browser',
         sourceType = 'module',
+        typeAware = false,
+        policy = 'compatibility',
     } = typeof options === 'string' ? { language: options } : options;
     if (
         !['javascript', 'typescript'].includes(language)
         || !['browser', 'node', 'both'].includes(environment)
         || !['module', 'script', 'commonjs'].includes(sourceType)
+        || !['compatibility', 'guideline'].includes(policy)
     ) {
-        throw new TypeError('Unsupported language or environment.');
+        throw new TypeError('Unsupported language, environment, or policy.');
+    }
+    if (typeof typeAware !== 'boolean' || (typeAware && language !== 'typescript')) {
+        throw new TypeError('Type-aware linting requires the TypeScript preset and a boolean typeAware option.');
     }
     const rules = structuredClone(catalog.rules) as NonNullable<OxlintConfig['rules']>;
     const settings = structuredClone(catalog.settings);
@@ -49,6 +58,7 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
     delete settings.react;
     settings.agSourceType = sourceType;
     settings.agTypeScript = language === 'typescript';
+    settings.agPolicy = policy;
     const config: OxlintConfig = {
         categories: {
             correctness: 'off',
@@ -72,6 +82,13 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
         rules: rules as OxlintConfig['rules'],
         overrides: [],
     };
+    if (policy === 'guideline') {
+        // Preserve compatibility defaults; only reverse documented sample/prose conflicts.
+        rules['ag-import/prefer-default-export'] = 'off';
+    }
+    if (typeAware) {
+        config.options = { typeAware: true };
+    }
     if (language === 'typescript') {
         const unused = rules['ag-compat/no-unused-vars'];
         settings['import/extensions'] = ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.mts', '.cts'];
@@ -118,11 +135,10 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
                     'ag-jsdoc/require-throws-type': 'off',
                     'ag-jsdoc/no-undefined-types': 'off',
                     'ag-jsdoc/no-types': 'error',
-                    // Syntax-only @typescript-eslint subset backed by Oxlint's
-                    // native typescript plugin (no type-aware rules).
                     ...Object.fromEntries(
                         catalog.mappings
                             .filter((mapping) => mapping.target?.startsWith('typescript/') ?? false)
+                            .filter((mapping) => !mapping.requiresTypeInfo || typeAware)
                             .map((mapping) => [mapping.target as string, mapping.setting]),
                     ),
                 },

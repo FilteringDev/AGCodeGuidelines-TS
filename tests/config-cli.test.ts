@@ -31,6 +31,11 @@ it('provides documented defaults', () => {
     });
 });
 
+it('accepts an explicit policy profile', () => {
+    expect(parseArguments(['--policy', 'guideline']).options).toEqual({ policy: 'guideline' });
+    expect(parseArguments(['--policy', 'compatibility']).options).toEqual({ policy: 'compatibility' });
+});
+
 it.each(
     [
         ['--unknown'],
@@ -40,6 +45,7 @@ it.each(
         ['--help', '--help'],
         ['--force', '--force'],
         ['--language', 'flow'],
+        ['--policy', 'strict'],
         ['--environment', 'worker'],
         ['--source-type', 'automatic'],
     ].map((args) => ({ args })),
@@ -66,11 +72,15 @@ it('uses standard output when no printer is supplied', async () => {
 it('writes a complete configuration to stdout', async () => {
     const output: string[] = [];
     await runCli(
-        ['--language', 'typescript', '--environment', 'node', '--source-type', 'module', '--output', '-'],
+        ['--language', 'typescript', '--environment', 'node', '--policy', 'guideline', '--source-type', 'module', '--output', '-'],
         (text) => output.push(text),
     );
     const config = JSON.parse(output.join(''));
-    expect(config).toEqual(createConfig({ language: 'typescript', environment: 'node' }));
+    expect(config).toEqual(createConfig({
+        language: 'typescript',
+        environment: 'node',
+        policy: 'guideline',
+    }));
     expect(config.settings['import/resolver'].typescript).toBe(true);
     expect(config.settings.agReact.pragma).toBe('React');
     expect(config.env).toMatchObject({

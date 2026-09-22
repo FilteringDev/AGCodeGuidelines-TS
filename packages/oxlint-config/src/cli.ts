@@ -10,6 +10,7 @@ export const usage = `Usage: ag-oxlint-config [options]
 
   --language javascript|typescript  Source language (default: javascript)
   --environment browser|node|both   Globals (default: browser)
+  --policy compatibility|guideline  Policy profile (default: compatibility)
   --source-type module|script|commonjs  Module semantics (default: module)
   --output PATH                    Output file (default: .oxlintrc.json)
   --force                          Replace an existing output file
@@ -44,7 +45,7 @@ export function parseArguments(args: string[]): {
             result.force = true;
         } else if (flag === '--help') {
             result.help = true;
-        } else if (['--language', '--environment', '--source-type', '--output'].includes(flag)) {
+        } else if (['--language', '--environment', '--policy', '--source-type', '--output'].includes(flag)) {
             const value = args[index + 1];
             if (!value || value.startsWith('--')) {
                 throw new TypeError(`Missing value for ${flag}`);

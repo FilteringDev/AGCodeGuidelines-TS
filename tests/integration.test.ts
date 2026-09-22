@@ -111,6 +111,17 @@ describe('public configuration API', () => {
         expect(createConfig().rules!['ag-compat/no-console']).toBe('error');
     });
 
+    it('keeps compatibility defaults and isolates the guideline profile', () => {
+        const compatibility = createConfig();
+        const guideline = createConfig({ policy: 'guideline' });
+        expect(compatibility.settings!.agPolicy).toBe('compatibility');
+        expect(compatibility.rules!['ag-import/prefer-default-export']).toBe('error');
+        expect(guideline.settings!.agPolicy).toBe('guideline');
+        expect(guideline.rules!['ag-import/prefer-default-export']).toBe('off');
+        expect(() => createConfig({ policy: 'strict' as 'compatibility' })).toThrow(/policy/u);
+        expect(createConfig().rules!['ag-import/prefer-default-export']).toBe('error');
+    });
+
     it('selects syntax-only linting for both consumer languages', () => {
         expect(createConfig('javascript').options?.typeAware).not.toBe(true);
         expect(createConfig('typescript').options?.typeAware).not.toBe(true);
