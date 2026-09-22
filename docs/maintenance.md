@@ -36,3 +36,18 @@ All 540 JavaScript sources from the migration baseline now have TypeScript ports
 `pnpm check` runs the source guard, build, strict project and tool type checks, the complete Oxlint configuration, catalog and integrity checks, coverage tests, and Git whitespace checks. Vendor TypeScript and external declarations have no blanket lint exclusions. Strict compiler options and coverage thresholds remain in force; do not replace type contracts with unchecked files or permissive ambient module shims.
 
 The existing development overrides permit sequential `for...of` traversal and early `continue` in the scope, context, and dependency parser adapters, where mutable graph traversal is required. Parser nodes are annotated in place. Internal application helpers retain named exports where already configured. All vendor families follow the repository's TypeScript import extension policy and full lint rules. Test-capture classes model upstream APIs. These development settings do not change the published presets.
+
+## Read-only consumer rehearsals
+
+External projects under `/references/outside` are reference evidence, not working directories. Never install, build, lint, fix, or run tests there. On Linux or macOS with `rsync` installed, prepare independent copies with:
+
+```sh
+pnpm exec tsx scripts/mirrors.ts prepare
+pnpm exec tsx scripts/mirrors.ts verify /tmp/agcodeguidelines-migration-<run-id>
+```
+
+`prepare` prints a unique directory directly under `/tmp`, containing `baseline/` and `candidate/` copies of all four projects, plus `reports/`, `artifacts/`, and `cache/`. Copies include hidden settings, lockfiles, and resources, but exclude `.git` and `node_modules`. Files are copied without hardlinks and made owner-writable. Internal symlinks are remapped into each copy; links escaping the project or entering excluded directories are rejected. Source content hashes, modes, and link targets are recorded in `reports/source-manifest.json` and verified after copying and on demand. This detects changes; it is not a sandbox that prevents arbitrary consumer scripts from writing elsewhere.
+
+Before running commands, review absolute paths, local dependencies, lifecycle scripts, Git hooks, and generated-output locations. Use the project's supported Node and package-manager versions, disable Git-hook installation, and begin with `--ignore-scripts` until dependency lifecycle scripts have been reviewed. Set the command's working directory explicitly to the chosen mirror and place stores, downloads, browser profiles, and caches below the run directory. Do not share `node_modules` between copies. Capture source revision information read-only; builds that require `.git` need independent metadata or a documented version fixture, never a link back to the source checkout.
+
+Install the original frozen lockfile in `baseline`. Install packed candidate packages from `artifacts` in `candidate`, not workspace links. Record commands, versions, diagnostics, and exit statuses in `reports`; distinguish baseline failures from migration regressions. Re-run `verify` after experiments. No copy-back, commit, publication, or deployment to the reference projects is part of a rehearsal. Cleanup must name only the specific generated run directory after reports are retained and processes stop. Mirror tests require `/tmp` and `rsync` and are skipped on Windows; package tests retain the existing cross-platform coverage.

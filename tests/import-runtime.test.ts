@@ -18,7 +18,10 @@ import {
 
 import imports from '../packages/oxlint-plugin/src/import';
 import { parseRemote } from '../packages/oxlint-plugin/src/import-parser';
-import typescriptResolver from '../vendor/import/compat/import-resolver';
+import typescriptResolver, {
+    createTypescriptResolver,
+    typescriptResolverCacheSize,
+} from '../vendor/import/compat/import-resolver';
 import RemoteSourceCode from '../vendor/import/compat/remote-source';
 
 type Parsed = {
@@ -98,6 +101,25 @@ it('resolves TypeScript aliases, extension aliases, package exports, and builtin
         expect(typescriptResolver.resolve('node:fs', filename)).toEqual({ found: true, path: null });
         expect(typescriptResolver.resolve('fs', filename)).toEqual({ found: true, path: null });
         expect(typescriptResolver.resolve('./missing', filename)).toEqual({ found: false });
+        const before = typescriptResolverCacheSize();
+        const first = createTypescriptResolver({ project: join(root, 'tsconfig.json'), alwaysTryTypes: true });
+        const second = createTypescriptResolver({
+            alwaysTryTypes: true,
+            project: join(root, 'tsconfig.json'),
+        });
+        expect(first.resolver).toBe(second.resolver);
+        expect(first.config).toEqual(second.config);
+        expect(typescriptResolverCacheSize()).toBeGreaterThanOrEqual(before);
+        const explicit = typescriptResolver.resolve('./src/value.js', filename, {
+            project: join(root, 'tsconfig.json'),
+        });
+        expect(explicit.found).toBe(true);
+        expect(explicit.found && explicit.path?.endsWith(join('src', 'value.ts'))).toBe(true);
+        const browser = createTypescriptResolver({ conditionNames: ['browser', 'import', 'default'] });
+        expect(browser.config).toMatchObject({ conditionNames: ['browser', 'import', 'default'] });
+        expect(typescriptResolver.resolve('./missing', filename, {
+            project: join(root, 'tsconfig.json'),
+        })).toEqual({ found: false });
     } finally {
         rmSync(root, { recursive: true, force: true });
     }
