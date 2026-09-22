@@ -9,6 +9,7 @@ export default defineConfig({
         exclude: ['tests/fixtures/**'],
         environment: 'node',
         maxWorkers: 2,
+        pool: 'forks',
         testTimeout: 30000,
         hookTimeout: 180000,
         reporters: ['default'],

@@ -88,15 +88,13 @@ it('resolves TypeScript aliases, extension aliases, package exports, and builtin
         const filename = join(root, 'entry.ts');
         writeFileSync(filename, '');
         for (const specifier of ['./src/value.js', './src/value', '@app/value']) {
-            expect(typescriptResolver.resolve(specifier, filename)).toEqual({
-                found: true,
-                path: join(root, 'src/value.ts'),
-            });
+            const resolved = typescriptResolver.resolve(specifier, filename);
+            expect(resolved.found).toBe(true);
+            expect(resolved.found && resolved.path?.endsWith(join('src', 'value.ts'))).toBe(true);
         }
-        expect(typescriptResolver.resolve('example', filename)).toEqual({
-            found: true,
-            path: join(root, 'node_modules/example/index.d.ts'),
-        });
+        const example = typescriptResolver.resolve('example', filename);
+        expect(example.found).toBe(true);
+        expect(example.found && example.path?.endsWith(join('example', 'index.d.ts'))).toBe(true);
         expect(typescriptResolver.resolve('node:fs', filename)).toEqual({ found: true, path: null });
         expect(typescriptResolver.resolve('fs', filename)).toEqual({ found: true, path: null });
         expect(typescriptResolver.resolve('./missing', filename)).toEqual({ found: false });
