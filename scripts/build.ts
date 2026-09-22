@@ -10,7 +10,7 @@ import {
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { build } from 'esbuild';
+import { build, stop } from 'esbuild';
 import { execPnpm } from './process';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -60,6 +60,7 @@ for (const name of ['rule-catalog', 'oxlint-plugin', 'oxlint-config']) {
     await writeFile(`${directory}/dist/build-meta.json`, JSON.stringify(result.metafile));
     await copyFile(`${ROOT}LICENSE`, `${directory}/LICENSE`);
 }
+await stop();
 execPnpm(['exec', 'tsc', '-b', '--force'], { cwd: ROOT, stdio: 'inherit' });
 execPnpm(['exec', 'tsx', 'scripts/write-configs.ts'], { cwd: ROOT, stdio: 'inherit' });
 execPnpm(['exec', 'tsx', 'scripts/notices.ts'], { cwd: ROOT, stdio: 'inherit' });
