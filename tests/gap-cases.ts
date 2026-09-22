@@ -281,4 +281,41 @@ export const gapCases: GapCase[] = [
         valid: 'logger.error("[ext.main]: message");',
         invalid: 'logger.error("message");',
     },
+    {
+        rule: '@typescript-eslint/no-explicit-any',
+        valid: 'export const value: unknown = 1;',
+        invalid: 'export const value: any = 1;',
+        extension: 'ts',
+    },
+    {
+        rule: '@typescript-eslint/explicit-function-return-type',
+        valid: 'export function read(): number { return 1; }',
+        invalid: 'export function read() { return 1; }',
+        extension: 'ts',
+    },
+    {
+        rule: '@typescript-eslint/no-var-requires',
+        valid: 'import value from "./dependency";\nconsole.log(value);',
+        invalid: 'export const value = require("./dependency");',
+        extension: 'ts',
+    },
+    {
+        rule: '@typescript-eslint/ban-ts-comment',
+        valid: 'export const value = 1;',
+        invalid: 'export const value = 1; // @ts-ignore',
+        extension: 'ts',
+    },
+    {
+        rule: '@typescript-eslint/explicit-member-accessibility',
+        valid: 'export class Value { public read(): number { return 1; } }',
+        invalid: 'export class Value { read(): number { return 1; } }',
+        extension: 'ts',
+    },
+    {
+        rule: '@typescript-eslint/consistent-type-imports',
+        valid: 'import { type Value } from "./dependency";\nconst x: Value = 1 as Value;\nconsole.log(x);',
+        invalid: 'import { Value } from "./dependency";\nconst x: Value = 1 as Value;\nconsole.log(x);',
+        extension: 'ts',
+        files: { 'dependency.ts': 'export type Value = number;' },
+    },
 ];

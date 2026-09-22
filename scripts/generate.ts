@@ -147,7 +147,6 @@ const additions: RuleMap = {
     // Syntax-only @typescript-eslint subset backed by Oxlint's native
     // typescript plugin (no type-aware rules; tsc provides types).
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
-    '@typescript-eslint/consistent-type-exports': ['error', { fixMixedExportsWithInlineTypeSpecifier: true }],
     '@typescript-eslint/explicit-function-return-type': 'error',
     '@typescript-eslint/explicit-member-accessibility': ['error', {
         accessibility: 'explicit',
