@@ -33,7 +33,7 @@ interface Provider {
 
 const PLUGIN_REQUIRE = createRequire(new URL('../packages/oxlint-plugin/package.json', import.meta.url));
 const loadPlugin = async (name: string): Promise<Provider> => {
-    const loaded = await import(PLUGIN_REQUIRE.resolve(name));
+    const loaded = await import(PLUGIN_REQUIRE.resolve(name).replaceAll('\\', '/'));
     return loaded.default ?? loaded;
 };
 const style = await loadPlugin('@stylistic/eslint-plugin');
