@@ -1100,13 +1100,6 @@
         ]
       }
     ],
-    "no-restricted-imports": [
-      "off",
-      {
-        "paths": [],
-        "patterns": []
-      }
-    ],
     "no-this-before-super": "error",
     "no-useless-computed-key": "error",
     "no-useless-constructor": "error",
@@ -1166,20 +1159,6 @@
     "rest-spread-spacing": [
       "error",
       "never"
-    ],
-    "sort-imports": [
-      "off",
-      {
-        "ignoreCase": false,
-        "ignoreDeclarationSort": false,
-        "ignoreMemberSort": false,
-        "memberSyntaxSortOrder": [
-          "none",
-          "all",
-          "multiple",
-          "single"
-        ]
-      }
     ],
     "symbol-description": "error",
     "template-curly-spacing": "error",
@@ -1279,7 +1258,6 @@
     ],
     "import/unambiguous": "off",
     "import/no-webpack-loader-syntax": "error",
-    "import/no-unassigned-import": "off",
     "import/no-named-default": "error",
     "import/no-anonymous-default-export": [
       "off",
@@ -4755,19 +4733,6 @@
       "origin": "airbnb@19.0.4/base@15.0.0"
     },
     {
-      "source": "no-restricted-imports",
-      "target": null,
-      "setting": [
-        "off",
-        {
-          "paths": [],
-          "patterns": []
-        }
-      ],
-      "implementation": "disabled",
-      "origin": "airbnb@19.0.4/base@15.0.0"
-    },
-    {
       "source": "no-this-before-super",
       "target": "ag-compat/no-this-before-super",
       "setting": "error",
@@ -4921,26 +4886,6 @@
         "never"
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
-    },
-    {
-      "source": "sort-imports",
-      "target": null,
-      "setting": [
-        "off",
-        {
-          "ignoreCase": false,
-          "ignoreDeclarationSort": false,
-          "ignoreMemberSort": false,
-          "memberSyntaxSortOrder": [
-            "none",
-            "all",
-            "multiple",
-            "single"
-          ]
-        }
-      ],
-      "implementation": "disabled",
       "origin": "airbnb@19.0.4/base@15.0.0"
     },
     {
@@ -5225,13 +5170,6 @@
       "target": "ag-import/no-webpack-loader-syntax",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
-    },
-    {
-      "source": "import/no-unassigned-import",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
       "origin": "airbnb@19.0.4/base@15.0.0"
     },
     {
@@ -7363,6 +7301,60 @@
       "origin": "Javascript.md"
     },
     {
+      "source": "sort-imports",
+      "target": "ag-compat/sort-imports",
+      "setting": [
+        "error",
+        {
+          "ignoreCase": true,
+          "ignoreDeclarationSort": true,
+          "ignoreMemberSort": false,
+          "memberSyntaxSortOrder": [
+            "none",
+            "all",
+            "multiple",
+            "single"
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "no-restricted-imports",
+      "target": "ag-compat/no-restricted-imports",
+      "setting": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": [
+                "**/*-mv2",
+                "**/*-mv3"
+              ],
+              "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
+            }
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
+      "source": "import/no-unassigned-import",
+      "target": "ag-import/no-unassigned-import",
+      "setting": [
+        "error",
+        {
+          "allow": [
+            "**/*.pcss"
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md"
+    },
+    {
       "source": "unicorn/prefer-node-protocol",
       "target": "unicorn/prefer-node-protocol",
       "setting": "error",
@@ -8004,8 +7996,8 @@
         "import/order",
         "sort-imports"
       ],
-      "enforcement": "overridden",
-      "reason": "Sample precedence: import/order, sort-imports retains its inherited/explicit options and severity."
+      "enforcement": "javascript",
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
     },
     {
       "id": "modules--import-node-protocol",
@@ -10507,6 +10499,42 @@
     ],
     "ag-jsdoc/require-throws": "error",
     "ag-jsdoc/sort-tags": "error",
+    "ag-compat/sort-imports": [
+      "error",
+      {
+        "ignoreCase": true,
+        "ignoreDeclarationSort": true,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": [
+          "none",
+          "all",
+          "multiple",
+          "single"
+        ]
+      }
+    ],
+    "ag-compat/no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "**/*-mv2",
+              "**/*-mv3"
+            ],
+            "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
+          }
+        ]
+      }
+    ],
+    "ag-import/no-unassigned-import": [
+      "error",
+      {
+        "allow": [
+          "**/*.pcss"
+        ]
+      }
+    ],
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-this-assignment": "error",
     "ag/no-accessors": "error",

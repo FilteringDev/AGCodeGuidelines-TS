@@ -3,7 +3,7 @@
  */
 
 import assert from 'node:assert/strict';
-import type { Rule, CreateRule, ESTree } from '@oxlint/plugins';
+import type { CreateRule, ESTree, Rule } from '@oxlint/plugins';
 import type { RuleTester } from 'oxlint/plugins-dev';
 import { legacyContext } from '../packages/oxlint-plugin/src/legacy-context';
 import compat from '../packages/oxlint-plugin/src/compat';

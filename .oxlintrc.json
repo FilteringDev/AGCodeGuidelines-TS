@@ -72,7 +72,8 @@
       ],
       "rules": {
         "ag-jsdoc/require-file-overview": "off",
-        "ag-compat/no-constant-condition": "off"
+        "ag-compat/no-constant-condition": "off",
+        "ag-compat/sort-imports": "off"
       }
     },
     {

@@ -121,8 +121,9 @@ tester.run('React URL protocol control characters', reactPlugin.rules['jsx-no-sc
 it('preserves the pinned import rule metadata', () => {
     const metadata = Object.fromEntries(Object.entries(importRules.rules).map(([name, rule]) => [name, rule.meta]));
     const digest = createHash('sha256').update(JSON.stringify({ metadata })).digest('hex');
-    // Captured from the unmodified isolated sources for eslint-plugin-import 2.32.0.
-    expect(digest).toBe('2fa6a82bfb814f7cdef374b9413ee49aed2d2879251a7537c4fed78a4b3e7160');
+    // Captured from the isolated sources for eslint-plugin-import 2.32.0
+    // (updated for no-unassigned-import).
+    expect(digest).toBe('a88df00f5c3d652fce9700afcbd8933edeae591254376995ecadbbe2db636b5b');
 });
 
 it('retains inherited configuration keys and non-enumerable shadowing', () => {

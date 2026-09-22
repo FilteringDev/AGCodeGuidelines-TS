@@ -241,4 +241,19 @@ export const gapCases: GapCase[] = [
         invalid: 'import value from "./other/entry.js";',
         files: { 'other/package.json': '{"name":"other","type":"module"}', 'other/entry.js': 'export default 1;' },
     },
+    {
+        rule: 'import/no-unassigned-import',
+        valid: 'import value from "./dependency";',
+        invalid: 'import "./dependency";',
+    },
+    {
+        rule: 'sort-imports',
+        valid: 'import { a, b } from "./dependency";',
+        invalid: 'import { b, a } from "./dependency";',
+    },
+    {
+        rule: 'no-restricted-imports',
+        valid: 'import value from "./allowed";',
+        invalid: 'import value from "./feature-mv2";',
+    },
 ];

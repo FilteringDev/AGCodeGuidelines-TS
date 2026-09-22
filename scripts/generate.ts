@@ -107,6 +107,19 @@ const additions: RuleMap = {
     'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
     'jsdoc/require-throws': 'error',
     'jsdoc/sort-tags': 'error',
+    'sort-imports': ['error', {
+        ignoreCase: true,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+    }],
+    'no-restricted-imports': ['error', {
+        patterns: [{
+            group: ['**/*-mv2', '**/*-mv3'],
+            message: 'Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead.',
+        }],
+    }],
+    'import/no-unassigned-import': ['error', { allow: ['**/*.pcss'] }],
     'unicorn/prefer-node-protocol': 'error',
     'unicorn/no-this-assignment': 'error',
     'ag/no-accessors': 'error',

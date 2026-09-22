@@ -1,6 +1,6 @@
 /** @file Freeze source provenance and reject snapshot drift or an installed ESLint engine. */
 import { createHash } from 'node:crypto';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 
 import lock from '../docs/reference/sources.json' with { type: 'json' };
 import recipes from './vendor-recipes.json' with { type: 'json' };

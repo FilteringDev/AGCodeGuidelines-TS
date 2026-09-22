@@ -21,6 +21,7 @@ import rule19 from './src/rules/no-cycle';
 import rule20 from './src/rules/no-useless-path-segments';
 import rule21 from './src/rules/no-import-module-exports';
 import rule22 from './src/rules/no-relative-packages';
+import rule23 from './src/rules/no-unassigned-import';
 
 export default {
     meta: { name: 'ag-import' },
@@ -48,5 +49,6 @@ export default {
         'no-useless-path-segments': rule20,
         'no-import-module-exports': rule21,
         'no-relative-packages': rule22,
+        'no-unassigned-import': rule23,
     },
 };

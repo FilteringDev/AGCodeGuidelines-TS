@@ -3,7 +3,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
-    mkdtemp, readFile, readdir, rm, writeFile,
+    mkdtemp, readdir, readFile, rm, writeFile,
 } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';

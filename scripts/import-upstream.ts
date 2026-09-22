@@ -7,7 +7,7 @@
  */
 import { createHash } from 'node:crypto';
 import { readdir, writeFile } from 'node:fs/promises';
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import { runInNewContext } from 'node:vm';

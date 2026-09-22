@@ -1,6 +1,6 @@
 /** @file Verify dependency parsing, documentation, and resolution in the Vitest process. */
 import {
-    mkdtempSync, mkdirSync, writeFileSync, rmSync,
+    mkdirSync, mkdtempSync, rmSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
