@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import sample from '../docs/reference/eslintrc';
 import { verifyReference } from './reference';
 import builtinRules from '../vendor/core/lib/rules/index';
@@ -33,7 +34,7 @@ interface Provider {
 
 const PLUGIN_REQUIRE = createRequire(new URL('../packages/oxlint-plugin/package.json', import.meta.url));
 const loadPlugin = async (name: string): Promise<Provider> => {
-    const loaded = await import(PLUGIN_REQUIRE.resolve(name).replaceAll('\\', '/'));
+    const loaded = await import(pathToFileURL(PLUGIN_REQUIRE.resolve(name)).href);
     return loaded.default ?? loaded;
 };
 const style = await loadPlugin('@stylistic/eslint-plugin');
