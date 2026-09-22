@@ -11,6 +11,9 @@ import {
 
 import compat from '../packages/oxlint-plugin/src/compat';
 import reactPlugin from '../packages/oxlint-plugin/src/react';
+import newlines from '../packages/oxlint-plugin/src/newlines';
+import boundaries from '../packages/oxlint-plugin/src/boundaries';
+import logger from '../packages/oxlint-plugin/src/logger';
 import registry from '../vendor/core/lib/rules/utils/lazy-loading-rule-map';
 import strings from '../vendor/core/lib/shared/string-utils';
 import type { LegacyRule } from '../vendor/types';
@@ -123,6 +126,37 @@ tester.run('React URL protocol control characters', reactPlugin.rules['jsx-no-sc
         code: `<a href="${url}" />;`,
         errors: [{ messageId: 'noScriptURL' }],
     })),
+});
+
+tester.run('provider wrappers delegate to the vendored implementations', newlines.rules!.enforce!, {
+    valid: ['import { a } from "./dependency";'],
+    invalid: [{
+        code: 'import { a, b, c, d } from "./dependency";',
+        options: [{ items: 3, 'max-len': 120 }],
+        errors: [{ messageId: 'mustSplitMany' }],
+        output: 'import {\na,\nb,\nc,\nd\n} from "./dependency";',
+    }],
+});
+
+it('exposes the vendored boundaries element-types rule through its wrapper', () => {
+    expect(boundaries.rules?.['element-types']).toBeDefined();
+    expect(boundaries.rules?.['element-types']?.meta).toBeDefined();
+    expect(typeof boundaries.rules?.['element-types']?.create).toBe('function');
+});
+
+tester.run('logger wrapper requires a context tag', logger.rules!['require-logger-context']!, {
+    valid: [{
+        filename: 'main.js',
+        code: 'logger.error("[ext.main]: message");',
+        options: [{ contextModuleName: 'ext' }],
+    }],
+    invalid: [{
+        filename: 'main.js',
+        code: 'logger.error("message");',
+        options: [{ contextModuleName: 'ext' }],
+        errors: [{ messageId: 'missingContextTag' }],
+        output: 'logger.error(\'[ext.main]: message\');',
+    }],
 });
 
 it('preserves the pinned import rule metadata', () => {
