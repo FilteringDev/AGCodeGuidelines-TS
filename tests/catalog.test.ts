@@ -9,7 +9,12 @@ import { describe, expect, it } from 'vitest';
 import { catalog, severity } from '../packages/rule-catalog/src/index';
 import { customCases } from './custom-cases';
 import { gapCases } from './gap-cases';
-import upstream from './fixtures/upstream.json' with { type: 'json' };
+
+import type { Fixture } from './harness';
+
+const upstream = JSON.parse(
+    readFileSync(new URL('./fixtures/upstream.json', import.meta.url), 'utf8'),
+) as Fixture[];
 
 const helpers = ['react/jsx-uses-react', 'react/jsx-uses-vars'];
 
