@@ -103,6 +103,7 @@
     "oxc-parser": "0.149.0",
     "oxc-resolver": "11.24.2",
     "oxlint": "1.82.0",
+    "oxlint-tsgolint": "7.0.2002",
     "parse-imports-exports": "0.2.4",
     "prop-types": "15.8.1",
     "resolve": "2.0.0-next.7",

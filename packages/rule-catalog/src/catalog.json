@@ -7432,6 +7432,14 @@
       "origin": "Javascript.md"
     },
     {
+      "source": "@typescript-eslint/consistent-type-exports",
+      "target": "typescript/consistent-type-exports",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md",
+      "requiresTypeInfo": true
+    },
+    {
       "source": "@typescript-eslint/explicit-function-return-type",
       "target": "typescript/explicit-function-return-type",
       "setting": "error",

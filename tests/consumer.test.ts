@@ -97,6 +97,7 @@ beforeAll(async () => {
         cwd: directory,
         encoding: 'utf8',
         maxBuffer: 8 * 1024 * 1024,
+        env: { ...process.env, npm_config_engineStrict: 'false' },
     });
     const requireConsumer = createRequire(join(directory, 'package.json'));
     oxlint = join(dirname(requireConsumer.resolve('oxlint/package.json')), 'bin/oxlint');
@@ -110,6 +111,7 @@ beforeAll(async () => {
             "import plugin from '@agcodeguidelines/oxlint-plugin';",
             "for (const language of ['javascript', 'typescript'] as const) {",
             "    const config = createConfig({ language, environment: 'node' });",
+            "    if (config.settings.agPolicy !== 'compatibility') throw new Error('Default policy changed');",
             "    writeFileSync(language + '.json', JSON.stringify(config));",
             '}',
             "if (plugin.meta?.name !== 'ag') throw new Error('Missing plugin export');",
@@ -123,7 +125,7 @@ beforeAll(async () => {
             "import { createConfig } from '@agcodeguidelines/oxlint-config';",
             "import plugin from '@agcodeguidelines/oxlint-plugin';",
             "import { catalog } from '@agcodeguidelines/rule-catalog';",
-            "const config = createConfig({ language: 'typescript', environment: 'both' });",
+            "const config = createConfig({ language: 'typescript', environment: 'both', typeAware: true });",
             "if (!config.rules || !plugin.rules || !catalog.clauses.length) throw new Error('Broken public API');",
             '// @ts-expect-error Unsupported language must remain a compile-time error.',
             "createConfig({ language: 'flow' });",
@@ -149,6 +151,7 @@ describe('installed package contract', () => {
     it('installs without an ESLint engine', async () => {
         const installed = await readdir(join(directory, 'node_modules/.pnpm'));
         expect(installed.filter((name) => /^eslint@/u.test(name))).toEqual([]);
+        expect(installed.filter((name) => /^oxlint-tsgolint@/u.test(name))).toEqual([]);
     });
 
     it('executes the published configuration CLI and surfaces argument errors', () => {
@@ -204,4 +207,45 @@ describe('installed package contract', () => {
         );
         expect(json.rules['ag-compat/no-console']).toBe('error');
     });
+
+    it('runs opt-in typed rules with the separately installed service', async () => {
+        execPnpm(['add', '--save-exact', '--ignore-scripts', 'oxlint-tsgolint@7.0.2002'], {
+            cwd: directory,
+            encoding: 'utf8',
+            maxBuffer: 8 * 1024 * 1024,
+        });
+        await writeFile(join(directory, 'typed-config.ts'), [
+            "import { writeFileSync } from 'node:fs';",
+            "import { createConfig } from '@agcodeguidelines/oxlint-config';",
+            "const preset = createConfig({ language: 'typescript', typeAware: true });",
+            "if (preset.settings.agPolicy !== 'compatibility') throw new Error('Default policy changed');",
+            "writeFileSync('typed.json', JSON.stringify({",
+            '    categories: preset.categories,',
+            "    plugins: ['typescript'],",
+            '    options: preset.options,',
+            '    rules: {',
+            "        'typescript/consistent-type-exports': preset.overrides[0].rules['typescript/consistent-type-exports'],",
+            '    },',
+            '}));',
+        ].join('\n'));
+        const configuration = run(tsx, ['typed-config.ts']);
+        expect(configuration.status, configuration.output).toBe(0);
+        await writeFile(join(directory, 'tsconfig.json'), JSON.stringify({
+            compilerOptions: {
+                strict: true, module: 'ESNext', moduleResolution: 'Bundler', types: [], noEmit: true,
+            },
+            files: ['typed-export.ts', 'typed-dependency.ts'],
+        }));
+        await writeFile(join(directory, 'typed-dependency.ts'), 'export interface Value { text: string }');
+        await writeFile(join(directory, 'typed-export.ts'), 'export { Value } from "./typed-dependency";');
+        const args = ['--config', 'typed.json', 'typed-export.ts', '--format', 'json'];
+        const invalid = run(oxlint, args);
+        expect(invalid.status, invalid.output).toBe(1);
+        expect(JSON.parse(invalid.output).diagnostics).toHaveLength(1);
+        expect(invalid.output).toContain('consistent-type-exports');
+        await writeFile(join(directory, 'typed-export.ts'), 'export type { Value } from "./typed-dependency";');
+        const valid = run(oxlint, args);
+        expect(valid.status, valid.output).toBe(0);
+        expect(JSON.parse(valid.output).diagnostics).toEqual([]);
+    }, 180000);
 });

@@ -57,7 +57,7 @@ For compiler checking:
 }
 ```
 
-TypeScript presets preserve documentation requirements while avoiding duplicate JSDoc type annotations. Type checking uses the TypeScript compiler; no separate typed lint service is required.
+TypeScript presets preserve documentation requirements while avoiding duplicate JSDoc type annotations. Type checking uses the TypeScript compiler; the default presets require no separate typed lint service. Optional `createConfig({ language: 'typescript', typeAware: true })` enables type-dependent lint rules with `oxlint-tsgolint@7.0.2002`; see [type-aware linting](packages/oxlint-config/README.md#type-aware-linting). Compiler checking remains a separate gate.
 
 ## Scope and maintenance
 

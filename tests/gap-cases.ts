@@ -13,6 +13,22 @@ export interface GapCase {
 }
 
 export const gapCases: GapCase[] = [
+    {
+        rule: '@typescript-eslint/consistent-type-exports',
+        valid: 'export type { Value } from "./dependency";',
+        invalid: 'export { Value } from "./dependency";',
+        extension: 'ts',
+        language: 'typescript',
+        files: {
+            'dependency.ts': 'export interface Value { text: string }',
+            'tsconfig.json': JSON.stringify({
+                compilerOptions: {
+                    strict: true, module: 'ESNext', moduleResolution: 'Bundler', types: [], noEmit: true,
+                },
+                include: ['*.ts'],
+            }),
+        },
+    },
     { rule: 'no-global-assign', valid: 'const local = 1;', invalid: 'Array = 1;' },
     { rule: 'no-implied-eval', valid: 'setTimeout(() => work(), 0);', invalid: 'setTimeout("work()", 0);' },
     { rule: 'no-lone-blocks', valid: 'if (ready) { work(); }', invalid: '{ work(); }' },

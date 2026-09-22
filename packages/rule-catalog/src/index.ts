@@ -23,6 +23,7 @@ export interface Mapping {
     setting: RuleSetting;
     implementation: 'native' | 'javascript' | 'custom' | 'disabled';
     origin: string;
+    requiresTypeInfo?: boolean;
 }
 
 export interface Catalog {

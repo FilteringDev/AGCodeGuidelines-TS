@@ -128,4 +128,54 @@ it('uses the compiler for type safety without requiring a typed lint service', (
     const config = createConfig('typescript');
     expect(config.options?.typeAware).not.toBe(true);
     expect(JSON.stringify(config)).not.toContain('strict-boolean-expressions');
+    expect(config.overrides![0]!.rules!['typescript/consistent-type-exports']).toBeUndefined();
+});
+
+it('opts into the typed lint service without enabling compiler diagnostics', () => {
+    const config = createConfig({ language: 'typescript', typeAware: true });
+    expect(config.options).toEqual({ typeAware: true });
+    expect(config.overrides![0]!.rules!['typescript/consistent-type-exports']).toBe('error');
+    expect(config.rules!['typescript/consistent-type-exports']).toBeUndefined();
+    expect(createConfig({ language: 'typescript', typeAware: false }).options).toBeUndefined();
+    expect(createConfig('typescript').options).toBeUndefined();
+});
+
+it('rejects type-aware linting outside the TypeScript preset', () => {
+    expect(() => createConfig({ typeAware: true })).toThrow(/TypeScript preset/u);
+    expect(() => createConfig({ language: 'javascript', typeAware: true })).toThrow(/TypeScript preset/u);
+    expect(() => createConfig({ language: 'typescript', typeAware: 'true' as unknown as boolean }))
+        .toThrow(/boolean/u);
+});
+
+it('runs type-dependent export diagnostics in an isolated consumer project', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'ag-typed-lint-'));
+    try {
+        const preset = createConfig({ language: 'typescript', typeAware: true });
+        await writeFile(join(directory, '.oxlintrc.json'), JSON.stringify({
+            categories: preset.categories,
+            plugins: ['typescript'],
+            options: preset.options,
+            rules: {
+                'typescript/consistent-type-exports': preset.overrides![0]!.rules!['typescript/consistent-type-exports'],
+            },
+        }));
+        await writeFile(join(directory, 'tsconfig.json'), JSON.stringify({
+            compilerOptions: {
+                strict: true, module: 'ESNext', moduleResolution: 'Bundler', types: [], noEmit: true,
+            },
+            include: ['*.ts'],
+        }));
+        await writeFile(join(directory, 'dependency.ts'), 'export interface Value { text: string }');
+        await writeFile(join(directory, 'main.ts'), 'export { Value } from "./dependency";');
+        const invalid = await runOxlint(['--config', '.oxlintrc.json', 'main.ts'], directory);
+        expect(invalid.status).toBe(1);
+        expect(invalid.diagnostics).toHaveLength(1);
+        expect(invalid.diagnostics[0]!.code).toContain('consistent-type-exports');
+        await writeFile(join(directory, 'main.ts'), 'export type { Value } from "./dependency";');
+        const valid = await runOxlint(['--config', '.oxlintrc.json', 'main.ts'], directory);
+        expect(valid.status).toBe(0);
+        expect(valid.diagnostics).toEqual([]);
+    } finally {
+        await rm(directory, { recursive: true, force: true });
+    }
 });

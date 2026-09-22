@@ -61,8 +61,10 @@ const nativeList = JSON.parse(
             encoding: 'utf8',
         },
     ),
-) as { scope: string; value: string }[];
+) as { scope: string; value: string; type_aware: boolean }[];
 const native = new Set(nativeList.map(({ scope, value }) => `${scope.replaceAll('_', '-')}/${value}`));
+const typedNative = new Set(nativeList.filter((rule) => rule.type_aware)
+    .map(({ scope, value }) => `${scope.replaceAll('_', '-')}/${value}`));
 const origins: Record<string, string> = {};
 const baseline: RuleMap = {};
 const settings: Record<string, unknown> = {};
@@ -145,9 +147,8 @@ const additions: RuleMap = {
     }],
     'notice/notice': 'off',
     '@adguard/logger-context/require-logger-context': ['error', { contextModuleName: 'ext' }],
-    // Syntax-only @typescript-eslint subset backed by Oxlint's native
-    // typescript plugin (no type-aware rules; tsc provides types).
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+    '@typescript-eslint/consistent-type-exports': 'error',
     '@typescript-eslint/explicit-function-return-type': 'error',
     '@typescript-eslint/explicit-member-accessibility': ['error', {
         accessibility: 'explicit',
@@ -360,6 +361,7 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
         setting,
         implementation,
         origin,
+        ...(typedNative.has(target) ? { requiresTypeInfo: true } : {}),
     });
 }
 
@@ -442,11 +444,12 @@ const report = [
     '',
     '## Resolved rule mappings',
     '',
-    '| Source rule | Oxlint rule | Provider | Setting | Origin |',
-    '| --- | --- | --- | --- | --- |',
+    '| Source rule | Oxlint rule | Provider | Setting | Origin | Type information |',
+    '| --- | --- | --- | --- | --- | --- |',
     ...mappings.map(
         (mapping) => `| ${mapping.source} | ${mapping.target ?? 'disabled'} | ${mapping.implementation}`
-            + ` | \`${JSON.stringify(mapping.setting).replaceAll('|', '\\|')}\` | ${mapping.origin} |`,
+            + ` | \`${JSON.stringify(mapping.setting).replaceAll('|', '\\|')}\` | ${mapping.origin}`
+            + ` | ${mapping.requiresTypeInfo ? 'opt-in required' : ''} |`,
     ),
     '',
 ].join('\n');

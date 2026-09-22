@@ -25,10 +25,14 @@ beforeAll(async () => {
         const mapping = catalog.mappings.find((entry) => entry.source === example.rule)!;
         const target = mapping.target!;
         for (const kind of ['valid', 'invalid'] as const) {
-            const base = createConfig();
+            const base = createConfig({
+                language: example.language,
+                typeAware: mapping.requiresTypeInfo ?? false,
+            });
             const providers = base.jsPlugins as { name: string; specifier: string }[];
             const config = {
                 ...base,
+                overrides: [],
                 jsPlugins: providers
                     .filter((provider) => target.startsWith(`${provider.name}/`))
                     .map((provider) => ({ ...provider, specifier: REQUIRE.resolve(provider.specifier) })),
