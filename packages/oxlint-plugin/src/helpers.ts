@@ -36,7 +36,8 @@ export function writesPrototype(node: ESTree.Node): boolean {
  * @returns Whether the name has PascalCase form rather than constant casing.
  */
 export function isPascalCase(name: string): boolean {
-    return /^[A-Z][A-Za-z0-9]*$/u.test(name) && (name.length === 1 || /[a-z]/u.test(name));
+    // A capital followed only by digits (V1, H2) is PascalCase; all-capital words are constant casing.
+    return /^[A-Z][A-Za-z0-9]*$/u.test(name) && (name.length === 1 || /[a-z]/u.test(name) || /^[A-Z]\d+$/u.test(name));
 }
 
 /**
@@ -135,4 +136,70 @@ export function isDirectiveComment(value: string): boolean {
     return value.startsWith('/')
         || /^\s*(?:eslint|oxlint|@ts-|global\s|globals\s|exported\s|istanbul\s|c8\s|v8\s|prettier-ignore|#(?:end)?region\b)/u
             .test(value);
+}
+
+/**
+ * Read a static property chain such as `Array.prototype.slice`.
+ * @param node - Expression to read.
+ * @returns Dotted path, or undefined when a segment is computed dynamically.
+ */
+export function staticPath(node: ESTree.Node): string | undefined {
+    if (node.type === 'Identifier') {
+        return node.name;
+    }
+    if (node.type === 'ArrayExpression' && node.elements.length === 0) {
+        return '[]';
+    }
+    if (node.type === 'MemberExpression') {
+        const object = staticPath(node.object);
+        const property = memberName(node);
+        return object !== undefined && property !== undefined ? `${object}.${property}` : undefined;
+    }
+    return undefined;
+}
+
+/**
+ * Recognize prototype writes performed through reflection or inheritance helpers.
+ * @param node - Call expression.
+ * @returns Whether the call defines prototype members or changes a prototype chain.
+ */
+export function mutatesPrototypeByCall(node: ESTree.CallExpression): boolean {
+    const callee = staticPath(node.callee);
+    const [target] = node.arguments;
+    if (['Object.setPrototypeOf', 'Reflect.setPrototypeOf', 'inherits', 'util.inherits'].includes(callee ?? '')) {
+        return true;
+    }
+    return ['Object.assign', 'Object.defineProperty', 'Object.defineProperties', 'Reflect.defineProperty']
+        .includes(callee ?? '')
+        && target !== undefined
+        && writesPrototype(target);
+}
+
+/**
+ * Find the nearest function that has its own `arguments` binding.
+ * @param node - Node inside the function.
+ * @returns Whether a non-arrow function encloses the node.
+ */
+export function insideRegularFunction(node: ESTree.Node): boolean {
+    let current: ESTree.Node | null = node.parent;
+    while (current) {
+        if (current.type === 'FunctionDeclaration' || current.type === 'FunctionExpression') {
+            return true;
+        }
+        current = current.parent;
+    }
+    return false;
+}
+
+/**
+ * Flatten nested logical expressions into their operands in source order.
+ * @param node - Condition.
+ * @returns Operands that are not logical expressions.
+ */
+export function logicalOperands(node: ESTree.Node): ESTree.Node[] {
+    const value = unwrapTypeExpression(node);
+    if (value.type === 'LogicalExpression') {
+        return [...logicalOperands(value.left), ...logicalOperands(value.right)];
+    }
+    return [value];
 }

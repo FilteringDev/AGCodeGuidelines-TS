@@ -95,6 +95,34 @@ describe('tsconfig requirements', () => {
         expect((await checkTsconfig(join(directory, 'tsconfig.json'))).problems).toEqual([]);
     });
 
+    it('resolves bare package names like TypeScript and never through main', async () => {
+        await write('node_modules/strictest/package.json', { name: 'strictest', main: 'index.js' });
+        await write('node_modules/strictest/index.js', 'module.exports = {};');
+        await write('node_modules/strictest/tsconfig.json', { compilerOptions: { strict: true, noUncheckedIndexedAccess: true } });
+        await write('node_modules/fielded/package.json', { name: 'fielded', tsconfig: 'configs/base.json' });
+        await write('node_modules/fielded/configs/base.json', { compilerOptions: { strict: true, noUncheckedIndexedAccess: true } });
+        await write('first.json', { extends: 'strictest' });
+        await write('second.json', { extends: 'fielded' });
+        expect((await checkTsconfig(join(directory, 'first.json'))).problems).toEqual([]);
+        expect((await checkTsconfig(join(directory, 'second.json'))).files.at(-1)).toContain('configs');
+    });
+
+    it('uses an existing relative file as written and reports unresolved packages', async () => {
+        await write('base.jsonc', { compilerOptions: { strict: true, noUncheckedIndexedAccess: true } });
+        await write('tsconfig.json', { extends: './base.jsonc' });
+        expect((await checkTsconfig(join(directory, 'tsconfig.json'))).problems).toEqual([]);
+        await write('missing.json', { extends: 'no-such-config' });
+        await expect(checkTsconfig(join(directory, 'missing.json'))).rejects.toThrow(/Cannot resolve tsconfig extends/u);
+    });
+
+    it('reports strict-family options disabled next to strict', async () => {
+        await write('tsconfig.json', {
+            compilerOptions: { strict: true, noUncheckedIndexedAccess: true, strictNullChecks: false },
+        });
+        expect((await checkTsconfig(join(directory, 'tsconfig.json'))).problems)
+            .toEqual(['26.1: do not disable "strictNullChecks", which "strict" enables']);
+    });
+
     it('lets a project disable an inherited requirement and reports it', async () => {
         await write('base.json', { compilerOptions: { strict: true, noUncheckedIndexedAccess: true } });
         await write('tsconfig.json', { extends: './base.json', compilerOptions: { strict: false } });

@@ -396,4 +396,26 @@ export const gapCases: GapCase[] = [
         valid: 'const query = 1;',
         invalid: 'const q = 1;',
     },
+    {
+        rule: 'no-implicit-coercion',
+        scope: 'guideline',
+        valid: 'const value = Number(source);',
+        invalid: 'const value = +source;',
+    },
+    {
+        rule: '@typescript-eslint/no-require-imports',
+        scope: 'guideline',
+        language: 'typescript',
+        extension: 'ts',
+        valid: 'import fs from "node:fs";\n\nexport { fs };',
+        invalid: 'import fs = require("node:fs");\n\nexport { fs };',
+    },
+    {
+        rule: 'member-delimiter-style',
+        scope: 'adguard-projects',
+        language: 'typescript',
+        extension: 'ts',
+        valid: 'export interface Shape {\n    area: number;\n}',
+        invalid: 'export interface Shape {\n    area: number\n}',
+    },
 ];

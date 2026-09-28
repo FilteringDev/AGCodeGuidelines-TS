@@ -27,6 +27,7 @@ const SHARED_FILES = {
     'helpers.js': 'export const first = 1;\nexport const second = 2;\nexport const third = 3;\nexport const fourth = 4;\n',
     'bar.js': 'export default 1;\n',
     'src/foo.js': 'export default 1;\n',
+    'shapes.ts': 'export interface Shape {\n    area: number;\n}\n\nexport const area = 1;\n',
 };
 
 interface Run {

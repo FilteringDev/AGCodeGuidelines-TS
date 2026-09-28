@@ -141,8 +141,8 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
         config.options = { typeAware: true };
     }
     if (policy === 'guideline' && sourceType === 'module') {
-        // CommonJS filename extensions keep CommonJS semantics.
-        config.overrides!.push({ files: ['**/*.{cjs,cts}'], rules: { 'import/no-commonjs': 'off' } });
+        // CommonJS filename extensions and legacy ESLint configuration files keep CommonJS semantics.
+        config.overrides!.push({ files: ['**/*.{cjs,cts}', '**/.eslintrc.js'], rules: { 'import/no-commonjs': 'off' } });
     }
     if (language === 'typescript') {
         settings['import/extensions'] = ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.mts', '.cts'];

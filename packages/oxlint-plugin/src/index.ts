@@ -6,13 +6,17 @@ import { definePlugin, defineRule } from '@oxlint/plugins';
 import type { ESTree, RuleMeta } from '@oxlint/plugins';
 import {
     concatenationOperands,
+    insideRegularFunction,
     isDefaultMutation,
     isDirectiveComment,
     isPascalCase,
     isPrimitiveConstant,
     isStaticString,
     isUpperSnakeCase,
+    logicalOperands,
     memberName,
+    mutatesPrototypeByCall,
+    staticPath,
     unwrapTypeExpression,
     writesPrototype,
 } from './helpers';
@@ -101,8 +105,13 @@ export const rules = {
                     const annotation = node.param && 'typeAnnotation' in node.param
                         ? node.param.typeAnnotation
                         : null;
-                    if (annotation?.typeAnnotation.type === 'TSAnyKeyword') {
-                        context.report({ node: annotation, messageId: 'guideline' });
+                    const type = annotation?.typeAnnotation;
+                    // Syntactic `any`, alone or in a union; aliases of `any` need type information.
+                    if (
+                        type?.type === 'TSAnyKeyword'
+                        || (type?.type === 'TSUnionType' && type.types.some((member) => member.type === 'TSAnyKeyword'))
+                    ) {
+                        context.report({ node: annotation!, messageId: 'guideline' });
                     }
                 },
             };
@@ -124,14 +133,24 @@ export const rules = {
         },
     }),
     'no-prototype-mutation': defineRule({
-        meta: metadata('constructors--use-class', 'Use class declarations instead of directly modifying prototypes.'),
+        meta: metadata('constructors--use-class', 'Use class declarations instead of directly modifying prototypes.', [{
+            type: 'object',
+            properties: { calls: { type: 'boolean' } },
+            additionalProperties: false,
+        }]),
         create(context) {
+            const { calls = false } = (context.options[0] ?? {}) as { calls?: boolean };
             const report = (node: ESTree.Node) => {
                 if (writesPrototype(node)) {
                     context.report({ node, messageId: 'guideline' });
                 }
             };
             return {
+                CallExpression(node) {
+                    if (calls && mutatesPrototypeByCall(node)) {
+                        context.report({ node, messageId: 'guideline' });
+                    }
+                },
                 AssignmentExpression(node) {
                     report(node.left);
                 },
@@ -157,7 +176,77 @@ export const rules = {
                     context.report({ node, messageId: 'guideline' });
                 }
             };
-            return { AssignmentExpression: report, UpdateExpression: report };
+            return {
+                AssignmentExpression: report,
+                UpdateExpression: report,
+                UnaryExpression(node) {
+                    if (node.operator === 'delete') {
+                        report(node);
+                    }
+                },
+            };
+        },
+    }),
+    'prefer-array-from': defineRule({
+        meta: metadata('arrays--from-array-like', 'Use Array.from to convert an array-like object to an array.'),
+        create(context) {
+            return {
+                CallExpression(node) {
+                    if (
+                        node.callee.type === 'MemberExpression'
+                        && ['call', 'apply'].includes(memberName(node.callee) ?? '')
+                        && ['Array.prototype.slice', '[].slice'].includes(staticPath(node.callee.object) ?? '')
+                        && node.arguments.length === 1
+                    ) {
+                        context.report({ node, messageId: 'guideline' });
+                    }
+                },
+            };
+        },
+    }),
+    'prefer-template-over-join': defineRule({
+        meta: metadata('es6-template-literals', 'Use a template literal instead of joining string parts.'),
+        create(context) {
+            return {
+                CallExpression(node) {
+                    const [separator, ...rest] = node.arguments;
+                    if (
+                        node.callee.type !== 'MemberExpression'
+                        || memberName(node.callee) !== 'join'
+                        || node.callee.object.type !== 'ArrayExpression'
+                        || rest.length > 0
+                        || (separator !== undefined && !(separator.type === 'Literal' && separator.value === ''))
+                    ) {
+                        return;
+                    }
+                    const { elements } = node.callee.object;
+                    if (
+                        elements.every((element) => element !== null && element.type !== 'SpreadElement')
+                        && elements.some((element) => isStaticString(element!))
+                        && elements.some((element) => !isStaticString(element!))
+                    ) {
+                        context.report({ node, messageId: 'guideline' });
+                    }
+                },
+            };
+        },
+    }),
+    'no-arguments': defineRule({
+        meta: metadata('es6-rest', 'Use rest parameters instead of the arguments object.'),
+        create(context) {
+            return {
+                MemberExpression(node) {
+                    // prefer-rest-params reports other uses; it allows property access such as `arguments.length`.
+                    if (
+                        node.object.type === 'Identifier'
+                        && node.object.name === 'arguments'
+                        && !node.computed
+                        && insideRegularFunction(node)
+                    ) {
+                        context.report({ node, messageId: 'guideline' });
+                    }
+                },
+            };
         },
     }),
     'prefer-array-from-map': defineRule({
@@ -197,7 +286,8 @@ export const rules = {
                 Program() {
                     let run: ESTree.Comment[] = [];
                     const flush = () => {
-                        if (run.length > 1) {
+                        // Action items (17.4) may span several // lines.
+                        if (run.length > 1 && !run.some((comment) => /^\s*(?:TODO|FIXME)\b/u.test(comment.value))) {
                             context.report({
                                 loc: { start: run[0]!.loc.start, end: run.at(-1)!.loc.end },
                                 messageId: 'guideline',
@@ -208,7 +298,12 @@ export const rules = {
                     context.sourceCode.getAllComments().forEach((comment) => {
                         if (comment.type === 'Block') {
                             flush();
-                            if (/\r|\n/u.test(comment.value) && !comment.value.startsWith('*')) {
+                            // `/*!` preserves license text in bundles; directives keep their syntax.
+                            if (
+                                /\r|\n/u.test(comment.value)
+                                && !/^[*!]/u.test(comment.value)
+                                && !isDirectiveComment(comment.value)
+                            ) {
                                 context.report({ loc: comment.loc, messageId: 'guideline' });
                             }
                             return;
@@ -226,6 +321,22 @@ export const rules = {
                         run.push(comment);
                     });
                     flush();
+                },
+            };
+        },
+    }),
+    'docblock-spacing': defineRule({
+        meta: metadata('comments--spaces', 'Start each line of a /** ... */ comment with "* " followed by the text.'),
+        create(context) {
+            return {
+                Program() {
+                    context.sourceCode.getAllComments().forEach((comment) => {
+                        // A continuation line whose text starts right after the asterisk: ` *text`.
+                        if (comment.type === 'Block' && comment.value.startsWith('*')
+                            && comment.value.split(/\r\n|\r|\n/u).slice(1).some((line) => /^\s*\*[^\s*/]/u.test(line))) {
+                            context.report({ loc: comment.loc, messageId: 'guideline' });
+                        }
+                    });
                 },
             };
         },
@@ -269,6 +380,11 @@ export const rules = {
                 }
                 const first = sourceCode.getTokenAfter(open)!;
                 const last = sourceCode.getTokenBefore(close)!;
+                // Only conditions split between their operands; a wrapped call argument is not a new condition.
+                const operands = logicalOperands(unwrapTypeExpression(test));
+                if (new Set(operands.map((operand) => operand.loc.start.line)).size < 2) {
+                    return;
+                }
                 if (
                     first.loc.start.line !== last.loc.end.line
                     && (first.loc.start.line === open.loc.end.line || last.loc.end.line === close.loc.start.line)

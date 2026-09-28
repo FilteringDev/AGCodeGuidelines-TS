@@ -15,6 +15,12 @@ Use `@agcodeguidelines/oxlint-config` to materialize the full preset. The defaul
 - `no-multiline-string-concat`
 - `multiline-condition-layout`
 - `constant-name`
+- `prefer-array-from`
+- `prefer-template-over-join`
+- `no-arguments`
+- `docblock-spacing`
+
+`no-prototype-mutation` accepts `{ calls: true }` to also report prototype changes through `Object.assign`, `Object.defineProperty`, `Object.setPrototypeOf`, and `inherits`; the guideline policy enables it.
 
 The `/typescript` export provides TypeScript-aware variants of pinned core rules: `no-redeclare` accepts overloads and the declaration merges that TypeScript permits.
 

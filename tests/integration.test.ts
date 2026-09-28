@@ -134,7 +134,9 @@ describe('public configuration API', () => {
             expect(guideline.rules![rule as keyof typeof guideline.rules]).toBe('error');
         });
         expect(guideline.plugins).toContain('import');
-        expect(guideline.overrides).toEqual([{ files: ['**/*.{cjs,cts}'], rules: { 'import/no-commonjs': 'off' } }]);
+        expect(guideline.overrides).toEqual([
+            { files: ['**/*.{cjs,cts}', '**/.eslintrc.js'], rules: { 'import/no-commonjs': 'off' } },
+        ]);
         const script = createConfig({ policy: 'guideline', sourceType: 'commonjs' });
         expect(script.rules!['import/no-commonjs']).toBe('off');
         expect(script.overrides).toEqual([]);
@@ -149,7 +151,9 @@ describe('public configuration API', () => {
         expect(typescript.rules!['ag-compat/lines-around-comment']).toBe('off');
         expect(typescript.rules!['ag-style/lines-around-comment']).toMatchObject(['error', { allowInterfaceStart: true }]);
         expect(typescript.rules!['ag-ts/no-redeclare']).toBe('error');
-        expect(guideline.overrides![1]!.files).toEqual(['**/*.{cjs,cts}']);
+        expect(guideline.overrides![1]!.files).toEqual(['**/*.{cjs,cts}', '**/.eslintrc.js']);
+        expect(typescript.rules!['typescript/no-require-imports']).toBe('error');
+        expect(typescript.rules!['eslint/class-methods-use-this']).toMatchObject(['error', { ignoreOverrideMethods: true }]);
     });
 
     it('keeps AdGuard project conventions in an opt-in profile', () => {

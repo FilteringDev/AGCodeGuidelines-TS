@@ -177,6 +177,10 @@ const enumNames = [
     ['$Color', false],
     ['URL', false],
     ['C0L0R', false],
+    ['V1', true],
+    ['H2', true],
+    ['IO', false],
+    ['MV3', false],
     ['c', false],
     ['C_o_l_o_r', false],
     ['color_mode', false],
@@ -215,6 +219,9 @@ const catchForms = [
     ['catch ({ message }: any) {}', 1],
     ['catch ([first]: any) {}', 1],
     ['catch ({ message }: unknown) {}', 0],
+    ['catch (error: any | unknown) {}', 1],
+    ['catch (error: unknown | any) {}', 1],
+    ['catch (error: unknown | Error) {}', 0],
 ] as const;
 for (const [form, errors] of catchForms) {
     for (const [context, wrap] of [
@@ -428,3 +435,101 @@ for (const [name, code, errors] of [
     add('require-docblock', `line runs: ${name}`, code, errors, 'jsx', [runs]);
 }
 add('require-docblock', 'line runs disabled explicitly', '// alpha\n// beta\nwork();', 0, 'jsx', [{ lineCommentRuns: false }]);
+
+for (const [code, errors] of [
+    ['function count(first = delete source.key) { return first; }', 1],
+    ['function count(first = typeof source) { return first; }', 0],
+] as const) {
+    add('no-default-side-effects', `delete: ${code}`, code, errors);
+}
+
+const prototypeCalls = { calls: true };
+for (const [code, errors] of [
+    ['Object.assign(Queue.prototype, { pop() {} });', 1],
+    ["Object.defineProperty(Queue.prototype, 'size', { value: 1 });", 1],
+    ['Object.defineProperties(Queue.prototype, {});', 1],
+    ["Reflect.defineProperty(Queue.prototype, 'size', { value: 1 });", 1],
+    ['Object.setPrototypeOf(PeekableQueue, Queue);', 1],
+    ['Reflect.setPrototypeOf(PeekableQueue, Queue);', 1],
+    ['inherits(PeekableQueue, Queue);', 1],
+    ['util.inherits(PeekableQueue, Queue);', 1],
+    ['Object.assign(target, { pop() {} });', 0],
+    ["Object.defineProperty(target, 'size', { value: 1 });", 0],
+    ['Object.assign();', 0],
+    ['queue[method](Queue.prototype);', 0],
+] as const) {
+    add('no-prototype-mutation', `calls: ${code}`, code, errors, 'jsx', [prototypeCalls]);
+}
+add('no-prototype-mutation', 'calls disabled by default', 'Object.setPrototypeOf(Child, Parent);', 0);
+
+for (const [code, errors] of [
+    ['const list = Array.prototype.slice.call(arrayLike);', 1],
+    ['const list = [].slice.call(arrayLike);', 1],
+    ['const list = Array.prototype.slice.apply(arrayLike);', 1],
+    ["const list = Array.prototype['slice'].call(arrayLike);", 1],
+    ['const list = Array.prototype.slice.call(arrayLike, 1);', 0],
+    ['const list = Array.from(arrayLike);', 0],
+    ['const list = items.slice.call(arrayLike);', 0],
+    ['const list = [1].slice.call(arrayLike);', 0],
+    ['const list = Array.prototype.map.call(arrayLike, convert);', 0],
+    ['const list = factory().slice.call(arrayLike);', 0],
+] as const) {
+    add('prefer-array-from', code, code, errors);
+}
+
+for (const [code, errors] of [
+    ["const text = ['How are you, ', name, '?'].join();", 1],
+    ["const text = ['How are you, ', name, '?'].join('');", 1],
+    ["const text = [greeting, '!'].join('');", 1],
+    ["const text = ['How are you, ', name, '?'].join(' ');", 0],
+    ["const text = ['a', 'b'].join('');", 0],
+    ['const text = [first, second].join();', 0],
+    ["const text = ['a', ...rest].join('');", 0],
+    ["const text = ['a', , first].join('');", 0],
+    ["const text = parts.join('');", 0],
+    ["const text = ['a', first].concat();", 0],
+    ["const text = ['a', first].join('', extra);", 0],
+] as const) {
+    add('prefer-template-over-join', code, code, errors);
+}
+
+for (const [code, errors] of [
+    ['function count() { return arguments.length; }', 1],
+    ['const count = function () { return arguments.callee; };', 1],
+    ['function outer() { return () => arguments.length; }', 1],
+    ['const count = (...args) => args.length;', 0],
+    ['function first() { return arguments[0]; }', 0],
+    ['const size = arguments.length;', 0],
+    ['function run(options) { return options.arguments.length; }', 0],
+] as const) {
+    add('no-arguments', code, code, errors);
+}
+
+for (const [code, errors] of [
+    ['/**\n *make() returns a new element\n */', 1],
+    ['/**\n * make() returns a new element\n *based on the tag\n */', 1],
+    ['/**\n * make() returns a new element\n */', 0],
+    ['/**\n *\n * Blank line above.\n */', 0],
+    ['/**\n **** banner ****\n */', 0],
+    ['/** single line */', 0],
+    ['/*\n *not a doc comment\n */', 0],
+    ['// line comment', 0],
+] as const) {
+    add('docblock-spacing', JSON.stringify(code), code, errors);
+}
+
+for (const [name, code, errors] of [
+    ['action items', '// TODO(author): first\n// continues\nwork();', 0],
+    ['fix item later in run', '// Explains the next line.\n// FIXME: broken\nwork();', 0],
+    ['preserved banner', '/*!\n * Copyright\n */\nwork();', 0],
+    ['block directive', '/* eslint-disable\n    no-console,\n    no-alert\n*/\nwork();', 0],
+] as const) {
+    add('require-docblock', `line runs: ${name}`, code, errors, 'jsx', [runs]);
+}
+
+for (const [name, code, errors] of [
+    ['operands on one line', 'if (first && check(\n    second,\n)) {\n    work();\n}', 0],
+    ['nested operands on separate lines', 'if (first && (second\n    || third)) {\n    work();\n}', 1],
+] as const) {
+    add('multiline-condition-layout', name, code, errors);
+}

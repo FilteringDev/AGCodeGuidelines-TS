@@ -150,17 +150,28 @@ const guideTypeScriptAdditions: RuleMap = {
 };
 
 // The opt-in guideline policy resolves documented conflicts between guide prose and the sample in favor of prose.
-const importOrder = (groups: unknown[]): RuleSetting => ['error', {
+const importOrder = (groups: unknown[], options: object = {}): RuleSetting => ['error', {
     groups,
     'newlines-between': 'always',
     alphabetize: { order: 'asc', caseInsensitive: true },
+    ...options,
 }];
 const importGroups: Record<ImportGroups, RuleSetting> = {
-    // The guide's example keeps built-in and package imports in one block.
-    example: importOrder([['builtin', 'external', 'internal'], 'parent', ['sibling', 'index']]),
+    // The guide's example keeps built-in and package imports in one block, built-in imports first.
+    // Project aliases ("internal") are not npm packages; they follow them, as in the "most far" to "most close" order.
+    example: importOrder([['builtin', 'external'], 'internal', 'parent', ['sibling', 'index']], {
+        pathGroups: [
+            { pattern: 'node:*', group: 'external', position: 'before' },
+            { pattern: 'node:*/**', group: 'external', position: 'before' },
+        ],
+        pathGroupsExcludedImportTypes: [],
+        distinctGroup: false,
+    }),
     // The guide's prose separates every listed category.
     prose: importOrder(['builtin', 'external', 'internal', 'parent', ['sibling', 'index']]),
 };
+// Tool directives are not comments that describe code (clause 17.2).
+const COMMENT_DIRECTIVES = '^\\s*(?:oxlint-|@ts-)';
 const guidelineAdditions: RuleMap = {
     'import/no-commonjs': 'error',
     'import/no-namespace': 'error',
@@ -169,7 +180,7 @@ const guidelineAdditions: RuleMap = {
     'import/order': importGroups.example,
     'line-comment-position': ['error', {
         ...(inheritedOptions('line-comment-position')[0] as object),
-        ignorePattern: '^\\s*(?:oxlint-|@ts-)',
+        ignorePattern: COMMENT_DIRECTIVES,
     }],
     // Clause 17.2 governs single-line comments; block comments keep their inherited freedom.
     'lines-around-comment': ['error', {
@@ -179,6 +190,7 @@ const guidelineAdditions: RuleMap = {
         allowObjectStart: true,
         allowArrayStart: true,
         allowClassStart: true,
+        ignorePattern: COMMENT_DIRECTIVES,
     }],
     'prefer-destructuring': ['error', {
         ...(inheritedOptions('prefer-destructuring')[0] as object),
@@ -187,7 +199,10 @@ const guidelineAdditions: RuleMap = {
     'react/jsx-indent': ['error', 4],
     'react/jsx-indent-props': ['error', 4],
     'newline-per-chained-call': ['error', { ignoreChainWithDepth: 2 }],
-    'padding-line-between-statements': ['error', { blankLine: 'always', prev: 'block-like', next: '*' }],
+    // Case labels are not statements; the clause 14.5 example puts braced cases back to back.
+    'padding-line-between-statements': ['error',
+        { blankLine: 'always', prev: 'block-like', next: '*' },
+        { blankLine: 'any', prev: '*', next: ['case', 'default'] }],
     'id-length': ['error', { min: 2, properties: 'never' }],
     'max-len': ['error', {
         ...(inheritedOptions('max-len')[0] as object),
@@ -198,6 +213,21 @@ const guidelineAdditions: RuleMap = {
     'ag/multiline-condition-layout': 'error',
     'ag/require-docblock': ['error', { lineCommentRuns: true }],
     'ag/constant-name': 'error',
+    'ag/prefer-array-from': 'error',
+    'ag/prefer-template-over-join': 'error',
+    'ag/no-arguments': 'error',
+    'ag/no-prototype-mutation': ['error', { calls: true }],
+    'ag/docblock-spacing': 'error',
+    // The prose has no exemptions: "Never mutate parameters" and "Use === and !==".
+    'no-param-reassign': ['error', { props: true }],
+    eqeqeq: ['error', 'always'],
+    'no-implicit-coercion': ['error', ...inheritedOptions('no-implicit-coercion')],
+    'import/no-duplicates': ['error', { 'prefer-inline': true }],
+    // No clause asks for named function expressions; the guide's own examples use anonymous ones.
+    'func-names': 'off',
+};
+const guidelineTypeScriptAdditions: RuleMap = {
+    '@typescript-eslint/no-require-imports': 'error',
 };
 
 // Rules used by AdGuard projects that the guide does not require; opt-in through the adguard-projects profile.
@@ -227,6 +257,7 @@ const projectAdditions: RuleMap = {
     '@adguard/logger-context/require-logger-context': ['error', { contextModuleName: 'ext' }],
 };
 const projectTypeScriptAdditions: RuleMap = {
+    'member-delimiter-style': 'error',
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
     '@typescript-eslint/consistent-type-exports': 'error',
     '@typescript-eslint/explicit-function-return-type': 'error',
@@ -297,6 +328,20 @@ const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
         reason: 'Understands parameter-property constructors and overload signatures.',
     },
     'no-dupe-class-members': { target: 'eslint/no-dupe-class-members', reason: 'Accepts method overload signatures.' },
+    'class-methods-use-this': {
+        target: 'eslint/class-methods-use-this',
+        reason: 'Exempts override methods, which a base class requires to be instance methods.',
+        adapt: (setting) => withOptions(setting, ([options]) => [{
+            ...(options as object),
+            ignoreOverrideMethods: true,
+        }]),
+    },
+    'space-before-function-paren': {
+        target: 'ag-style/space-before-function-paren',
+        reason: 'Checks overload signatures, ambient functions, and abstract methods.',
+    },
+    'keyword-spacing': { target: 'ag-style/keyword-spacing', reason: 'Checks `as` and `satisfies`.' },
+    'brace-style': { target: 'ag-style/brace-style', reason: 'Checks namespace bodies.' },
     'no-redeclare': {
         target: 'ag-ts/no-redeclare',
         reason: 'Accepts overloads and declaration merges that TypeScript permits.',
@@ -416,9 +461,10 @@ const typescriptTargets = new Set([
 
 const extraClauses: Record<string, string[]> = {
     'types--primitives': [],
+    'references--prefer-const': ['prefer-const', 'no-const-assign', 'no-var'],
     'references--block-scope': ['no-undef'],
     'arrays--mapping': ['ag/prefer-array-from-map'],
-    'strings--line-length': ['max-len', 'no-useless-concat'],
+    'strings--line-length': ['max-len', 'no-useless-concat', 'no-multi-str'],
     'functions--in-blocks': ['no-loop-func', 'no-inner-declarations'],
     'functions--arguments-shadow': ['no-shadow-restricted-names'],
     'es6-default-parameters': ['no-param-reassign'],
@@ -431,6 +477,7 @@ const extraClauses: Record<string, string[]> = {
     'modules--no-duplicate-imports': ['no-duplicate-imports', 'import/no-duplicates'],
     'modules--prefer-named-export': ['import/prefer-default-export'],
     'modules--import-node-protocol': ['unicorn/prefer-node-protocol'],
+    'modules--import-member-order': ['sort-imports'],
     'properties--bracket': ['dot-notation'],
     'control-statements': ['operator-linebreak'],
     'control-statement--value-selection': ['no-unused-expressions'],
@@ -448,9 +495,16 @@ const extraClauses: Record<string, string[]> = {
 
 // Rules that the guideline policy adds to a clause's compatibility rules.
 const guidelineClauses: Record<string, string[]> = {
-    'strings--line-length': ['max-len', 'ag/no-multiline-string-concat'],
+    'arrays--from-array-like': ['ag/prefer-array-from'],
+    'strings--line-length': ['max-len', 'no-multi-str', 'ag/no-multiline-string-concat'],
+    'es6-template-literals': ['prefer-template', 'template-curly-spacing', 'ag/prefer-template-over-join'],
+    'es6-rest': ['prefer-rest-params', 'ag/no-arguments'],
+    'modules--use-them': ['import/no-commonjs', 'import/no-amd', '@typescript-eslint/no-require-imports'],
     'modules--prefer-named-export': ['import/no-default-export'],
     'control-statements': ['operator-linebreak', 'ag/multiline-condition-layout'],
+    'comments--spaces': ['spaced-comment', 'ag/docblock-spacing'],
+    'coercion--strings': ['no-new-wrappers', 'no-implicit-coercion'],
+    'coercion--numbers': ['radix', 'no-new-wrappers', 'no-implicit-coercion'],
     'naming--constants': ['ag/constant-name'],
 };
 
@@ -460,7 +514,9 @@ const manual: Record<string, string> = {
     'es6-array-spreads': 'Recognizing arbitrary copying algorithms requires semantic intent; reviewed manually.',
     'arrays--from-iterable':
         'An unknown JavaScript value may be array-like rather than iterable; no speculative rewrite.',
-    'arrays--from-array-like': 'Whether an arbitrary runtime value is array-like requires runtime information.',
+    'arrays--from-array-like':
+        'Array.from for array-like values is not checked by the sample; the guideline policy reports '
+        + '`Array.prototype.slice.call(value)`.',
     'destructuring--object-over-array':
         'Distinguishing multiple return values from an intentional array API requires review.',
     'constructors--chaining': 'Method chaining is optional API design guidance.',
@@ -487,6 +543,45 @@ const manual: Record<string, string> = {
 // Clauses whose linked rules are active but do not enforce every stated requirement.
 const partial: Record<Policy, Record<string, string>> = {
     compatibility: {
+        'objects--rest-spread':
+            'prefer-object-spread reports `Object.assign` whose first argument is an object literal; mutating '
+            + '`Object.assign(target, ...)` and omitting properties with `delete` instead of rest syntax remain '
+            + 'reviewable.',
+        'functions--default-side-effects':
+            'ag/no-default-side-effects reports assignments, updates, and `delete` in default values; side '
+            + 'effects of calls are not analyzed.',
+        'functions--spread-vs-apply':
+            'prefer-spread reports `fn.apply(receiver, args)`; constructor application through '
+            + '`Function.prototype.bind.apply` remains reviewable.',
+        'naming--camelCase':
+            'camelcase reports underscores; the capitalization of functions and instances remains reviewable.',
+        'es6-template-literals':
+            'prefer-template reports concatenation; building strings with `[...].join()` is reported only by the '
+            + 'guideline policy.',
+        'es6-rest':
+            'prefer-rest-params allows property access such as `arguments.length`; the guideline policy reports '
+            + 'it.',
+        'functions--mutate-params':
+            'Inherited no-param-reassign exempts parameters such as `acc`, `e`, and `res` and cannot see '
+            + 'mutation through method calls; the guideline policy removes the exemptions.',
+        'constructors--use-class':
+            'ag/no-prototype-mutation reports assignments to prototypes; the guideline policy also reports '
+            + '`Object.assign` or `Object.defineProperty` on a prototype. Plain constructor functions remain '
+            + 'reviewable.',
+        'constructors--extends':
+            'ag/no-prototype-mutation reports prototype assignments; the guideline policy also reports '
+            + '`Object.setPrototypeOf` and `inherits`. Other manual inheritance remains reviewable.',
+        'comparison--eqeqeq':
+            'Inherited eqeqeq allows `== null` and `!= null`; the guideline policy does not.',
+        'comments--spaces':
+            'spaced-comment checks the comment opener; text directly after the `*` of a JSDoc line is reported '
+            + 'only by the guideline policy.',
+        'coercion--strings':
+            'no-new-wrappers rejects `new String()`; Airbnb disables no-implicit-coercion, which the guideline '
+            + 'policy enables for `\'\' + value`.',
+        'coercion--numbers':
+            'radix and no-new-wrappers are enforced; Airbnb disables no-implicit-coercion, which the guideline '
+            + 'policy enables for `+value`.',
         'destructuring--array':
             'Inherited prefer-destructuring checks assignments but not declarations such as `const first = arr[0]`; '
             + 'the guideline policy checks both.',
@@ -506,6 +601,42 @@ const partial: Record<Policy, Record<string, string>> = {
             'Inherited newline-per-chained-call allows four calls on one line; the guideline policy allows two.',
     },
     guideline: {
+        'objects--rest-spread':
+            'prefer-object-spread reports `Object.assign` whose first argument is an object literal; mutating '
+            + '`Object.assign(target, ...)` and omitting properties with `delete` instead of rest syntax remain '
+            + 'reviewable.',
+        'functions--default-side-effects':
+            'ag/no-default-side-effects reports assignments, updates, and `delete` in default values; side '
+            + 'effects of calls are not analyzed.',
+        'functions--spread-vs-apply':
+            'prefer-spread reports `fn.apply(receiver, args)`; constructor application through '
+            + '`Function.prototype.bind.apply` remains reviewable.',
+        'naming--camelCase':
+            'camelcase reports underscores; the capitalization of functions and instances remains reviewable.',
+        'functions--mutate-params':
+            'no-param-reassign reports property writes to any parameter; mutation through method calls such as '
+            + '`list.push()` remains reviewable.',
+        'constructors--use-class':
+            'ag/no-prototype-mutation reports prototype writes, including `Object.assign` and '
+            + '`Object.defineProperty` on a prototype; plain constructor functions remain reviewable.',
+        'constructors--extends':
+            'ag/no-prototype-mutation reports prototype writes, `Object.setPrototypeOf`, and `inherits`; other '
+            + 'manual inheritance remains reviewable.',
+        'modules--use-them':
+            'import/no-commonjs rejects `require` and `module.exports`, and typescript/no-require-imports '
+            + 'rejects `import x = require()`; TypeScript `export =` remains reviewable.',
+        'control-statements':
+            'ag/multiline-condition-layout checks multiline conditions; whether a single-line condition is too '
+            + 'long to read remains reviewable.',
+        'comments--singleline':
+            'line-comment-position and lines-around-comment place `//` comments; single-line `/* */` comments '
+            + 'remain reviewable.',
+        'whitespace--chains':
+            'newline-per-chained-call breaks chains longer than two calls; the clause\'s own d3 example keeps '
+            + '`.enter().append()` on one line, which the rule rejects.',
+        'whitespace--max-len':
+            'max-len exempts strings and template literals, but it exempts the whole line that contains one, so '
+            + 'long code on such a line is not reported.',
         'whitespace--after-blocks':
             'padding-line-between-statements requires a blank line after block-like statements; blank lines between '
             + 'multiline members of object and array literals remain reviewable.',
@@ -523,6 +654,21 @@ const reasons: Record<Policy, Record<string, string>> = {
         'modules--import-order':
             'Inherited import/order options do not alphabetize; the guideline policy orders imports by path.',
         'comments-jsdoc': 'The recommended eslint-plugin-jsdoc configuration plus jsdoc/require-file-overview.',
+        'strings--line-length':
+            'The sample max-len has no ignoreStrings, so the clause\'s good example (a long single-line string) is '
+            + 'rejected while strings broken with concatenation pass; backslash continuations are rejected by '
+            + 'no-multi-str. The guideline policy enforces the clause.',
+        'whitespace--max-len':
+            'The sample max-len does not exempt long strings as the clause notes; the guideline policy does.',
+        'whitespace--block-spacing':
+            'block-spacing requires spaces inside single-line blocks; the sample brace-style (allowSingleLine: false, '
+            + 'clause 15.1) rejects single-line blocks, including this clause\'s good example.',
+        'commas--dangling':
+            'comma-dangle requires trailing commas in multiline lists; like upstream, it also requires one after a '
+            + 'trailing spread argument, which the clause\'s last example omits.',
+        'coercion--comment-deviations':
+            'no-bitwise reports every bitwise operation; a justified deviation is a directive that names the '
+            + 'implementation, e.g. `// oxlint-disable-next-line ag-compat/no-bitwise -- reason`.',
         'typescript--enum-naming-conventions':
             'Enum and member casing is enforced. Singular English names require review; values are unrestricted.',
         'typescript--caught-error-type':
@@ -530,9 +676,11 @@ const reasons: Record<Policy, Record<string, string>> = {
             + 'strict compiler settings.',
     },
     guideline: {
+        'modules--no-duplicate-imports':
+            'import/no-duplicates with prefer-inline also merges type-only and value imports of one path.',
         'modules--import-grouping':
             'import/order requires blank lines between groups. `importGroups: example` follows the clause example '
-            + '(built-in and package imports share a block); `prose` separates every listed category.',
+            + '(built-in imports first, then packages, in one block); `prose` separates every listed category.',
         'modules--import-order': 'import/order alphabetizes imports by path within each group.',
         'modules--prefer-named-export':
             'import/prefer-default-export is disabled and import/no-default-export rejects default exports.',
@@ -573,6 +721,7 @@ const known = new Set([
     ...Object.keys(guideAdditions),
     ...Object.keys(guideTypeScriptAdditions),
     ...Object.keys(guidelineAdditions),
+    ...Object.keys(guidelineTypeScriptAdditions),
 ]);
 clauses.forEach((clause) => [...clause.rules, ...clause.guideline.rules].forEach((rule) => {
     if (!known.has(rule)) {
@@ -717,6 +866,9 @@ Object.entries(guideTypeScriptAdditions).forEach(([name, setting]) => {
 Object.entries(guidelineAdditions).forEach(([name, setting]) => {
     mapRule(name, setting, 'Javascript.md', 'guideline');
 });
+Object.entries(guidelineTypeScriptAdditions).forEach(([name, setting]) => {
+    mapRule(name, setting, 'Javascript.md', 'guideline', 'typescript');
+});
 Object.entries(projectAdditions).forEach(([name, setting]) => {
     mapRule(name, setting, 'adguard-projects', 'adguard-projects');
 });
@@ -769,7 +921,8 @@ function classify(clause: Clause, disposition: Disposition, policy: Policy): Dis
     }
     // The comment-deviation clause is satisfied by a justified directive; the others lose to sample options.
     const forced = clause.id === 'coercion--comment-deviations' || (policy === 'compatibility'
-        && ['modules--prefer-named-export', 'strings--line-length', 'modules--import-order'].includes(clause.id));
+        && ['modules--prefer-named-export', 'strings--line-length', 'modules--import-order', 'whitespace--max-len']
+            .includes(clause.id));
     if (forced || (enabled.length < rules.length && !override)) {
         return {
             rules,
@@ -827,9 +980,8 @@ const report = [
     '| --- | --- | --- | --- | --- |',
     ...clauses.map((clause) => {
         const sameRules = JSON.stringify(clause.rules) === JSON.stringify(clause.guideline.rules);
-        const rules = sameRules
-            ? ruleList(clause.rules)
-            : `${ruleList(clause.rules)}; guideline: ${ruleList(clause.guideline.rules)}`;
+        const guidelineRules = `guideline: ${ruleList(clause.guideline.rules)}`;
+        const rules = sameRules ? ruleList(clause.rules) : [ruleList(clause.rules), guidelineRules].filter(Boolean).join('; ');
         const interpretation = clause.reason === clause.guideline.reason
             ? clause.reason
             : `${clause.reason} Guideline: ${clause.guideline.reason}`;

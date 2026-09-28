@@ -36,9 +36,10 @@ describe('custom plugin contract', () => {
         expect(plugin.meta?.name).toBe('ag');
         expect(Object.keys(rules)).toEqual(Object.keys(rules));
         Object.entries(rules).forEach(([name, rule]) => {
-            // Only the multiline comment rule has an option: the guideline policy's line-comment runs.
-            expect(rule.meta?.schema).toEqual(name === 'require-docblock'
-                ? [{ type: 'object', properties: { lineCommentRuns: { type: 'boolean' } }, additionalProperties: false }]
+            // Options only switch on the guideline policy's stricter checks.
+            const options: Record<string, string> = { 'require-docblock': 'lineCommentRuns', 'no-prototype-mutation': 'calls' };
+            expect(rule.meta?.schema).toEqual(options[name]
+                ? [{ type: 'object', properties: { [options[name]]: { type: 'boolean' } }, additionalProperties: false }]
                 : []);
             expect(rule.meta?.docs?.url).toContain('CodeGuidelines/blob/master/JavaScript/Javascript.md#');
             expect(rule.meta?.fixable).toBeUndefined();

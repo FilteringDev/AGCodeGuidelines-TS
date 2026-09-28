@@ -1,7 +1,25 @@
 /** @file Verify that a consumer tsconfig enables the compiler options required by the guide. */
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import {
+    dirname,
+    isAbsolute,
+    join,
+    resolve,
+} from 'node:path';
+
+// Options that `strict: true` enables and a project can still turn off individually.
+const STRICT_FAMILY = [
+    'alwaysStrict',
+    'noImplicitAny',
+    'noImplicitThis',
+    'strictBindCallApply',
+    'strictBuiltinIteratorReturn',
+    'strictFunctionTypes',
+    'strictNullChecks',
+    'strictPropertyInitialization',
+];
 
 export interface TsconfigCheck {
     /** Resolved configuration files, starting with the checked file. */
@@ -64,7 +82,7 @@ export function parseJsonc(text: string): unknown {
 }
 
 /**
- * Resolve an `extends` entry the way TypeScript does for relative paths and packages.
+ * Resolve an `extends` entry the way TypeScript does.
  * @param specifier - Value from the `extends` field.
  * @param from - Configuration file that declares it.
  * @returns Absolute path of the extended configuration.
@@ -72,14 +90,31 @@ export function parseJsonc(text: string): unknown {
 function resolveExtends(specifier: string, from: string): string {
     if (specifier.startsWith('.') || isAbsolute(specifier)) {
         const path = resolve(dirname(from), specifier);
-        return path.endsWith('.json') ? path : `${path}.json`;
+        return existsSync(path) || path.endsWith('.json') ? path : `${path}.json`;
     }
     const require = createRequire(from);
-    try {
-        return require.resolve(specifier);
-    } catch {
-        return require.resolve(`${specifier}${specifier.endsWith('.json') ? '' : '.json'}`);
+    const bare = /^(?:@[^/]+\/)?[^/]+$/u.test(specifier);
+    // A bare package name uses its package.json `tsconfig` field or its root tsconfig.json, never `main`.
+    const candidates = bare ? [`${specifier}/tsconfig.json`] : [specifier, `${specifier}.json`];
+    if (bare) {
+        try {
+            const manifest = require.resolve(`${specifier}/package.json`);
+            const { tsconfig } = JSON.parse(readFileSync(manifest, 'utf8')) as { tsconfig?: unknown };
+            if (typeof tsconfig === 'string') {
+                candidates.unshift(join(dirname(manifest), tsconfig));
+            }
+        } catch {
+            // Packages may hide package.json behind `exports`; the root tsconfig.json still applies.
+        }
     }
+    for (const candidate of candidates) {
+        try {
+            return require.resolve(candidate);
+        } catch {
+            // Try the next form TypeScript accepts.
+        }
+    }
+    throw new Error(`Cannot resolve tsconfig extends "${specifier}" from ${from}`);
 }
 
 /**
@@ -124,5 +159,8 @@ export async function checkTsconfig(path = 'tsconfig.json'): Promise<TsconfigChe
     if (compilerOptions.useUnknownInCatchVariables === false) {
         problems.push('25.3: do not disable "useUnknownInCatchVariables"');
     }
+    STRICT_FAMILY.filter((option) => compilerOptions[option] === false).forEach((option) => {
+        problems.push(`26.1: do not disable "${option}", which "strict" enables`);
+    });
     return { files, compilerOptions, problems };
 }
