@@ -206,6 +206,15 @@ describe('installed package contract', () => {
             ),
         );
         expect(json.rules['ag-compat/no-console']).toBe('error');
+        const project = JSON.parse(
+            await readFile(
+                join(directory, 'node_modules/@agcodeguidelines/oxlint-config/dist/typescript-adguard-projects.json'),
+                'utf8',
+            ),
+        );
+        expect(project.settings.agProfile).toBe('adguard-projects');
+        expect(project.overrides[0].rules['typescript/explicit-function-return-type']).toBe('error');
+        expect(json.rules['ag-jsdoc/require-description']).toBeUndefined();
     });
 
     it('runs opt-in typed rules with the separately installed service', async () => {
@@ -217,8 +226,9 @@ describe('installed package contract', () => {
         await writeFile(join(directory, 'typed-config.ts'), [
             "import { writeFileSync } from 'node:fs';",
             "import { createConfig } from '@agcodeguidelines/oxlint-config';",
-            "const preset = createConfig({ language: 'typescript', typeAware: true });",
+            "const preset = createConfig({ language: 'typescript', typeAware: true, profile: 'adguard-projects' });",
             "if (preset.settings.agPolicy !== 'compatibility') throw new Error('Default policy changed');",
+            "if (preset.settings.agProfile !== 'adguard-projects') throw new Error('Profile not recorded');",
             "writeFileSync('typed.json', JSON.stringify({",
             '    categories: preset.categories,',
             "    plugins: ['typescript'],",

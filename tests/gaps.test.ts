@@ -22,12 +22,16 @@ const outcomes = new Map<string, Diagnostic[]>();
 
 beforeAll(async () => {
     for (const example of gapCases) {
-        const mapping = catalog.mappings.find((entry) => entry.source === example.rule)!;
+        const mapping = catalog.mappings.find(
+            (entry) => entry.source === example.rule && entry.scope === example.scope,
+        )!;
         const target = mapping.target!;
         for (const kind of ['valid', 'invalid'] as const) {
             const base = createConfig({
                 language: example.language,
                 typeAware: mapping.requiresTypeInfo ?? false,
+                policy: example.scope === 'guideline' ? 'guideline' : 'compatibility',
+                profile: example.scope === 'adguard-projects' ? 'adguard-projects' : 'guide',
             });
             const providers = base.jsPlugins as { name: string; specifier: string }[];
             const config = {
@@ -61,11 +65,14 @@ beforeAll(async () => {
                 const extra = kind === 'valid' ? example.validFiles : example.invalidFiles;
                 const names = extra ? Object.keys(extra) : [filename];
                 outcomes.set(
-                    `${example.rule}/${kind}`,
+                    `${example.scope ?? 'base'}:${example.rule}/${kind}`,
                     names.flatMap((name) => result.get(name) ?? []),
                 );
             } catch (error: unknown) {
-                outcomes.set(`${example.rule}/${kind}`, [{ severity: 'error', message: String(error) }]);
+                outcomes.set(
+                    `${example.scope ?? 'base'}:${example.rule}/${kind}`,
+                    [{ severity: 'error', message: String(error) }],
+                );
             }
         }
     }
@@ -74,14 +81,16 @@ beforeAll(async () => {
 describe('supplementary rule and multi-file coverage', () => {
     gapCases.forEach((example) => {
         ['valid', 'invalid'].forEach((kind) => {
-            it(`${example.rule}/${kind}`, () => {
-                const diagnostics = outcomes.get(`${example.rule}/${kind}`);
+            it(`${example.scope ?? 'base'}: ${example.rule}/${kind}`, () => {
+                const diagnostics = outcomes.get(`${example.scope ?? 'base'}:${example.rule}/${kind}`);
                 expect(diagnostics).toBeDefined();
                 if (kind === 'valid') {
                     expect(diagnostics).toEqual([]);
                 } else {
                     expect(diagnostics?.length).toBeGreaterThan(0);
-                    const { target } = catalog.mappings.find((entry) => entry.source === example.rule)!;
+                    const { target } = catalog.mappings.find(
+                        (entry) => entry.source === example.rule && entry.scope === example.scope,
+                    )!;
                     if (example.rule === 'import/export') {
                         expect(diagnostics?.[0]?.message).toContain('Duplicated export');
                         return;

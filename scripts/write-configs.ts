@@ -10,5 +10,9 @@ for (const language of ['javascript', 'typescript'] as const) {
         `packages/oxlint-config/dist/${language}.json`,
         `${JSON.stringify(createConfig(language), null, 2)}\n`,
     );
+    await writeFile(
+        `packages/oxlint-config/dist/${language}-adguard-projects.json`,
+        `${JSON.stringify(createConfig({ language, profile: 'adguard-projects' }), null, 2)}\n`,
+    );
 }
 await writeFile('packages/oxlint-config/dist/node.json', `${JSON.stringify(node, null, 2)}\n`);

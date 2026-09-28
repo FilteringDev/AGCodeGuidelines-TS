@@ -36,6 +36,12 @@ it('accepts an explicit policy profile', () => {
     expect(parseArguments(['--policy', 'compatibility']).options).toEqual({ policy: 'compatibility' });
 });
 
+it('accepts the project profile and import grouping options', () => {
+    expect(parseArguments(['--profile', 'adguard-projects']).options).toEqual({ profile: 'adguard-projects' });
+    expect(parseArguments(['--policy', 'guideline', '--import-groups', 'prose']).options)
+        .toEqual({ policy: 'guideline', importGroups: 'prose' });
+});
+
 it.each(
     [
         ['--unknown'],
@@ -48,6 +54,9 @@ it.each(
         ['--policy', 'strict'],
         ['--environment', 'worker'],
         ['--source-type', 'automatic'],
+        ['--profile', 'custom'],
+        ['--import-groups', 'prose'],
+        ['--policy', 'guideline', '--import-groups', 'sorted'],
     ].map((args) => ({ args })),
 )('rejects invalid arguments $args', ({ args }) => {
     expect(() => parseArguments(args)).toThrow(TypeError);

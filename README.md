@@ -1,6 +1,6 @@
 # AdGuard guidelines for Oxlint
 
-An Oxlint-only implementation of the pinned [AdGuard JavaScript guidelines](docs/reference/Javascript.md), including the complete inherited Airbnb and JSDoc sample configuration. The sample configuration takes precedence when it conflicts with prose. Every one of the 134 numbered clauses has a disposition in the generated [coverage catalog](docs/coverage.md).
+An Oxlint-only implementation of the pinned [AdGuard JavaScript guidelines](docs/reference/Javascript.md), including the complete inherited Airbnb and JSDoc sample configuration and the guide's TypeScript section. The default `compatibility` policy gives the sample configuration precedence when it conflicts with prose; the opt-in `guideline` policy enforces the prose instead. Every one of the 134 numbered clauses has a disposition for both policies in the generated [coverage catalog](docs/coverage.md), and `tests/clauses.test.ts` runs each enforced clause's good and bad examples through the complete preset.
 
 The pnpm workspace contains three reusable packages:
 
@@ -33,7 +33,7 @@ pnpm exec ag-oxlint-config --language typescript --environment node
 pnpm exec oxlint --config .oxlintrc.json .
 ```
 
-The CLI preserves existing files unless passed `--force`. `--output -` prints JSON. JavaScript/browser/module are the defaults. Use `--source-type script` for browser scripts; `.cjs` and `.cts` retain CommonJS semantics.
+The CLI preserves existing files unless passed `--force`. `--output -` prints JSON. JavaScript/browser/module are the defaults. Use `--source-type script` for browser scripts; `.cjs` and `.cts` retain CommonJS semantics. `--policy guideline` enforces guide prose over conflicting sample settings (`--import-groups example|prose` selects the clause 10.10 interpretation), and `--profile adguard-projects` adds conventions shared by AdGuard projects that the guide does not require. `--check-tsconfig` verifies the compiler options of clauses 26.1 and 26.2.
 
 The programmatic API works in TypeScript scripts executed with `tsx`:
 
@@ -57,7 +57,7 @@ For compiler checking:
 }
 ```
 
-TypeScript presets preserve documentation requirements while avoiding duplicate JSDoc type annotations. Type checking uses the TypeScript compiler; the default presets require no separate typed lint service. Optional `createConfig({ language: 'typescript', typeAware: true })` enables type-dependent lint rules with `oxlint-tsgolint@7.0.2002`; see [type-aware linting](packages/oxlint-config/README.md#type-aware-linting). Compiler checking remains a separate gate.
+TypeScript presets apply the JavaScript rules through TypeScript-aware implementations where the pinned JavaScript ones misreport TypeScript syntax, and preserve documentation requirements while avoiding duplicate JSDoc type annotations. Type checking uses the TypeScript compiler; the default presets require no separate typed lint service. Optional `createConfig({ language: 'typescript', typeAware: true, profile: 'adguard-projects' })` enables type-dependent lint rules with `oxlint-tsgolint@7.0.2002`; see [type-aware linting](packages/oxlint-config/README.md#type-aware-linting). Compiler checking remains a separate gate.
 
 ## Scope and maintenance
 

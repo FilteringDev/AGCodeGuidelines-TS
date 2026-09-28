@@ -10,6 +10,8 @@
     },
     "./javascript": "./dist/javascript.json",
     "./typescript": "./dist/typescript.json",
+    "./javascript-adguard-projects": "./dist/javascript-adguard-projects.json",
+    "./typescript-adguard-projects": "./dist/typescript-adguard-projects.json",
     "./node": "./dist/node.json",
     "./tsconfig": "./tsconfig.base.json"
   },

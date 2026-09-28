@@ -20,7 +20,8 @@ function applyAliasAndType(currentNode: Node<'ImportSpecifier' | 'ImportDefaultS
         return localName;
     }
     const importedName = (imported as Node<'Identifier'>).name;
-    const { parent } = (currentNode as unknown as { parent: { importKind?: string } });
+    // The imported name's parent is this specifier; only an inline `type` modifier sets its importKind.
+    const { parent } = (imported as unknown as { parent: { importKind?: string } });
     const importedNameWithPrefix = parent.importKind === 'type'
         ? `type ${importedName}`
         : importedName;
