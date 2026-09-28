@@ -344,7 +344,7 @@ const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
     'brace-style': { target: 'ag-style/brace-style', reason: 'Checks namespace bodies.' },
     'no-redeclare': {
         target: 'ag-ts/no-redeclare',
-        reason: 'Accepts overloads and declaration merges that TypeScript permits.',
+        reason: 'Accepts overloads and the declaration merges that @typescript-eslint/no-redeclare accepts.',
     },
     'no-array-constructor': {
         target: 'eslint/no-array-constructor',

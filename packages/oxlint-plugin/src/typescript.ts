@@ -83,28 +83,33 @@ function containerOf(identifier: ESTree.Node): Container | null {
 }
 
 /**
- * Decide whether declarations form a merge that TypeScript permits.
+ * Decide whether declarations form a merge that `@typescript-eslint/no-redeclare` accepts with its default
+ * `ignoreDeclarationMerge`: interfaces, namespaces, one class with interfaces and namespaces, one function
+ * implementation with namespaces, or one enum with namespaces. TypeScript permits more (for example enum or
+ * type and value merges), but the TypeScript version of the rule still reports them.
  * @param declarations - Every same-name declaration in one container.
- * @returns Whether the declarations are an allowed TypeScript declaration merge.
+ * @returns Whether the declarations are an accepted declaration merge.
  */
 export function isAllowedMerge(declarations: Declaration[]): boolean {
-    const count = (kind: DeclarationKind) => declarations.filter((declaration) => declaration.kind === kind).length;
-    if (declarations.length < 2 || count('other') > 0) {
+    if (declarations.length < 2) {
         return false;
     }
-    const values = new Set(
-        declarations
-            .map((declaration) => declaration.kind)
-            .filter((kind) => ['class', 'function', 'enum', 'variable'].includes(kind)),
-    );
-    const typeAliases = count('type');
-    return values.size <= 1
-        && typeAliases <= 1
-        && (typeAliases === 0 || count('interface') + count('class') + count('enum') === 0)
-        && count('class') <= 1
-        && count('variable') <= 1
-        && (count('variable') === 0 || count('namespace') === 0)
-        && declarations.filter((declaration) => declaration.kind === 'function' && declaration.implementation).length <= 1;
+    // Overload signatures and ambient declarations belong to their implementation.
+    const kinds = declarations
+        .filter((declaration) => declaration.kind !== 'function' || declaration.implementation)
+        .map((declaration) => declaration.kind);
+    const count = (kind: DeclarationKind) => kinds.filter((entry) => entry === kind).length;
+    const only = (...allowed: DeclarationKind[]) => kinds.every((kind) => allowed.includes(kind));
+    if (kinds.length < 2 || only('interface') || only('namespace')) {
+        return true;
+    }
+    if (only('class', 'interface', 'namespace')) {
+        return count('class') <= 1;
+    }
+    if (only('function', 'namespace')) {
+        return count('function') <= 1;
+    }
+    return only('enum', 'namespace') && count('enum') === 1;
 }
 
 const noRedeclare = builtinRules.get('no-redeclare')!;
@@ -124,7 +129,7 @@ export const rules = {
                             .flatMap(declarationsOf)
                             .filter(([name]) => name === (node as ESTree.IdentifierReference).name)
                             .map(([, declaration]) => declaration) ?? [];
-                        // Overloads and permitted interface, namespace, class, function, or enum merges
+                        // Overloads and accepted interface, namespace, class, function, or enum merges
                         // declare one TypeScript symbol.
                         if (!isAllowedMerge(declarations)) {
                             context.report(descriptor);

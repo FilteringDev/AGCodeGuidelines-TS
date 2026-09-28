@@ -20,10 +20,9 @@ const valid = [
     ['class and namespace', 'class Box {}\nnamespace Box { export const SIZE = 1; }'],
     ['function and namespace', 'function build(): number { return 1; }\nnamespace build { export const SIZE = 1; }'],
     ['enum and namespace', 'enum Color { Red }\nnamespace Color { export const DEFAULT = 1; }'],
-    ['enum merge', 'enum Color { Red }\nenum Color { Green = 1 }'],
     ['namespace merge', 'namespace Space { export const A = 1; }\nnamespace Space { export const B = 2; }'],
-    ['type and value', 'type Mode = "light" | "dark";\nconst Mode = { Light: "light" };'],
-    ['interface and value', 'interface Mode { name: string }\nconst Mode = { name: "light" };'],
+    ['interface and namespace', 'interface Box { width: number }\nnamespace Box { export const SIZE = 1; }'],
+    ['overloads with namespace', 'function build(): number;\nfunction build(): number { return 1; }\nnamespace build { export const SIZE = 1; }'],
     ['nested block merge', 'function run() {\n    interface Box { width: number }\n    interface Box { height: number }\n}'],
     ['namespace body merge', 'namespace Outer {\n    export interface Box { width: number }\n    export interface Box { height: number }\n}'],
     ['distinct names', 'let first = 1;\nlet second = 2;'],
@@ -33,6 +32,10 @@ const invalid = [
     ['var redeclaration', 'var value = 1;\nvar value = 2;', 1],
     ['two implementations', 'function run() {}\nfunction run() {}', 1],
     ['class and function', 'class Box {}\nfunction Box() {}', 1],
+    // TypeScript merges these, but @typescript-eslint/no-redeclare reports them.
+    ['enum merge', 'enum Color { Red }\nenum Color { Green = 1 }', 1],
+    ['type and value', 'type Mode = "light" | "dark";\nconst Mode = { Light: "light" };', 1],
+    ['interface and value', 'interface Mode { name: string }\nconst Mode = { name: "light" };', 1],
     ['import and interface', 'import { Box } from "./box";\ninterface Box { width: number }', 1],
     ['hoisted var in block', 'var value = 1;\nif (value) {\n    var value = 2;\n}', 1],
     ['switch case', 'switch (mode) {\n    case 1:\n        var value = 1;\n        var value = 2;\n}', 1],
@@ -79,6 +82,14 @@ describe('TypeScript rule plugin contract', () => {
         expect(isAllowedMerge([declaration('function', true), declaration('function', true)])).toBe(false);
         expect(isAllowedMerge([declaration('class'), declaration('enum')])).toBe(false);
         expect(isAllowedMerge([declaration('function'), declaration('function', true)])).toBe(true);
+        expect(isAllowedMerge([declaration('function'), declaration('function')])).toBe(true);
+        expect(isAllowedMerge([declaration('enum'), declaration('enum')])).toBe(false);
+        expect(isAllowedMerge([declaration('enum'), declaration('enum'), declaration('namespace')])).toBe(false);
+        expect(isAllowedMerge([declaration('type'), declaration('variable')])).toBe(false);
+        expect(isAllowedMerge([declaration('interface'), declaration('variable')])).toBe(false);
+        expect(isAllowedMerge([declaration('class'), declaration('class'), declaration('interface')])).toBe(false);
+        expect(isAllowedMerge([declaration('function', true), declaration('function', true), declaration('namespace')]))
+            .toBe(false);
     });
 
     it('requires at least two declarations to describe a merge', () => {

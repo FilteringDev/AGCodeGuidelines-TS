@@ -1,5 +1,5 @@
 /**
- * @file Declaration merges that TypeScript permits.
+ * @file Declaration merges that `@typescript-eslint/no-redeclare` accepts.
  */
 
 interface Size {
@@ -38,10 +38,3 @@ export enum Direction {
 export namespace Direction {
     export const DEFAULT = Direction.Up;
 }
-
-export type Mode = 'light' | 'dark';
-
-export const Mode = {
-    Light: 'light',
-    Dark: 'dark',
-} as const;

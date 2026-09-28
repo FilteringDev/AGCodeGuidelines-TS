@@ -2628,7 +2628,7 @@
         "target": "ag-ts/no-redeclare",
         "setting": "error",
         "implementation": "javascript",
-        "reason": "Accepts overloads and declaration merges that TypeScript permits."
+        "reason": "Accepts overloads and the declaration merges that @typescript-eslint/no-redeclare accepts."
       }
     },
     {
