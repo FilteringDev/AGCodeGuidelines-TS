@@ -1,22 +1,43 @@
 /** @file Complete, portable Oxlint configurations derived from the pinned guide. */
 import { catalog } from '@agcodeguidelines/rule-catalog';
 
+import type {
+    ImportGroups,
+    Overlay,
+    Policy,
+    Profile,
+} from '@agcodeguidelines/rule-catalog';
 import type { OxlintConfig } from 'oxlint';
+import { checkTsconfig, parseJsonc } from './compiler';
 
+import type { TsconfigCheck } from './compiler';
+
+export type {
+    ImportGroups,
+    Policy,
+    Profile,
+    TsconfigCheck,
+};
 export type Language = 'javascript' | 'typescript';
 export type Environment = 'browser' | 'node' | 'both';
-export type Policy = 'compatibility' | 'guideline';
 export interface ConfigOptions {
     language?: Language;
     environment?: Environment;
     sourceType?: 'module' | 'script' | 'commonjs';
     typeAware?: boolean;
+    /** `guideline` enforces guide prose where it conflicts with the sample configuration. */
     policy?: Policy;
+    /** `adguard-projects` adds rules shared by AdGuard projects that the guide does not require. */
+    profile?: Profile;
+    /** Import grouping for clause 10.10 under the guideline policy. */
+    importGroups?: ImportGroups;
 }
+
+type Rules = NonNullable<OxlintConfig['rules']>;
 
 /**
  * Create an independent configuration with all plugin settings at its root.
- * @param options - Language, globals, and module semantics for the consumer.
+ * @param options - Language, globals, module semantics, policy, and profile for the consumer.
  * @returns A complete mutable Oxlint configuration.
  */
 export function createConfig(options: ConfigOptions | Language = {}): OxlintConfig {
@@ -26,22 +47,55 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
         sourceType = 'module',
         typeAware = false,
         policy = 'compatibility',
+        profile = 'guide',
+        importGroups,
     } = typeof options === 'string' ? { language: options } : options;
     if (
         !['javascript', 'typescript'].includes(language)
         || !['browser', 'node', 'both'].includes(environment)
         || !['module', 'script', 'commonjs'].includes(sourceType)
         || !['compatibility', 'guideline'].includes(policy)
+        || !['guide', 'adguard-projects'].includes(profile)
     ) {
-        throw new TypeError('Unsupported language, environment, or policy.');
+        throw new TypeError('Unsupported language, environment, source type, policy, or profile.');
     }
     if (typeof typeAware !== 'boolean' || (typeAware && language !== 'typescript')) {
         throw new TypeError('Type-aware linting requires the TypeScript preset and a boolean typeAware option.');
     }
-    const rules = structuredClone(catalog.rules) as NonNullable<OxlintConfig['rules']>;
+    if (importGroups !== undefined && (policy !== 'guideline' || !['example', 'prose'].includes(importGroups))) {
+        throw new TypeError('importGroups requires the guideline policy and one of: example, prose.');
+    }
+    const rules = structuredClone(catalog.rules) as Rules;
+    const typescriptRules = structuredClone(catalog.typescriptRules) as Rules;
     const settings = structuredClone(catalog.settings);
+    const overlays: Overlay[] = [];
+    if (policy === 'guideline') {
+        overlays.push(catalog.policies.guideline);
+    }
+    if (profile === 'adguard-projects') {
+        overlays.push(catalog.profiles['adguard-projects']);
+    }
+    overlays.forEach((overlay) => {
+        Object.assign(rules, structuredClone(overlay.rules));
+        Object.assign(typescriptRules, structuredClone(overlay.typescriptRules));
+        Object.assign(settings, structuredClone(overlay.settings));
+    });
+    if (policy === 'guideline') {
+        rules['ag-import/order'] = structuredClone(
+            catalog.policies.guideline.importGroups[importGroups ?? 'example'],
+        ) as Rules[string];
+        if (sourceType !== 'module') {
+            rules['import/no-commonjs'] = 'off';
+        }
+    }
+    if (!typeAware) {
+        catalog.mappings
+            .filter((mapping) => mapping.requiresTypeInfo && mapping.target)
+            .forEach((mapping) => delete typescriptRules[mapping.target!]);
+    }
     const providers = {
         ag: '@agcodeguidelines/oxlint-plugin',
+        'ag-ts': '@agcodeguidelines/oxlint-plugin/typescript',
         'ag-compat': '@agcodeguidelines/oxlint-plugin/compat',
         'ag-style': '@agcodeguidelines/oxlint-plugin/stylistic',
         'ag-jsdoc': '@agcodeguidelines/oxlint-plugin/jsdoc',
@@ -59,6 +113,7 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
     settings.agSourceType = sourceType;
     settings.agTypeScript = language === 'typescript';
     settings.agPolicy = policy;
+    settings.agProfile = profile;
     const config: OxlintConfig = {
         categories: {
             correctness: 'off',
@@ -69,7 +124,7 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
             restriction: 'off',
             nursery: 'off',
         },
-        plugins: ['eslint', 'unicorn', 'typescript'],
+        plugins: ['eslint', 'unicorn', 'typescript', 'import'],
         jsPlugins: Object.entries(providers).map(([name, specifier]) => ({ name, specifier })),
         env: {
             ...catalog.env,
@@ -79,71 +134,20 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
             node: environment !== 'browser',
         },
         settings,
-        rules: rules as OxlintConfig['rules'],
+        rules,
         overrides: [],
     };
-    if (policy === 'guideline') {
-        // Preserve compatibility defaults; only reverse documented sample/prose conflicts.
-        rules['ag-import/prefer-default-export'] = 'off';
-    }
     if (typeAware) {
         config.options = { typeAware: true };
     }
+    if (policy === 'guideline' && sourceType === 'module') {
+        // CommonJS filename extensions keep CommonJS semantics.
+        config.overrides!.push({ files: ['**/*.{cjs,cts}'], rules: { 'import/no-commonjs': 'off' } });
+    }
     if (language === 'typescript') {
-        const unused = rules['ag-compat/no-unused-vars'];
         settings['import/extensions'] = ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.mts', '.cts'];
         settings['import/resolver'] = { typescript: true, node: { extensions: settings['import/extensions'] } };
-        config.overrides = [
-            {
-                files: ['**/*.{ts,tsx,mts,cts}'],
-                rules: {
-                    'ag-compat/no-undef': 'off',
-                    // Native syntax-aware rules understand signatures and parameter properties.
-                    'ag-compat/no-unused-vars': 'off',
-                    'eslint/no-unused-vars': Array.isArray(unused)
-                        ? [unused[0], { caughtErrors: 'none', ...(unused[1] as object) }]
-                        : [unused ?? 'off', { caughtErrors: 'none' }],
-                    'ag-compat/no-shadow': 'off',
-                    'eslint/no-shadow': rules['ag-compat/no-shadow'],
-                    'ag-compat/no-useless-constructor': 'off',
-                    'eslint/no-useless-constructor': rules['ag-compat/no-useless-constructor'],
-                    'ag-compat/no-empty-function': 'off',
-                    'eslint/no-empty-function': rules['ag-compat/no-empty-function'],
-                    'ag-compat/indent': 'off',
-                    'ag-style/indent': rules['ag-compat/indent'],
-                    'ag/enum-name': 'error',
-                    'ag/unknown-catch': 'error',
-                    'ag-react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
-                    'ag-import/extensions': [
-                        'error',
-                        'ignorePackages',
-                        {
-                            js: 'never',
-                            jsx: 'never',
-                            ts: 'never',
-                            tsx: 'never',
-                            mts: 'never',
-                            cts: 'never',
-                        },
-                    ],
-                    'ag-jsdoc/check-tag-names': ['warn', { typed: true }],
-                    'ag-jsdoc/require-param-type': 'off',
-                    'ag-jsdoc/require-property-type': 'off',
-                    'ag-jsdoc/require-returns-type': 'off',
-                    'ag-jsdoc/require-next-type': 'off',
-                    'ag-jsdoc/require-yields-type': 'off',
-                    'ag-jsdoc/require-throws-type': 'off',
-                    'ag-jsdoc/no-undefined-types': 'off',
-                    'ag-jsdoc/no-types': 'error',
-                    ...Object.fromEntries(
-                        catalog.mappings
-                            .filter((mapping) => mapping.target?.startsWith('typescript/') ?? false)
-                            .filter((mapping) => !mapping.requiresTypeInfo || typeAware)
-                            .map((mapping) => [mapping.target as string, mapping.setting]),
-                    ),
-                },
-            },
-        ];
+        config.overrides!.unshift({ files: ['**/*.{ts,tsx,mts,cts}'], rules: typescriptRules });
     }
     return config;
 }
@@ -151,3 +155,4 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
 export const javascript = createConfig();
 export const typescript = createConfig({ language: 'typescript' });
 export const node = { env: { browser: false, node: true } } satisfies OxlintConfig;
+export { checkTsconfig, parseJsonc };

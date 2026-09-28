@@ -23,10 +23,13 @@ const externalLoaders: Record<string, string> = {
     'scripts/airbnb.ts': 'Pinned Airbnb configuration data evaluated in a VM.',
     'scripts/generate.ts': 'Installed upstream metadata used to build the rule catalog.',
     'scripts/import-upstream.ts': 'Pinned upstream fixtures evaluated in a VM.',
+    'packages/oxlint-config/src/compiler.ts': 'Consumer package specifiers in tsconfig extends chains.',
     'tests/behavior.test.ts': 'Resolve the installed TypeScript compiler executable.',
+    'tests/clauses.test.ts': 'Resolve the installed plugin entrypoints for CLI fixtures.',
     'tests/consumer.test.ts': 'Resolve tools inside the temporary packed consumer.',
     'tests/gaps.test.ts': 'Resolve the installed plugin entrypoints for CLI fixtures.',
     'tests/integration.test.ts': 'Resolve the installed plugin entrypoints for CLI fixtures.',
+    'tests/typescript-preset.test.ts': 'Resolve the installed plugin entrypoints for CLI fixtures.',
     'tests/typescript-syntax.test.ts': 'Resolve the installed plugin entrypoints for CLI fixtures.',
 };
 const scopeKinds = new Set([

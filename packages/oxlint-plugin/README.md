@@ -11,7 +11,12 @@ Use `@agcodeguidelines/oxlint-config` to materialize the full preset. The defaul
 - `no-prototype-mutation`
 - `no-default-side-effects`
 - `prefer-array-from-map`
-- `require-docblock`
+- `require-docblock` (option `lineCommentRuns` also rejects runs of `//` comments)
+- `no-multiline-string-concat`
+- `multiline-condition-layout`
+- `constant-name`
+
+The `/typescript` export provides TypeScript-aware variants of pinned core rules: `no-redeclare` accepts overloads and the declaration merges that TypeScript permits.
 
 The `/compat`, `/jsdoc`, `/react`, `/jsx-a11y`, `/import`, and `/stylistic` exports provide isolated upstream rules through Oxlint's JavaScript plugin API. They are not an ESLint plugin distribution and do not depend on the ESLint engine.
 

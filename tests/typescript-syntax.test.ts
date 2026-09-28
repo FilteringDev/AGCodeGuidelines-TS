@@ -44,7 +44,8 @@ const extensions = ['ts', 'tsx', 'mts', 'cts'];
 let counts: Map<string, number>;
 
 beforeAll(async () => {
-    const preset = createConfig('typescript');
+    // The explicit-* and ban-ts-comment rules belong to the AdGuard projects profile.
+    const preset = createConfig({ language: 'typescript', profile: 'adguard-projects' });
     const overlay = preset.overrides![0]!.rules!;
     const names = [
         'eslint/no-unused-vars',

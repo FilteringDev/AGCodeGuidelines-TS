@@ -2,6 +2,7 @@
 /** @file Materialize a complete Oxlint configuration for a consumer project. */
 import { writeFile } from 'node:fs/promises';
 
+import { checkTsconfig } from './compiler';
 import { createConfig } from './index';
 
 import type { ConfigOptions } from './index';
@@ -10,10 +11,13 @@ export const usage = `Usage: ag-oxlint-config [options]
 
   --language javascript|typescript  Source language (default: javascript)
   --environment browser|node|both   Globals (default: browser)
-  --policy compatibility|guideline  Policy profile (default: compatibility)
+  --policy compatibility|guideline  Sample-first or prose-first rules (default: compatibility)
+  --profile guide|adguard-projects  Add rules shared by AdGuard projects (default: guide)
+  --import-groups example|prose     Clause 10.10 grouping for the guideline policy (default: example)
   --source-type module|script|commonjs  Module semantics (default: module)
   --output PATH                    Output file (default: .oxlintrc.json)
   --force                          Replace an existing output file
+  --check-tsconfig [PATH]          Verify compiler options required by the guide (default: tsconfig.json)
   --help                           Print this help
 `;
 
@@ -27,9 +31,10 @@ export function parseArguments(args: string[]): {
     output: string;
     force: boolean;
     help: boolean;
+    tsconfig?: string;
 } {
-    const result = {
-        options: {} as ConfigOptions,
+    const result: ReturnType<typeof parseArguments> = {
+        options: {},
         output: '.oxlintrc.json',
         force: false,
         help: false,
@@ -45,7 +50,14 @@ export function parseArguments(args: string[]): {
             result.force = true;
         } else if (flag === '--help') {
             result.help = true;
-        } else if (['--language', '--environment', '--policy', '--source-type', '--output'].includes(flag)) {
+        } else if (flag === '--check-tsconfig') {
+            const value = args[index + 1];
+            result.tsconfig = value && !value.startsWith('--') ? value : 'tsconfig.json';
+            index += value && !value.startsWith('--') ? 1 : 0;
+        } else if (
+            ['--language', '--environment', '--policy', '--profile', '--import-groups', '--source-type', '--output']
+                .includes(flag)
+        ) {
             const value = args[index + 1];
             if (!value || value.startsWith('--')) {
                 throw new TypeError(`Missing value for ${flag}`);
@@ -54,7 +66,8 @@ export function parseArguments(args: string[]): {
             if (flag === '--output') {
                 result.output = value;
             } else {
-                const key = flag === '--source-type' ? 'sourceType' : flag.slice(2);
+                const keys: Record<string, string> = { '--source-type': 'sourceType', '--import-groups': 'importGroups' };
+                const key = keys[flag] ?? flag.slice(2);
                 Object.assign(result.options, { [key]: value });
             }
         } else {
@@ -75,10 +88,18 @@ export async function runCli(
     print: (text: string) => void = (text) => process.stdout.write(text),
 ): Promise<void> {
     const {
-        options, output, force, help,
+        options, output, force, help, tsconfig,
     } = parseArguments(args);
     if (help) {
         print(usage);
+        return;
+    }
+    if (tsconfig !== undefined) {
+        const { files, problems } = await checkTsconfig(tsconfig);
+        if (problems.length > 0) {
+            throw new Error(`${files[0]} does not meet the guide:\n${problems.map((problem) => `  ${problem}`).join('\n')}`);
+        }
+        print(`${files[0]} meets the guide's compiler requirements.\n`);
         return;
     }
     const text = `${JSON.stringify(createConfig(options), null, 2)}\n`;

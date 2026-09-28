@@ -15,7 +15,10 @@ import { severity } from '../packages/rule-catalog/src/index';
 import type {
     Catalog,
     Clause,
+    Disposition,
+    ImportGroups,
     Mapping,
+    Policy,
     RuleMap,
     RuleSetting,
 } from '../packages/rule-catalog/src/index';
@@ -104,11 +107,6 @@ apply(airbnb, 'airbnb@19.0.4/base@15.0.0');
 hash('airbnb.json', airbnbText);
 apply(jsdoc.configs.recommended ?? {}, 'jsdoc@64.3.6/recommended');
 hash('jsdoc@64.3.6/recommended', JSON.stringify(jsdoc.configs.recommended));
-// Default boundary elements for the catalog (consumers override via settings).
-settings['boundaries/elements'] = [
-    { type: 'src-index', pattern: 'src/index.ts', mode: 'file' },
-    { type: 'test-folder', pattern: 'test', mode: 'folder' },
-];
 const sampleText = await readFile('docs/reference/eslintrc.upstream.txt', 'utf8');
 const guideText = await readFile('docs/reference/Javascript.md', 'utf8');
 hash('Javascript.md', guideText);
@@ -116,19 +114,99 @@ hash('eslintrc.cjs', sampleText);
 verifyReference(sampleText, sample);
 apply(sample, 'eslintrc.cjs');
 
-const additions: RuleMap = {
+type Scope = 'base' | NonNullable<Mapping['scope']>;
+
+/**
+ * Read inherited rule options without the severity.
+ * @param name - Source rule identifier.
+ * @returns Options from the resolved sample configuration.
+ */
+function inheritedOptions(name: string): unknown[] {
+    const setting = baseline[name];
+    return Array.isArray(setting) ? setting.slice(1) : [];
+}
+
+// Requirements stated by the guide that the sample configuration does not configure.
+const guideAdditions: RuleMap = {
     'jsdoc/require-file-overview': 'error',
-    'jsdoc/require-description': 'error',
-    'jsdoc/require-description-complete-sentence': 'error',
-    'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
-    'jsdoc/require-throws': 'error',
-    'jsdoc/sort-tags': 'error',
     'sort-imports': ['error', {
         ignoreCase: true,
         ignoreDeclarationSort: true,
         ignoreMemberSort: false,
         memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
     }],
+    'unicorn/prefer-node-protocol': 'error',
+    'unicorn/no-this-assignment': 'error',
+    'ag/no-accessors': 'error',
+    'ag/no-direct-reexport': 'error',
+    'ag/no-prototype-mutation': 'error',
+    'ag/no-default-side-effects': 'error',
+    'ag/prefer-array-from-map': 'error',
+    'ag/require-docblock': 'error',
+};
+const guideTypeScriptAdditions: RuleMap = {
+    'ag/enum-name': 'error',
+    'ag/unknown-catch': 'error',
+};
+
+// The opt-in guideline policy resolves documented conflicts between guide prose and the sample in favor of prose.
+const importOrder = (groups: unknown[]): RuleSetting => ['error', {
+    groups,
+    'newlines-between': 'always',
+    alphabetize: { order: 'asc', caseInsensitive: true },
+}];
+const importGroups: Record<ImportGroups, RuleSetting> = {
+    // The guide's example keeps built-in and package imports in one block.
+    example: importOrder([['builtin', 'external', 'internal'], 'parent', ['sibling', 'index']]),
+    // The guide's prose separates every listed category.
+    prose: importOrder(['builtin', 'external', 'internal', 'parent', ['sibling', 'index']]),
+};
+const guidelineAdditions: RuleMap = {
+    'import/no-commonjs': 'error',
+    'import/no-namespace': 'error',
+    'import/prefer-default-export': 'off',
+    'import/no-default-export': 'error',
+    'import/order': importGroups.example,
+    'line-comment-position': ['error', {
+        ...(inheritedOptions('line-comment-position')[0] as object),
+        ignorePattern: '^\\s*(?:oxlint-|@ts-)',
+    }],
+    // Clause 17.2 governs single-line comments; block comments keep their inherited freedom.
+    'lines-around-comment': ['error', {
+        beforeBlockComment: false,
+        beforeLineComment: true,
+        allowBlockStart: true,
+        allowObjectStart: true,
+        allowArrayStart: true,
+        allowClassStart: true,
+    }],
+    'prefer-destructuring': ['error', {
+        ...(inheritedOptions('prefer-destructuring')[0] as object),
+        VariableDeclarator: { array: true, object: true },
+    }, ...inheritedOptions('prefer-destructuring').slice(1)],
+    'react/jsx-indent': ['error', 4],
+    'react/jsx-indent-props': ['error', 4],
+    'newline-per-chained-call': ['error', { ignoreChainWithDepth: 2 }],
+    'padding-line-between-statements': ['error', { blankLine: 'always', prev: 'block-like', next: '*' }],
+    'id-length': ['error', { min: 2, properties: 'never' }],
+    'max-len': ['error', {
+        ...(inheritedOptions('max-len')[0] as object),
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+    }],
+    'ag/no-multiline-string-concat': 'error',
+    'ag/multiline-condition-layout': 'error',
+    'ag/require-docblock': ['error', { lineCommentRuns: true }],
+    'ag/constant-name': 'error',
+};
+
+// Rules used by AdGuard projects that the guide does not require; opt-in through the adguard-projects profile.
+const projectAdditions: RuleMap = {
+    'jsdoc/require-description': 'error',
+    'jsdoc/require-description-complete-sentence': 'error',
+    'jsdoc/require-hyphen-before-param-description': ['error', 'never'],
+    'jsdoc/require-throws': 'error',
+    'jsdoc/sort-tags': 'error',
     'no-restricted-imports': ['error', {
         patterns: [{
             group: ['**/*-mv2', '**/*-mv3'],
@@ -147,6 +225,8 @@ const additions: RuleMap = {
     }],
     'notice/notice': 'off',
     '@adguard/logger-context/require-logger-context': ['error', { contextModuleName: 'ext' }],
+};
+const projectTypeScriptAdditions: RuleMap = {
     '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
     '@typescript-eslint/consistent-type-exports': 'error',
     '@typescript-eslint/explicit-function-return-type': 'error',
@@ -165,21 +245,181 @@ const additions: RuleMap = {
     '@typescript-eslint/ban-ts-comment': 'error',
     '@typescript-eslint/dot-notation': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
-    'unicorn/prefer-node-protocol': 'error',
-    'unicorn/no-this-assignment': 'error',
-    'ag/no-accessors': 'error',
-    'ag/no-direct-reexport': 'error',
-    'ag/no-prototype-mutation': 'error',
-    'ag/no-default-side-effects': 'error',
-    'ag/prefer-array-from-map': 'error',
-    'ag/require-docblock': 'error',
 };
+const projectSettings: Record<string, unknown> = {
+    // Default boundary elements (consumers override via settings).
+    'boundaries/elements': [
+        { type: 'src-index', pattern: 'src/index.ts', mode: 'file' },
+        { type: 'test-folder', pattern: 'test', mode: 'folder' },
+    ],
+};
+
+/**
+ * Replace the options of a rule setting while keeping its severity.
+ * @param setting - Original setting.
+ * @param update - Derives new options from the original options.
+ * @returns Setting with derived options.
+ */
+function withOptions(setting: RuleSetting, update: (options: unknown[]) => unknown[]): RuleSetting {
+    return Array.isArray(setting) ? [setting[0], ...update(setting.slice(1))] : [setting, ...update([])];
+}
+
+interface Equivalent {
+    target: string | null;
+    reason: string;
+    adapt?: (setting: RuleSetting) => RuleSetting;
+}
+
+const TYPESCRIPT_EXTENSIONS = {
+    ts: 'never',
+    tsx: 'never',
+    mts: 'never',
+    cts: 'never',
+};
+
+// "In TypeScript we use the same rules as in JavaScript": each entry selects a TypeScript-aware
+// implementation of the same rule and options. Entries are limited to rules whose pinned JavaScript
+// implementation reports valid TypeScript or ignores TypeScript syntax (see tests/typescript-preset.test.ts).
+const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
+    'no-undef': { target: null, reason: 'The TypeScript compiler reports unresolved names, including ambient types.' },
+    'no-unused-vars': {
+        target: 'eslint/no-unused-vars',
+        reason: 'Understands type-only usage, signatures, and parameter properties.',
+        adapt: (setting) => withOptions(setting, ([options]) => [{ caughtErrors: 'none', ...(options as object) }]),
+    },
+    'no-shadow': { target: 'eslint/no-shadow', reason: 'Ignores type-space parameters in signatures.' },
+    'no-useless-constructor': {
+        target: 'eslint/no-useless-constructor',
+        reason: 'Keeps constructors that declare parameter properties or accessibility.',
+    },
+    'no-empty-function': {
+        target: 'eslint/no-empty-function',
+        reason: 'Understands parameter-property constructors and overload signatures.',
+    },
+    'no-dupe-class-members': { target: 'eslint/no-dupe-class-members', reason: 'Accepts method overload signatures.' },
+    'no-redeclare': {
+        target: 'ag-ts/no-redeclare',
+        reason: 'Accepts overloads and declaration merges that TypeScript permits.',
+    },
+    'no-array-constructor': {
+        target: 'eslint/no-array-constructor',
+        reason: 'Accepts explicitly typed constructors such as `new Array<string>()`.',
+    },
+    'default-param-last': { target: 'eslint/default-param-last', reason: 'Treats optional parameters like defaults.' },
+    'no-use-before-define': {
+        target: 'eslint/no-use-before-define',
+        reason: 'Ignores type-only references such as `typeof` queries.',
+    },
+    indent: { target: 'ag-style/indent', reason: 'Indents interfaces, enums, and type annotations.' },
+    'comma-dangle': {
+        target: 'ag-style/comma-dangle',
+        reason: 'Also checks enums, type parameters, and tuples with the array setting, as airbnb-typescript does.',
+        adapt: (setting) => withOptions(setting, ([options]) => {
+            const base = typeof options === 'string'
+                ? Object.fromEntries(['arrays', 'objects', 'imports', 'exports', 'functions'].map((key) => [key, options]))
+                : (options as Record<string, unknown>);
+            return [{
+                ...base,
+                enums: base.arrays,
+                generics: base.arrays,
+                tuples: base.arrays,
+            }];
+        }),
+    },
+    'comma-spacing': {
+        target: 'ag-style/comma-spacing',
+        reason: 'Checks type arguments and accepts the TSX `<T,>` form.',
+    },
+    'key-spacing': { target: 'ag-style/key-spacing', reason: 'Checks interface and type literal members.' },
+    'lines-between-class-members': {
+        target: 'ag-style/lines-between-class-members',
+        reason: 'Accepts adjacent overload signatures.',
+    },
+    'object-curly-spacing': { target: 'ag-style/object-curly-spacing', reason: 'Checks type literals.' },
+    semi: { target: 'ag-style/semi', reason: 'Checks type aliases, ambient declarations, and abstract members.' },
+    'space-before-blocks': {
+        target: 'ag-style/space-before-blocks',
+        reason: 'Checks interface, enum, and module bodies.',
+    },
+    'space-infix-ops': {
+        target: 'ag-style/space-infix-ops',
+        reason: 'Checks union and intersection types and enum initializers.',
+    },
+    'lines-around-comment': {
+        target: 'ag-style/lines-around-comment',
+        reason: 'Treats interface, type literal, enum, and namespace bodies like blocks.',
+        adapt: (setting) => withOptions(setting, ([options]) => {
+            const allow = (options ?? {}) as Record<string, unknown>;
+            return [{
+                ...allow,
+                allowInterfaceStart: allow.allowBlockStart,
+                allowTypeStart: allow.allowBlockStart,
+                allowEnumStart: allow.allowBlockStart,
+                allowModuleStart: allow.allowBlockStart,
+            }];
+        }),
+    },
+    'import/extensions': {
+        target: 'ag-import/extensions',
+        reason: 'TypeScript module specifiers omit TypeScript extensions as well.',
+        adapt: (setting) => withOptions(setting, ([mode, options]) => [
+            mode,
+            { ...(options as object), ...TYPESCRIPT_EXTENSIONS },
+        ]),
+    },
+    'import/no-extraneous-dependencies': {
+        target: 'ag-import/no-extraneous-dependencies',
+        reason: 'Adds TypeScript variants of the development file globs, as airbnb-typescript does.',
+        adapt: (setting) => withOptions(setting, ([options]) => {
+            const { devDependencies } = options as { devDependencies: string[] };
+            return [{
+                ...(options as object),
+                devDependencies: devDependencies.flatMap((glob) => {
+                    const typed = glob.replace(/\bjs(x?)\b/gu, 'ts$1');
+                    return typed === glob ? [glob] : [glob, typed];
+                }),
+            }];
+        }),
+    },
+    'react/jsx-filename-extension': {
+        target: 'ag-react/jsx-filename-extension',
+        reason: 'Allows JSX in .tsx files.',
+        adapt: (setting) => withOptions(setting, () => [{ extensions: ['.jsx', '.tsx'] }]),
+    },
+    'jsdoc/check-tag-names': {
+        target: 'ag-jsdoc/check-tag-names',
+        reason: 'Uses TypeScript tag semantics.',
+        adapt: (setting) => withOptions(setting, () => [{ typed: true }]),
+    },
+    'jsdoc/no-types': {
+        target: 'ag-jsdoc/no-types',
+        reason: 'Types come from TypeScript annotations rather than duplicated JSDoc types.',
+        adapt: () => 'error',
+    },
+    ...Object.fromEntries([
+        'jsdoc/require-param-type',
+        'jsdoc/require-property-type',
+        'jsdoc/require-returns-type',
+        'jsdoc/require-next-type',
+        'jsdoc/require-yields-type',
+        'jsdoc/require-throws-type',
+        'jsdoc/no-undefined-types',
+    ].map((name) => [name, { target: null, reason: 'Types come from TypeScript annotations.' }])),
+};
+
+const typescriptPlugin = await import('../packages/oxlint-plugin/src/typescript');
+const typescriptTargets = new Set([
+    ...native,
+    ...Object.keys(style.rules).map((name) => `ag-style/${name}`),
+    ...Object.keys(typescriptPlugin.rules).map((name) => `ag-ts/${name}`),
+]);
 
 const extraClauses: Record<string, string[]> = {
     'types--primitives': [],
     'references--block-scope': ['no-undef'],
     'arrays--mapping': ['ag/prefer-array-from-map'],
     'strings--line-length': ['max-len', 'no-useless-concat'],
+    'functions--in-blocks': ['no-loop-func', 'no-inner-declarations'],
     'functions--arguments-shadow': ['no-shadow-restricted-names'],
     'es6-default-parameters': ['no-param-reassign'],
     'functions--default-side-effects': ['ag/no-default-side-effects'],
@@ -188,6 +428,7 @@ const extraClauses: Record<string, string[]> = {
     'modules--use-them': ['import/no-commonjs', 'import/no-amd'],
     'modules--no-wildcard': ['import/no-namespace'],
     'modules--no-export-from-import': ['ag/no-direct-reexport'],
+    'modules--no-duplicate-imports': ['no-duplicate-imports', 'import/no-duplicates'],
     'modules--prefer-named-export': ['import/prefer-default-export'],
     'modules--import-node-protocol': ['unicorn/prefer-node-protocol'],
     'properties--bracket': ['dot-notation'],
@@ -195,20 +436,22 @@ const extraClauses: Record<string, string[]> = {
     'control-statement--value-selection': ['no-unused-expressions'],
     'comments--multiline': ['ag/require-docblock'],
     'comments--singleline': ['line-comment-position', 'lines-around-comment'],
-    'comments-jsdoc': [
-        'jsdoc/require-file-overview',
-        'jsdoc/require-description',
-        'jsdoc/require-description-complete-sentence',
-        'jsdoc/require-hyphen-before-param-description',
-        'jsdoc/require-throws',
-        'jsdoc/sort-tags',
-    ],
+    'comments-jsdoc': ['jsdoc/require-file-overview'],
+    'whitespace--spaces': ['indent', 'react/jsx-indent', 'react/jsx-indent-props'],
     'whitespace--after-blocks': ['padding-line-between-statements'],
     'coercion--comment-deviations': ['no-bitwise'],
     'naming--self-this': ['unicorn/no-this-assignment'],
     'accessors--no-getters-setters': ['ag/no-accessors'],
     'typescript--enum-naming-conventions': ['ag/enum-name'],
     'typescript--caught-error-type': ['ag/unknown-catch'],
+};
+
+// Rules that the guideline policy adds to a clause's compatibility rules.
+const guidelineClauses: Record<string, string[]> = {
+    'strings--line-length': ['max-len', 'ag/no-multiline-string-concat'],
+    'modules--prefer-named-export': ['import/no-default-export'],
+    'control-statements': ['operator-linebreak', 'ag/multiline-condition-layout'],
+    'naming--constants': ['ag/constant-name'],
 };
 
 const manual: Record<string, string> = {
@@ -241,6 +484,65 @@ const manual: Record<string, string> = {
     'accessors--consistent': 'Consistency of get/set APIs is a design-review requirement.',
 };
 
+// Clauses whose linked rules are active but do not enforce every stated requirement.
+const partial: Record<Policy, Record<string, string>> = {
+    compatibility: {
+        'destructuring--array':
+            'Inherited prefer-destructuring checks assignments but not declarations such as `const first = arr[0]`; '
+            + 'the guideline policy checks both.',
+        'modules--import-grouping':
+            'Inherited import/order places built-in, package, and internal imports first, but does not require blank '
+            + 'lines between groups or separate parent from sibling imports; use the guideline policy.',
+        'comments--multiline':
+            'Multiline /* */ blocks are rejected; runs of // line comments (the clause example) are rejected only by '
+            + 'the guideline policy.',
+        'control-statements':
+            'operator-linebreak puts logical operators first; starting the condition on its own line is enforced by '
+            + 'the guideline policy.',
+        'whitespace--spaces':
+            'indent requires four spaces; inherited react/jsx-indent and react/jsx-indent-props require two-space '
+            + 'JSX, which the guideline policy changes to four.',
+        'whitespace--chains':
+            'Inherited newline-per-chained-call allows four calls on one line; the guideline policy allows two.',
+    },
+    guideline: {
+        'whitespace--after-blocks':
+            'padding-line-between-statements requires a blank line after block-like statements; blank lines between '
+            + 'multiline members of object and array literals remain reviewable.',
+        'naming--constants':
+            'ag/constant-name requires UPPER_SNAKE_CASE for module-level const bindings initialized with primitive '
+            + 'literals; other semantic constants remain reviewable.',
+    },
+};
+
+// Clauses whose explanation is more specific than the enforcement category.
+const reasons: Record<Policy, Record<string, string>> = {
+    compatibility: {
+        'modules--no-duplicate-imports':
+            'Airbnb disables no-duplicate-imports in favor of import/no-duplicates, which enforces the clause.',
+        'modules--import-order':
+            'Inherited import/order options do not alphabetize; the guideline policy orders imports by path.',
+        'comments-jsdoc': 'The recommended eslint-plugin-jsdoc configuration plus jsdoc/require-file-overview.',
+        'typescript--enum-naming-conventions':
+            'Enum and member casing is enforced. Singular English names require review; values are unrestricted.',
+        'typescript--caught-error-type':
+            'Explicit any is rejected on every catch binding; unannotated catches are unknown under the shared '
+            + 'strict compiler settings.',
+    },
+    guideline: {
+        'modules--import-grouping':
+            'import/order requires blank lines between groups. `importGroups: example` follows the clause example '
+            + '(built-in and package imports share a block); `prose` separates every listed category.',
+        'modules--import-order': 'import/order alphabetizes imports by path within each group.',
+        'modules--prefer-named-export':
+            'import/prefer-default-export is disabled and import/no-default-export rejects default exports.',
+        'strings--line-length':
+            'max-len ignores strings and template literals; ag/no-multiline-string-concat rejects strings broken '
+            + 'across lines with concatenation.',
+        'whitespace--max-len': 'max-len exempts strings and template literals, as the clause notes.',
+    },
+};
+
 const clauseMatches = [...guideText.matchAll(/^- \[(\d+\.\d+)\]\(#([^)]+)\)(.*)$/gmu)];
 const clauses: Clause[] = clauseMatches.map((match, index) => {
     const start = match.index;
@@ -262,31 +564,84 @@ const clauses: Clause[] = clauseMatches.map((match, index) => {
         rules: linked,
         enforcement: 'manual',
         reason: manual[id] ?? '',
+        guideline: { rules: [...new Set(guidelineClauses[id] ?? linked)], enforcement: 'manual', reason: '' },
     };
 });
 
-const guideOptions: RuleMap = {
-    'no-const-assign': 'error',
-    'no-var': 'error',
-    'no-restricted-properties': ['error', { object: 'Math', property: 'pow', message: 'Use the ** operator.' }],
-    'padding-line-between-statements': ['error', { blankLine: 'always', prev: 'block-like', next: '*' }],
-};
-clauses.forEach((clause) => clause.rules.forEach((rule) => {
-    if (baseline[rule] === undefined && additions[rule] === undefined && !rule.startsWith('ag/')) {
-        additions[rule] = guideOptions[rule] ?? 'error';
+const known = new Set([
+    ...Object.keys(baseline),
+    ...Object.keys(guideAdditions),
+    ...Object.keys(guideTypeScriptAdditions),
+    ...Object.keys(guidelineAdditions),
+]);
+clauses.forEach((clause) => [...clause.rules, ...clause.guideline.rules].forEach((rule) => {
+    if (!known.has(rule)) {
+        throw new Error(`Clause ${clause.id} links unmapped rule ${rule}`);
     }
 }));
 
 const mappings: Mapping[] = [];
-const rules: RuleMap = {};
+const layers: Record<Scope, { rules: RuleMap; typescriptRules: RuleMap }> = {
+    base: { rules: {}, typescriptRules: {} },
+    guideline: { rules: {}, typescriptRules: {} },
+    'adguard-projects': { rules: {}, typescriptRules: {} },
+};
 
 /**
- * Choose a concrete provider, refusing to silently drop an enabled setting.
+ * Choose the concrete provider for a source rule.
+ * @param source - Original rule identifier.
+ * @returns Target rule and implementation kind.
+ */
+function resolveTarget(source: string): { target: string; implementation: Mapping['implementation'] } {
+    if (source.startsWith('ag/')) {
+        return { target: source, implementation: 'custom' };
+    }
+    const prefixes: [string, Provider | null, string][] = [
+        ['jsdoc/', jsdoc, 'ag-jsdoc/'],
+        ['react/', react, 'ag-react/'],
+        ['jsx-a11y/', accessibility, 'ag-a11y/'],
+        ['import/', imports, 'ag-import/'],
+        ['import-newlines/', newlines, 'ag-newlines/'],
+        ['boundaries/', boundaries, 'ag-boundaries/'],
+        ['notice/', notice, 'ag-notice/'],
+        ['@adguard/logger-context/', logger, 'ag-logger/'],
+    ];
+    if (builtinRules.has(source)) {
+        return { target: `ag-compat/${source}`, implementation: 'javascript' };
+    }
+    for (const [prefix, provider, namespace] of prefixes) {
+        const name = source.slice(prefix.length);
+        if (source.startsWith(prefix) && provider?.rules[name]) {
+            return { target: `${namespace}${name}`, implementation: 'javascript' };
+        }
+    }
+    if (source.startsWith('@typescript-eslint/') && native.has(`typescript/${source.slice('@typescript-eslint/'.length)}`)) {
+        return { target: `typescript/${source.slice('@typescript-eslint/'.length)}`, implementation: 'native' };
+    }
+    if (style.rules[source]) {
+        return { target: `ag-style/${source}`, implementation: 'javascript' };
+    }
+    if (native.has(source)) {
+        return { target: source, implementation: 'native' };
+    }
+    throw new Error(`No implementation for rule ${source}`);
+}
+
+/**
+ * Record a source rule in one configuration layer, refusing to silently drop an enabled setting.
  * @param source - Original rule identifier.
  * @param originalSetting - Resolved setting.
  * @param origin - Source of the setting.
+ * @param scope - Configuration layer.
+ * @param language - Restrict the rule to TypeScript files.
  */
-function mapRule(source: string, originalSetting: RuleSetting, origin: string): void {
+function mapRule(
+    source: string,
+    originalSetting: RuleSetting,
+    origin: string,
+    scope: Scope,
+    language?: 'typescript',
+): void {
     let setting = originalSetting;
     if (source === 'import/no-cycle' && Array.isArray(setting)) {
         const options = { ...setting[1] };
@@ -295,129 +650,150 @@ function mapRule(source: string, originalSetting: RuleSetting, origin: string): 
         }
         setting = [setting[0], options];
     }
-    const level = Array.isArray(setting) ? setting[0] : setting;
-    if (level === 'off' || level === 0) {
+    const disabled = severity(setting) === 0;
+    const scoped = scope === 'base' ? {} : { scope };
+    if (disabled && scope === 'base') {
         mappings.push({
-            source,
-            target: null,
-            setting,
-            implementation: 'disabled',
-            origin,
+            source, target: null, setting, implementation: 'disabled', origin,
         });
-        return;
-    }
-    let target: string | null = null;
-    let implementation: Mapping['implementation'] = 'javascript';
-    if (source.startsWith('ag/')) {
-        target = source;
-        implementation = 'custom';
-    } else if (builtinRules.has(source)) {
-        target = `ag-compat/${source}`;
-    } else if (source.startsWith('jsdoc/') && jsdoc.rules[source.slice(6)]) {
-        target = `ag-jsdoc/${source.slice(6)}`;
-    } else if (source.startsWith('react/') && react.rules[source.slice(6)]) {
-        target = `ag-react/${source.slice(6)}`;
-    } else if (source.startsWith('jsx-a11y/') && accessibility.rules[source.slice(9)]) {
-        target = `ag-a11y/${source.slice(9)}`;
-    } else if (source.startsWith('import/') && imports.rules[source.slice(7)]) {
-        target = `ag-import/${source.slice(7)}`;
-    } else if (source.startsWith('import-newlines/') && newlines.rules[source.slice('import-newlines/'.length)]) {
-        target = `ag-newlines/${source.slice('import-newlines/'.length)}`;
-    } else if (source.startsWith('boundaries/') && boundaries.rules[source.slice('boundaries/'.length)]) {
-        target = `ag-boundaries/${source.slice('boundaries/'.length)}`;
-    } else if (source.startsWith('notice/') && notice.rules[source.slice(7)]) {
-        target = `ag-notice/${source.slice(7)}`;
-    } else if (source.startsWith('@adguard/logger-context/') && logger.rules[source.slice('@adguard/logger-context/'.length)]) {
-        target = `ag-logger/${source.slice('@adguard/logger-context/'.length)}`;
-    } else if (source.startsWith('@typescript-eslint/') && native.has(`typescript/${source.slice('@typescript-eslint/'.length)}`)) {
-        target = `typescript/${source.slice('@typescript-eslint/'.length)}`;
-        implementation = 'native';
-    } else if (style.rules[source]) {
-        target = `ag-style/${source}`;
-    } else if (native.has(source)) {
-        target = source;
-        implementation = 'native';
-    }
-    if (!target) {
-        throw new Error(`No implementation for enabled rule ${source}`);
-    }
-    if (rules[target] !== undefined && JSON.stringify(rules[target]) !== JSON.stringify(setting)) {
-        // Directive spacing and block spacing are independent constraints of one rule.
-        if (target === 'ag-style/padding-line-between-statements') {
-            setting = [level, ...(rules[target] as unknown[]).slice(1), ...(setting as unknown[]).slice(1)];
-        } else {
+    } else {
+        const { target, implementation } = resolveTarget(source);
+        const layer = layers[scope];
+        const rules = language === 'typescript' ? layer.typescriptRules : layer.rules;
+        if (rules[target] !== undefined && JSON.stringify(rules[target]) !== JSON.stringify(setting)) {
             throw new Error(`Conflicting provider mapping for ${source}: ${target}`);
         }
+        rules[target] = setting;
+        mappings.push({
+            source,
+            target,
+            setting,
+            implementation: disabled ? 'disabled' : implementation,
+            origin,
+            ...scoped,
+            ...(language ? { language } : {}),
+            ...(typedNative.has(target) ? { requiresTypeInfo: true } : {}),
+        });
     }
-    rules[target] = setting;
-    if (target.startsWith('typescript/')) {
-        // TypeScript-only rules live in the preset override; keep them out of
-        // the shared root so plain JavaScript consumers stay unaffected.
-        delete rules[target];
+    const equivalent = TYPESCRIPT_EQUIVALENTS[source];
+    if (equivalent && !language) {
+        const mapping = mappings.at(-1)!;
+        if (equivalent.target !== null && !typescriptTargets.has(equivalent.target)
+            && equivalent.target !== resolveTarget(source).target) {
+            throw new Error(`Missing TypeScript implementation ${equivalent.target} for ${source}`);
+        }
+        const typed = equivalent.adapt ? equivalent.adapt(setting) : setting;
+        const typedSetting = equivalent.target === null || (disabled && !equivalent.adapt) ? 'off' : typed;
+        mapping.typescript = {
+            target: equivalent.target,
+            setting: typedSetting,
+            implementation: equivalent.target === null || severity(typedSetting) === 0
+                ? 'disabled'
+                : equivalent.target.startsWith('eslint/') ? 'native' : 'javascript',
+            reason: equivalent.reason,
+        };
+        const layer = layers[scope].typescriptRules;
+        if (mapping.target && mapping.target !== equivalent.target) {
+            layer[mapping.target] = 'off';
+        }
+        // A rule disabled in JavaScript needs no TypeScript entry unless the equivalent enables it.
+        if (equivalent.target && (mapping.target !== null || severity(typedSetting) > 0)) {
+            layer[equivalent.target] = typedSetting;
+        }
     }
-    mappings.push({
-        source,
-        target,
-        setting,
-        implementation,
-        origin,
-        ...(typedNative.has(target) ? { requiresTypeInfo: true } : {}),
-    });
 }
 
-Object.entries(baseline).forEach(([name, setting]) => mapRule(name, setting, origins[name] ?? 'baseline'));
-Object.entries(additions).forEach(([name, setting]) => {
-    if (baseline[name] === undefined || severity(baseline[name]) === 0) {
-        delete baseline[name];
-        const existing = mappings.findIndex((mapping) => mapping.source === name);
-        if (existing !== -1) {
-            mappings.splice(existing, 1);
-        }
-        mapRule(name, setting, 'Javascript.md');
+Object.entries(guideAdditions).forEach(([name]) => {
+    if (baseline[name] !== undefined && severity(baseline[name]) > 0) {
+        throw new Error(`Guide addition ${name} would replace an enabled sample setting`);
+    }
+    delete baseline[name];
+});
+Object.entries(baseline).forEach(([name, setting]) => mapRule(name, setting, origins[name] ?? 'baseline', 'base'));
+Object.entries(guideAdditions).forEach(([name, setting]) => mapRule(name, setting, 'Javascript.md', 'base'));
+Object.entries(guideTypeScriptAdditions).forEach(([name, setting]) => {
+    mapRule(name, setting, 'Javascript.md', 'base', 'typescript');
+});
+Object.entries(guidelineAdditions).forEach(([name, setting]) => {
+    mapRule(name, setting, 'Javascript.md', 'guideline');
+});
+Object.entries(projectAdditions).forEach(([name, setting]) => {
+    mapRule(name, setting, 'adguard-projects', 'adguard-projects');
+});
+Object.entries(projectTypeScriptAdditions).forEach(([name, setting]) => {
+    mapRule(name, setting, 'adguard-projects', 'adguard-projects', 'typescript');
+});
+Object.keys(TYPESCRIPT_EQUIVALENTS).forEach((source) => {
+    if (!mappings.some((mapping) => mapping.source === source)) {
+        throw new Error(`TypeScript equivalent for unmapped rule ${source}`);
     }
 });
-for (let index = mappings.length - 1; index >= 0; index -= 1) {
-    const mapping = mappings[index]!;
-    if (mapping.implementation === 'disabled' && rules[mapping.source] !== undefined) {
-        mappings.splice(index, 1);
+
+/**
+ * Classify a clause for one policy from the rules active in that policy.
+ * @param clause - Guideline clause.
+ * @param disposition - Rules linked for this policy.
+ * @param policy - Policy being described.
+ * @returns Enforcement and explanation.
+ */
+function classify(clause: Clause, disposition: Disposition, policy: Policy): Disposition {
+    const { rules } = disposition;
+    if (clause.id.startsWith('typescript--tsconfig')) {
+        return {
+            rules,
+            enforcement: 'compiler',
+            reason: 'Enforced by the shared tsconfig and verified with `ag-oxlint-config --check-tsconfig`.',
+        };
     }
+    const active = rules.map((rule) => {
+        const candidates = mappings.filter((mapping) => mapping.source === rule
+            && (mapping.scope === undefined || (policy === 'guideline' && mapping.scope === 'guideline')));
+        return candidates.at(-1);
+    });
+    const enabled = active.filter((mapping) => mapping && mapping.implementation !== 'disabled');
+    const override = reasons[policy][clause.id]
+        ?? (policy === 'guideline' ? reasons.compatibility[clause.id] : undefined);
+    if (rules.length === 0 || enabled.length === 0) {
+        if (rules.length > 0) {
+            return {
+                rules,
+                enforcement: 'overridden',
+                reason: override ?? `Sample precedence: ${rules.join(', ')} retains its inherited/explicit options and severity.`,
+            };
+        }
+        return { rules, enforcement: 'manual', reason: manual[clause.id] ?? '' };
+    }
+    const partialReason = partial[policy][clause.id];
+    if (partialReason) {
+        return { rules, enforcement: 'partial', reason: partialReason };
+    }
+    // The comment-deviation clause is satisfied by a justified directive; the others lose to sample options.
+    const forced = clause.id === 'coercion--comment-deviations' || (policy === 'compatibility'
+        && ['modules--prefer-named-export', 'strings--line-length', 'modules--import-order'].includes(clause.id));
+    if (forced || (enabled.length < rules.length && !override)) {
+        return {
+            rules,
+            enforcement: 'overridden',
+            reason: override ?? `Sample precedence: ${rules.join(', ')} retains its inherited/explicit options and severity.`,
+        };
+    }
+    const kinds = enabled.map((mapping) => mapping!.implementation);
+    return {
+        rules,
+        enforcement: kinds.includes('custom') ? 'custom' : kinds.includes('javascript') ? 'javascript' : 'native',
+        reason: override ?? 'Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.',
+    };
 }
 
 clauses.forEach((clause) => {
-    if (clause.id.startsWith('typescript--tsconfig')) {
-        clause.enforcement = 'compiler';
-        clause.reason = 'Enforced by shared tsconfig settings and compiler integration tests.';
-    } else if (clause.id === 'typescript--enum-naming-conventions') {
-        clause.enforcement = 'custom';
-        clause.reason = 'Enum and member casing is enforced. Singular English names require review; values are unrestricted.';
-    } else if (clause.id === 'typescript--caught-error-type') {
-        clause.enforcement = 'custom';
-        clause.reason = 'Explicit any is rejected; unannotated catches use unknown through strict compiler settings.';
-    } else if (clause.rules.length > 0) {
-        const matched = mappings.filter((mapping) => clause.rules.includes(mapping.source));
-        const disabled = matched.filter((mapping) => mapping.implementation === 'disabled');
-        const active = matched.filter((mapping) => mapping.implementation !== 'disabled');
-        if (
-            disabled.length > 0
-            || clause.id === 'modules--prefer-named-export'
-            || clause.id === 'strings--line-length'
-            || clause.id === 'coercion--comment-deviations'
-        ) {
-            clause.enforcement = 'overridden';
-            clause.reason = `Sample precedence: ${clause.rules.join(', ')} retains its inherited/explicit options and severity.`;
-        } else if (active.length > 0) {
-            clause.enforcement = active.some((mapping) => mapping.implementation === 'custom')
-                ? 'custom'
-                : active.some((mapping) => mapping.implementation === 'javascript')
-                    ? 'javascript'
-                    : 'native';
-            clause.reason
-                ||= 'Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.';
+    const compatibility = classify(clause, clause, 'compatibility');
+    Object.assign(clause, compatibility);
+    clause.guideline = classify(clause, clause.guideline, 'guideline');
+    [compatibility, clause.guideline].forEach((disposition) => {
+        if (!disposition.reason) {
+            throw new Error(`Unclassified source clause: ${clause.id}`);
         }
-    }
-    if (!clause.reason) {
-        throw new Error(`Unclassified source clause: ${clause.id}`);
-    }
+    });
 });
 
 const catalog: Catalog = {
@@ -427,28 +803,52 @@ const catalog: Catalog = {
     env,
     mappings,
     clauses,
-    rules,
+    rules: layers.base.rules,
+    typescriptRules: layers.base.typescriptRules,
+    policies: {
+        guideline: { ...layers.guideline, settings: {}, importGroups },
+    },
+    profiles: {
+        'adguard-projects': { ...layers['adguard-projects'], settings: projectSettings },
+    },
 };
+
+const cell = (text: string) => text.replaceAll('|', '\\|');
+const ruleList = (rules: string[]) => rules.map((rule) => `\`${rule}\``).join(', ');
+const scopeLabel = (mapping: Mapping) => mapping.scope ?? (mapping.language === 'typescript' ? 'base (TypeScript)' : 'base');
 const report = [
     '# Guideline coverage',
     '',
-    'Generated by `pnpm catalog:generate`. Sample settings and inherited disabled rules take precedence over prose.',
+    'Generated by `pnpm catalog:generate`. The default `compatibility` policy gives the sample configuration and its '
+    + 'inherited disabled rules precedence over prose. The opt-in `guideline` policy enforces the prose where the two '
+    + 'conflict. `partial` marks clauses whose rules enforce only part of the stated requirement.',
     '',
-    '| Clause | Enforcement | Rules | Interpretation |',
-    '| --- | --- | --- | --- |',
-    ...clauses.map(
-        (clause) => `| [${clause.number} ${clause.id}](reference/Javascript.md#${clause.id})`
-            + ` | ${clause.enforcement} | ${clause.rules.map((rule) => `\`${rule}\``).join(', ')}`
-            + ` | ${clause.reason.replaceAll('|', '\\|')} |`,
-    ),
+    '| Clause | Compatibility | Guideline | Rules | Interpretation |',
+    '| --- | --- | --- | --- | --- |',
+    ...clauses.map((clause) => {
+        const sameRules = JSON.stringify(clause.rules) === JSON.stringify(clause.guideline.rules);
+        const rules = sameRules
+            ? ruleList(clause.rules)
+            : `${ruleList(clause.rules)}; guideline: ${ruleList(clause.guideline.rules)}`;
+        const interpretation = clause.reason === clause.guideline.reason
+            ? clause.reason
+            : `${clause.reason} Guideline: ${clause.guideline.reason}`;
+        return `| [${clause.number} ${clause.id}](reference/Javascript.md#${clause.id})`
+            + ` | ${clause.enforcement} | ${clause.guideline.enforcement} | ${rules} | ${cell(interpretation)} |`;
+    }),
     '',
     '## Resolved rule mappings',
     '',
-    '| Source rule | Oxlint rule | Provider | Setting | Origin | Type information |',
-    '| --- | --- | --- | --- | --- | --- |',
+    'Scope `base` is always active, `guideline` is added by `policy: \'guideline\'`, and `adguard-projects` by '
+    + '`profile: \'adguard-projects\'`. The TypeScript column names the implementation used for TypeScript files when it '
+    + 'differs from the JavaScript one.',
+    '',
+    '| Source rule | Oxlint rule | Provider | Setting | Origin | Scope | TypeScript | Type information |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- |',
     ...mappings.map(
         (mapping) => `| ${mapping.source} | ${mapping.target ?? 'disabled'} | ${mapping.implementation}`
-            + ` | \`${JSON.stringify(mapping.setting).replaceAll('|', '\\|')}\` | ${mapping.origin}`
+            + ` | \`${cell(JSON.stringify(mapping.setting))}\` | ${mapping.origin} | ${scopeLabel(mapping)}`
+            + ` | ${mapping.typescript ? `${mapping.typescript.target ?? 'disabled'}: ${cell(mapping.typescript.reason)}` : ''}`
             + ` | ${mapping.requiresTypeInfo ? 'opt-in required' : ''} |`,
     ),
     '',
@@ -467,5 +867,5 @@ for (const [file, content] of [
     }
 }
 process.stdout.write(
-    `Catalog: ${clauses.length} clauses; ${Object.keys(rules).length} enabled rules; generate.ts\n`,
+    `Catalog: ${clauses.length} clauses; ${Object.keys(catalog.rules).length} enabled rules; generate.ts\n`,
 );

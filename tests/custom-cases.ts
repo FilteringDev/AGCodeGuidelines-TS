@@ -1,15 +1,21 @@
 /**
  * @file Structural, operator, and syntax boundary cases for the custom rules.
  */
+import type { RuleTester } from 'oxlint/plugins-dev';
+
 export interface CustomCase {
     rule: string;
     name: string;
     code: string;
     errors: number;
     lang: 'jsx' | 'tsx';
+    options?: RuleTester.ValidTestCase['options'];
 }
 
 export const customCases: CustomCase[] = [];
+
+// Builds template substitutions in fixture source text without writing `${` inside a string literal.
+const DOLLAR = '$';
 
 /**
  * Register a distinct custom-rule input and its expected diagnostic count.
@@ -18,14 +24,23 @@ export const customCases: CustomCase[] = [];
  * @param code - Source text.
  * @param errors - Expected diagnostics.
  * @param lang - Parser language.
+ * @param options - Rule options.
  */
-function add(rule: string, name: string, code: string, errors: number, lang: 'jsx' | 'tsx' = 'jsx'): void {
+function add(
+    rule: string,
+    name: string,
+    code: string,
+    errors: number,
+    lang: 'jsx' | 'tsx' = 'jsx',
+    options?: CustomCase['options'],
+): void {
     customCases.push({
         rule,
         name,
         code,
         errors,
         lang,
+        ...(options ? { options } : {}),
     });
 }
 
@@ -197,6 +212,9 @@ const catchForms = [
     ['catch (error:\nany) {}', 1],
     ['catch ({ message }) {}', 0],
     ['catch ([first]) {}', 0],
+    ['catch ({ message }: any) {}', 1],
+    ['catch ([first]: any) {}', 1],
+    ['catch ({ message }: unknown) {}', 0],
 ] as const;
 for (const [form, errors] of catchForms) {
     for (const [context, wrap] of [
@@ -299,3 +317,114 @@ for (const newline of ['\n', '\r\n', '\r']) {
     'const value = 1;',
     '/* before */ const value = 1; /* after */',
 ].forEach((code) => add('require-docblock', code, code, 0));
+
+[
+    ['abstract getter', 'abstract class Shape { abstract get area(): number; }', 1],
+    ['abstract setter', 'abstract class Shape { abstract set area(next: number); }', 1],
+    ['interface accessors', 'interface Shape { get area(): number; set area(next: number); }', 2],
+    ['type literal getter', 'type Shape = { get area(): number };', 1],
+    ['auto-accessor', 'class Counter { accessor count = 0; }', 1],
+    ['static auto-accessor', 'class Counter { static accessor count = 0; }', 1],
+    ['abstract auto-accessor', 'abstract class Counter { abstract accessor count: number; }', 1],
+    ['abstract method', 'abstract class Shape { abstract getArea(): number; }', 0],
+    ['interface method', 'interface Shape { getArea(): number; }', 0],
+    ['interface property', 'interface Shape { area: number; }', 0],
+    ['type literal method', 'type Shape = { getArea(): number };', 0],
+].forEach(([name, code, errors]) => {
+    add('no-accessors', `TypeScript ${name as string}`, code as string, errors as number, 'tsx');
+});
+
+for (const [name, code, errors] of [
+    ['two literals', "const message = 'first part '\n    + 'second part';", 1],
+    ['operator at line end', "const message = 'first part ' +\n    'second part';", 1],
+    ['three literals', "const message = 'first '\n    + 'second '\n    + 'third';", 1],
+    ['templates', 'const message = `first `\n    + `second`;', 1],
+    ['argument', "report('first part '\n    + 'second part');", 1],
+    ['literal after value', "const message = prefix + 'first '\n    + 'second';", 1],
+    ['same line', "const message = 'first ' + 'second';", 0],
+    ['value then literal', "const message = prefix\n    + 'second';", 0],
+    ['literal then value', "const message = 'first '\n    + suffix;", 0],
+    ['substitution', `const message = \`first ${DOLLAR}{value}\`\n    + 'second';`, 0],
+    ['numbers', 'const total = 1\n    + 2;', 0],
+    ['subtraction', "const value = 'first'\n    - 'second';", 0],
+    ['separated by value', "const message = 'first '\n    + value\n    + 'second';", 0],
+] as const) {
+    add('no-multiline-string-concat', name, code, errors);
+}
+
+const layouts = [
+    ['operator continues first line', 'if (first === 1\n    && second === 2) {\n    work();\n}', 1],
+    ['closing parenthesis after condition', 'if (\n    first\n    && second) {\n    work();\n}', 1],
+    ['condition starts after parenthesis', 'if (first\n    && second\n) {\n    work();\n}', 1],
+    ['while', 'while (first\n    || second) {\n    work();\n}', 1],
+    ['do while', 'do {\n    work();\n} while (first\n    && second);', 1],
+    ['do while without semicolon', 'do {\n    work();\n} while (first\n    && second)', 1],
+    ['grouped operand', 'if ((first || second)\n    && third) {\n    work();\n}', 1],
+    ['good if', 'if (\n    first === 1\n    && second === 2\n) {\n    work();\n}', 0],
+    ['good while', 'while (\n    first\n    || second\n) {\n    work();\n}', 0],
+    ['good do while', 'do {\n    work();\n} while (\n    first\n    && second\n);', 0],
+    ['single line', 'if (first && second) {\n    work();\n}', 0],
+    ['multiline call', 'if (check({\n    first,\n})) {\n    work();\n}', 0],
+    ['negated group', 'if (!(first\n    && second)) {\n    work();\n}', 0],
+    ['single line while', 'while (first || second) {\n    work();\n}', 0],
+] as const;
+for (const [name, code, errors] of layouts) {
+    add('multiline-condition-layout', name, code, errors);
+}
+add('multiline-condition-layout', 'type assertion', 'if ((first\n    && second) as boolean) {\n    work();\n}', 1, 'tsx');
+
+for (const [code, errors] of [
+    ["const childCombinator = '>';", 1],
+    ['export const maxSize = 10;', 1],
+    ['const offset = -1;', 1],
+    ['const limit = 10n;', 1],
+    ['const enabled = true;', 1],
+    ['const label = `text`;', 1],
+    ["const first = 'a', SECOND = 'b';", 1],
+    ["const _PRIVATE = 'a';", 1],
+    ["const CHILD_COMBINATOR = '>';", 0],
+    ['export const MAX_SIZE_2 = 10;', 0],
+    ['const X = 1;', 0],
+    ['const value = compute();', 0],
+    ['let counter = 0;', 0],
+    ['function run() { const local = 1; return local; }', 0],
+    ['const { first } = source;', 0],
+    ['const pattern = /x/u;', 0],
+    ['const empty = null;', 0],
+    [`const label = \`${DOLLAR}{value}\`;`, 0],
+    ['const items = [];', 0],
+    ['const negated = !flag;', 0],
+    ['const declared = undefined;', 0],
+    ['export default 1;', 0],
+    ['const value = compute();\nexport { value };', 0],
+] as const) {
+    add('constant-name', code, code, errors);
+}
+for (const [code, errors] of [
+    ["const mode = 'light' as const;", 1],
+    ['const size = 1 satisfies number;', 1],
+    ['const size = (1 as number)!;', 1],
+    ["const MODE = 'light' as const;", 0],
+] as const) {
+    add('constant-name', `TypeScript ${code}`, code, errors, 'tsx');
+}
+
+const runs = { lineCommentRuns: true };
+for (const [name, code, errors] of [
+    ['two lines', '// first\n// second\nwork();', 1],
+    ['three lines', '// first\n// second\n// third\nwork();', 1],
+    ['two runs', '// first\n// second\n\n// third\n// fourth\nwork();', 2],
+    ['indented run', 'function run() {\n    // first\n    // second\n    work();\n}', 1],
+    ['single line', '// only\nwork();', 0],
+    ['separated', '// first\nwork();\n// second\nwork();', 0],
+    ['blank line', '// first\n\n// second\nwork();', 0],
+    ['trailing comment', 'work(); // trailing\n// next\nwork();', 0],
+    ['directive', '// eslint-disable-next-line no-console\n// explains\nwork();', 0],
+    ['oxlint directive', '// oxlint-disable-next-line no-console\n// explains\nwork();', 0],
+    ['triple slash', '/// <reference path="first.d.ts" />\n/// <reference path="second.d.ts" />', 0],
+    ['block between', '// first\n/* second */\n// third\nwork();', 0],
+    ['multiline block', '/* first\n   second */\nwork();', 1],
+] as const) {
+    add('require-docblock', `line runs: ${name}`, code, errors, 'jsx', [runs]);
+}
+add('require-docblock', 'line runs disabled explicitly', '// alpha\n// beta\nwork();', 0, 'jsx', [{ lineCommentRuns: false }]);

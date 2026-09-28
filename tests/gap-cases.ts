@@ -10,11 +10,14 @@ export interface GapCase {
     files?: Record<string, string>;
     validFiles?: Record<string, string>;
     invalidFiles?: Record<string, string>;
+    /** Configuration layer that enables the rule; absent for the base preset. */
+    scope?: 'guideline' | 'adguard-projects';
 }
 
 export const gapCases: GapCase[] = [
     {
         rule: '@typescript-eslint/consistent-type-exports',
+        scope: 'adguard-projects',
         valid: 'export type { Value } from "./dependency";',
         invalid: 'export { Value } from "./dependency";',
         extension: 'ts',
@@ -260,6 +263,7 @@ export const gapCases: GapCase[] = [
     },
     {
         rule: 'import/no-unassigned-import',
+        scope: 'adguard-projects',
         valid: 'import value from "./dependency";',
         invalid: 'import "./dependency";',
     },
@@ -270,16 +274,19 @@ export const gapCases: GapCase[] = [
     },
     {
         rule: 'no-restricted-imports',
+        scope: 'adguard-projects',
         valid: 'import value from "./allowed";',
         invalid: 'import value from "./feature-mv2";',
     },
     {
         rule: 'import-newlines/enforce',
+        scope: 'adguard-projects',
         valid: 'import { a } from "./dependency";',
         invalid: 'import { a, b, c, d } from "./dependency";',
     },
     {
         rule: 'boundaries/element-types',
+        scope: 'adguard-projects',
         // Resolves extensionless '../src/index' to src/index.ts via the
         // TypeScript-aware import resolver.
         language: 'typescript',
@@ -294,44 +301,99 @@ export const gapCases: GapCase[] = [
     },
     {
         rule: '@adguard/logger-context/require-logger-context',
+        scope: 'adguard-projects',
         valid: 'logger.error("[ext.main]: message");',
         invalid: 'logger.error("message");',
     },
     {
         rule: '@typescript-eslint/no-explicit-any',
+        scope: 'adguard-projects',
         valid: 'export const value: unknown = 1;',
         invalid: 'export const value: any = 1;',
         extension: 'ts',
     },
     {
         rule: '@typescript-eslint/explicit-function-return-type',
+        scope: 'adguard-projects',
         valid: 'export function read(): number { return 1; }',
         invalid: 'export function read() { return 1; }',
         extension: 'ts',
     },
     {
         rule: '@typescript-eslint/no-var-requires',
+        scope: 'adguard-projects',
         valid: 'import value from "./dependency";\nconsole.log(value);',
         invalid: 'export const value = require("./dependency");',
         extension: 'ts',
     },
     {
         rule: '@typescript-eslint/ban-ts-comment',
+        scope: 'adguard-projects',
         valid: 'export const value = 1;',
         invalid: 'export const value = 1; // @ts-ignore',
         extension: 'ts',
     },
     {
         rule: '@typescript-eslint/explicit-member-accessibility',
+        scope: 'adguard-projects',
         valid: 'export class Value { public read(): number { return 1; } }',
         invalid: 'export class Value { read(): number { return 1; } }',
         extension: 'ts',
     },
     {
         rule: '@typescript-eslint/consistent-type-imports',
+        scope: 'adguard-projects',
         valid: 'import { type Value } from "./dependency";\nconst x: Value = 1 as Value;\nconsole.log(x);',
         invalid: 'import { Value } from "./dependency";\nconst x: Value = 1 as Value;\nconsole.log(x);',
         extension: 'ts',
         files: { 'dependency.ts': 'export type Value = number;' },
+    },
+    {
+        rule: 'import/no-commonjs',
+        scope: 'guideline',
+        valid: 'import value from "./dependency";\n\nexport { value };',
+        invalid: 'const value = require("./dependency");\n\nmodule.exports = value;',
+    },
+    {
+        rule: 'import/no-namespace',
+        scope: 'guideline',
+        valid: 'import { named } from "./dependency";\n\nexport { named };',
+        invalid: 'import * as dependency from "./dependency";\n\nexport { dependency };',
+    },
+    {
+        rule: 'import/no-default-export',
+        scope: 'guideline',
+        valid: 'export const value = 1;',
+        invalid: 'const value = 1;\n\nexport default value;',
+    },
+    {
+        rule: 'import/order',
+        scope: 'guideline',
+        valid: 'import fs from "node:fs";\n\nimport value from "./dependency";\n\nexport { fs, value };',
+        invalid: 'import fs from "node:fs";\nimport value from "./dependency";\n\nexport { fs, value };',
+    },
+    {
+        rule: 'line-comment-position',
+        scope: 'guideline',
+        valid: '// Explains the value.\nconst value = 1;',
+        invalid: 'const value = 1; // Explains the value.',
+    },
+    {
+        rule: 'lines-around-comment',
+        scope: 'guideline',
+        valid: 'work();\n\n// Explains the value.\nconst value = 1;',
+        invalid: 'work();\n// Explains the value.\nconst value = 1;',
+    },
+    {
+        rule: 'padding-line-between-statements',
+        scope: 'guideline',
+        valid: 'if (ready) {\n    work();\n}\n\nwork();',
+        invalid: 'if (ready) {\n    work();\n}\nwork();',
+    },
+    {
+        rule: 'id-length',
+        scope: 'guideline',
+        valid: 'const query = 1;',
+        invalid: 'const q = 1;',
     },
 ];

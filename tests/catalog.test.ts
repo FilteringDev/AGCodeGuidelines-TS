@@ -90,15 +90,17 @@ describe('source and scenario inventory', () => {
 
     it('keeps disabled inherited settings disabled and prevents stale fixture targets', () => {
         catalog.mappings
-            .filter((mapping) => severity(mapping.setting) === 0)
+            .filter((mapping) => mapping.scope === undefined && severity(mapping.setting) === 0)
             .forEach((mapping) => {
                 expect(mapping.implementation).toBe('disabled');
                 expect(mapping.target).toBeNull();
             });
         upstream.forEach((fixture) => {
-            expect(catalog.mappings.find((mapping) => mapping.source === fixture.sourceRule)?.target).toBe(
-                fixture.target,
+            // Fixtures target the enabled implementation, which may belong to an opt-in layer.
+            const enabled = catalog.mappings.find(
+                (mapping) => mapping.source === fixture.sourceRule && mapping.implementation !== 'disabled',
             );
+            expect(enabled?.target).toBe(fixture.target);
             expect(fixture.origin).toMatch(/^(?:eslint|eslint-stylistic|eslint-plugin-)/u);
         });
     });

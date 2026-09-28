@@ -122,6 +122,56 @@ describe('public configuration API', () => {
         expect(createConfig().rules!['ag-import/prefer-default-export']).toBe('error');
     });
 
+    it('layers the guideline policy over the sample configuration', () => {
+        const compatibility = createConfig();
+        const guideline = createConfig({ policy: 'guideline' });
+        expect(guideline.rules!['ag-import/order']).toEqual(catalog.policies.guideline.importGroups.example);
+        expect(createConfig({ policy: 'guideline', importGroups: 'prose' }).rules!['ag-import/order'])
+            .toEqual(catalog.policies.guideline.importGroups.prose);
+        expect(compatibility.rules!['ag-import/order']).toEqual(catalog.rules['ag-import/order']);
+        ['import/no-commonjs', 'import/no-namespace', 'import/no-default-export', 'ag/constant-name'].forEach((rule) => {
+            expect(compatibility.rules![rule as keyof typeof compatibility.rules]).toBeUndefined();
+            expect(guideline.rules![rule as keyof typeof guideline.rules]).toBe('error');
+        });
+        expect(guideline.plugins).toContain('import');
+        expect(guideline.overrides).toEqual([{ files: ['**/*.{cjs,cts}'], rules: { 'import/no-commonjs': 'off' } }]);
+        const script = createConfig({ policy: 'guideline', sourceType: 'commonjs' });
+        expect(script.rules!['import/no-commonjs']).toBe('off');
+        expect(script.overrides).toEqual([]);
+        expect(() => createConfig({ importGroups: 'prose' })).toThrow(/guideline policy/u);
+        expect(() => createConfig({ policy: 'guideline', importGroups: 'sorted' as 'prose' })).toThrow(/importGroups/u);
+    });
+
+    it('applies TypeScript equivalents after the guideline overlay', () => {
+        const guideline = createConfig({ language: 'typescript', policy: 'guideline' });
+        const typescript = guideline.overrides![0]!;
+        expect(typescript.files).toEqual(['**/*.{ts,tsx,mts,cts}']);
+        expect(typescript.rules!['ag-compat/lines-around-comment']).toBe('off');
+        expect(typescript.rules!['ag-style/lines-around-comment']).toMatchObject(['error', { allowInterfaceStart: true }]);
+        expect(typescript.rules!['ag-ts/no-redeclare']).toBe('error');
+        expect(guideline.overrides![1]!.files).toEqual(['**/*.{cjs,cts}']);
+    });
+
+    it('keeps AdGuard project conventions in an opt-in profile', () => {
+        const guide = createConfig({ language: 'typescript' });
+        const project = createConfig({ language: 'typescript', profile: 'adguard-projects' });
+        expect(guide.settings!.agProfile).toBe('guide');
+        expect(project.settings!.agProfile).toBe('adguard-projects');
+        expect(guide.settings!['boundaries/elements']).toBeUndefined();
+        expect(project.settings!['boundaries/elements']).toEqual(
+            catalog.profiles['adguard-projects'].settings['boundaries/elements'],
+        );
+        expect(guide.rules!['ag-compat/no-restricted-imports']).toBeUndefined();
+        expect(project.rules!['ag-compat/no-restricted-imports']).toBeDefined();
+        expect(guide.overrides![0]!.rules!['typescript/no-explicit-any']).toBeUndefined();
+        expect(project.overrides![0]!.rules!['typescript/no-explicit-any']).toBe('error');
+        expect(project.overrides![0]!.rules!['typescript/consistent-type-exports']).toBeUndefined();
+        expect(() => createConfig({ profile: 'custom' as 'guide' })).toThrow(/profile/u);
+        catalog.mappings.filter((mapping) => mapping.scope === 'adguard-projects').forEach((mapping) => {
+            expect(mapping.origin).toBe('adguard-projects');
+        });
+    });
+
     it('selects syntax-only linting for both consumer languages', () => {
         expect(createConfig('javascript').options?.typeAware).not.toBe(true);
         expect(createConfig('typescript').options?.typeAware).not.toBe(true);
@@ -132,11 +182,14 @@ describe('public configuration API', () => {
         expect(catalog.baseline['no-await-in-loop']).toBe('off');
         expect(catalog.baseline['jsdoc/require-file-overview']).toBeUndefined();
         expect(catalog.rules['ag-jsdoc/require-file-overview']).toBe('error');
-        expect(catalog.rules['ag-jsdoc/require-description']).toBe('error');
-        expect(catalog.rules['ag-jsdoc/require-description-complete-sentence']).toBe('error');
-        expect(catalog.rules['ag-jsdoc/require-hyphen-before-param-description']).toEqual(['error', 'never']);
-        expect(catalog.rules['ag-jsdoc/require-throws']).toBe('error');
-        expect(catalog.rules['ag-jsdoc/sort-tags']).toBe('error');
+        // Stricter JSDoc rules are AdGuard project conventions, not guide requirements.
+        const project = catalog.profiles['adguard-projects'].rules;
+        expect(catalog.rules['ag-jsdoc/require-description']).toBeUndefined();
+        expect(project['ag-jsdoc/require-description']).toBe('error');
+        expect(project['ag-jsdoc/require-description-complete-sentence']).toBe('error');
+        expect(project['ag-jsdoc/require-hyphen-before-param-description']).toEqual(['error', 'never']);
+        expect(project['ag-jsdoc/require-throws']).toBe('error');
+        expect(project['ag-jsdoc/sort-tags']).toBe('error');
         expect(catalog.baseline['brace-style']).toEqual(['error', '1tbs', { allowSingleLine: false }]);
         expect(catalog.baseline.indent).toEqual(['error', 4, { SwitchCase: 1 }]);
         expect(catalog.baseline['react/jsx-indent']).toEqual(['error', 2]);

@@ -1,6 +1,6 @@
 {
   "extends": [
-    "./packages/oxlint-config/dist/typescript.json",
+    "./packages/oxlint-config/dist/typescript-adguard-projects.json",
     "./packages/oxlint-config/dist/node.json"
   ],
   "ignorePatterns": [

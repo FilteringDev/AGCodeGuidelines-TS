@@ -132,7 +132,7 @@ it('uses the compiler for type safety without requiring a typed lint service', (
 });
 
 it('opts into the typed lint service without enabling compiler diagnostics', () => {
-    const config = createConfig({ language: 'typescript', typeAware: true });
+    const config = createConfig({ language: 'typescript', typeAware: true, profile: 'adguard-projects' });
     expect(config.options).toEqual({ typeAware: true });
     expect(config.overrides![0]!.rules!['typescript/consistent-type-exports']).toBe('error');
     expect(config.rules!['typescript/consistent-type-exports']).toBeUndefined();
@@ -150,7 +150,7 @@ it('rejects type-aware linting outside the TypeScript preset', () => {
 it('runs type-dependent export diagnostics in an isolated consumer project', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'ag-typed-lint-'));
     try {
-        const preset = createConfig({ language: 'typescript', typeAware: true });
+        const preset = createConfig({ language: 'typescript', typeAware: true, profile: 'adguard-projects' });
         await writeFile(join(directory, '.oxlintrc.json'), JSON.stringify({
             categories: preset.categories,
             plugins: ['typescript'],

@@ -1100,6 +1100,13 @@
         ]
       }
     ],
+    "no-restricted-imports": [
+      "off",
+      {
+        "paths": [],
+        "patterns": []
+      }
+    ],
     "no-this-before-super": "error",
     "no-useless-computed-key": "error",
     "no-useless-constructor": "error",
@@ -1258,6 +1265,7 @@
     ],
     "import/unambiguous": "off",
     "import/no-webpack-loader-syntax": "error",
+    "import/no-unassigned-import": "off",
     "import/no-named-default": "error",
     "import/no-anonymous-default-export": [
       "off",
@@ -2001,7 +2009,10 @@
     "jsdoc/reject-any-type": "warn",
     "jsdoc/reject-function-type": "warn",
     "jsdoc/require-asterisk-prefix": "off",
+    "jsdoc/require-description": "off",
+    "jsdoc/require-description-complete-sentence": "off",
     "jsdoc/require-example": "off",
+    "jsdoc/require-hyphen-before-param-description": "off",
     "jsdoc/require-jsdoc": "warn",
     "jsdoc/require-next-description": "off",
     "jsdoc/require-next-type": "warn",
@@ -2021,12 +2032,14 @@
     "jsdoc/require-tags": "off",
     "jsdoc/require-template": "off",
     "jsdoc/require-template-description": "off",
+    "jsdoc/require-throws": "off",
     "jsdoc/require-throws-description": "off",
     "jsdoc/require-throws-type": "warn",
     "jsdoc/require-yields": "warn",
     "jsdoc/require-yields-check": "warn",
     "jsdoc/require-yields-description": "off",
     "jsdoc/require-yields-type": "warn",
+    "jsdoc/sort-tags": "off",
     "jsdoc/tag-lines": "warn",
     "jsdoc/text-escaping": "off",
     "jsdoc/ts-method-signature-style": "off",
@@ -2064,18 +2077,6 @@
       "forbidExtraProps",
       "exact",
       "Object.freeze"
-    ],
-    "boundaries/elements": [
-      {
-        "type": "src-index",
-        "pattern": "src/index.ts",
-        "mode": "file"
-      },
-      {
-        "type": "test-folder",
-        "pattern": "test",
-        "mode": "folder"
-      }
     ]
   },
   "env": {
@@ -2190,7 +2191,13 @@
       "target": "ag-compat/default-param-last",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/default-param-last",
+        "setting": "error",
+        "implementation": "native",
+        "reason": "Treats optional parameters like defaults."
+      }
     },
     {
       "source": "dot-notation",
@@ -2312,7 +2319,22 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-empty-function",
+        "setting": [
+          "error",
+          {
+            "allow": [
+              "arrowFunctions",
+              "functions",
+              "methods"
+            ]
+          }
+        ],
+        "implementation": "native",
+        "reason": "Understands parameter-property constructors and overload signatures."
+      }
     },
     {
       "source": "no-empty-pattern",
@@ -2572,7 +2594,13 @@
       "target": "ag-compat/no-redeclare",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-ts/no-redeclare",
+        "setting": "error",
+        "implementation": "javascript",
+        "reason": "Accepts overloads and declaration merges that TypeScript permits."
+      }
     },
     {
       "source": "no-restricted-properties",
@@ -3408,7 +3436,25 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/comma-dangle",
+        "setting": [
+          "error",
+          {
+            "arrays": "always-multiline",
+            "objects": "always-multiline",
+            "imports": "always-multiline",
+            "exports": "always-multiline",
+            "functions": "always-multiline",
+            "enums": "always-multiline",
+            "generics": "always-multiline",
+            "tuples": "always-multiline"
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Also checks enums, type parameters, and tuples with the array setting, as airbnb-typescript does."
+      }
     },
     {
       "source": "comma-spacing",
@@ -3421,7 +3467,19 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/comma-spacing",
+        "setting": [
+          "error",
+          {
+            "before": false,
+            "after": true
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Checks type arguments and accepts the TSX `<T,>` form."
+      }
     },
     {
       "source": "comma-style",
@@ -3578,7 +3636,19 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "eslintrc.cjs"
+      "origin": "eslintrc.cjs",
+      "typescript": {
+        "target": "ag-style/indent",
+        "setting": [
+          "error",
+          4,
+          {
+            "SwitchCase": 1
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Indents interfaces, enums, and type annotations."
+      }
     },
     {
       "source": "jsx-quotes",
@@ -3601,7 +3671,19 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/key-spacing",
+        "setting": [
+          "error",
+          {
+            "beforeColon": false,
+            "afterColon": true
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Checks interface and type literal members."
+      }
     },
     {
       "source": "keyword-spacing",
@@ -3662,14 +3744,35 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/lines-between-class-members",
+        "setting": [
+          "error",
+          "always",
+          {
+            "exceptAfterSingleLine": false
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Accepts adjacent overload signatures."
+      }
     },
     {
       "source": "lines-around-comment",
       "target": null,
       "setting": "off",
       "implementation": "disabled",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/lines-around-comment",
+        "setting": [
+          "off",
+          {}
+        ],
+        "implementation": "disabled",
+        "reason": "Treats interface, type literal, enum, and namespace bodies like blocks."
+      }
     },
     {
       "source": "lines-around-directive",
@@ -3856,7 +3959,13 @@
       "target": "ag-compat/no-array-constructor",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-array-constructor",
+        "setting": "error",
+        "implementation": "native",
+        "reason": "Accepts explicitly typed constructors such as `new Array<string>()`."
+      }
     },
     {
       "source": "no-bitwise",
@@ -4115,7 +4224,16 @@
         "always"
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/object-curly-spacing",
+        "setting": [
+          "error",
+          "always"
+        ],
+        "implementation": "javascript",
+        "reason": "Checks type literals."
+      }
     },
     {
       "source": "object-curly-newline",
@@ -4286,7 +4404,16 @@
         "always"
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/semi",
+        "setting": [
+          "error",
+          "always"
+        ],
+        "implementation": "javascript",
+        "reason": "Checks type aliases, ambient declarations, and abstract members."
+      }
     },
     {
       "source": "semi-spacing",
@@ -4337,7 +4464,13 @@
       "target": "ag-compat/space-before-blocks",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/space-before-blocks",
+        "setting": "error",
+        "implementation": "javascript",
+        "reason": "Checks interface, enum, and module bodies."
+      }
     },
     {
       "source": "space-before-function-paren",
@@ -4368,7 +4501,13 @@
       "target": "ag-compat/space-infix-ops",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-style/space-infix-ops",
+        "setting": "error",
+        "implementation": "javascript",
+        "reason": "Checks union and intersection types and enum initializers."
+      }
     },
     {
       "source": "space-unary-ops",
@@ -4568,7 +4707,13 @@
       "target": "ag-compat/no-shadow",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-shadow",
+        "setting": "error",
+        "implementation": "native",
+        "reason": "Ignores type-space parameters in signatures."
+      }
     },
     {
       "source": "no-shadow-restricted-names",
@@ -4582,7 +4727,13 @@
       "target": "ag-compat/no-undef",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "The TypeScript compiler reports unresolved names, including ambient types."
+      }
     },
     {
       "source": "no-undef-init",
@@ -4610,7 +4761,21 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-unused-vars",
+        "setting": [
+          "error",
+          {
+            "caughtErrors": "none",
+            "vars": "all",
+            "args": "after-used",
+            "ignoreRestSiblings": true
+          }
+        ],
+        "implementation": "native",
+        "reason": "Understands type-only usage, signatures, and parameter properties."
+      }
     },
     {
       "source": "no-use-before-define",
@@ -4624,7 +4789,20 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-use-before-define",
+        "setting": [
+          "error",
+          {
+            "functions": true,
+            "classes": true,
+            "variables": true
+          }
+        ],
+        "implementation": "native",
+        "reason": "Ignores type-only references such as `typeof` queries."
+      }
     },
     {
       "source": "arrow-body-style",
@@ -4713,7 +4891,13 @@
       "target": "ag-compat/no-dupe-class-members",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-dupe-class-members",
+        "setting": "error",
+        "implementation": "native",
+        "reason": "Accepts method overload signatures."
+      }
     },
     {
       "source": "no-duplicate-imports",
@@ -4745,6 +4929,19 @@
       "origin": "airbnb@19.0.4/base@15.0.0"
     },
     {
+      "source": "no-restricted-imports",
+      "target": null,
+      "setting": [
+        "off",
+        {
+          "paths": [],
+          "patterns": []
+        }
+      ],
+      "implementation": "disabled",
+      "origin": "airbnb@19.0.4/base@15.0.0"
+    },
+    {
       "source": "no-this-before-super",
       "target": "ag-compat/no-this-before-super",
       "setting": "error",
@@ -4763,7 +4960,13 @@
       "target": "ag-compat/no-useless-constructor",
       "setting": "error",
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "eslint/no-useless-constructor",
+        "setting": "error",
+        "implementation": "native",
+        "reason": "Keeps constructors that declare parameter properties or accessibility."
+      }
     },
     {
       "source": "no-useless-rename",
@@ -5020,7 +5223,59 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-import/no-extraneous-dependencies",
+        "setting": [
+          "error",
+          {
+            "devDependencies": [
+              "test/**",
+              "tests/**",
+              "spec/**",
+              "**/__tests__/**",
+              "**/__mocks__/**",
+              "test.{js,jsx}",
+              "test.{ts,tsx}",
+              "test-*.{js,jsx}",
+              "test-*.{ts,tsx}",
+              "**/*{.,_}{test,spec}.{js,jsx}",
+              "**/*{.,_}{test,spec}.{ts,tsx}",
+              "**/jest.config.js",
+              "**/jest.config.ts",
+              "**/jest.setup.js",
+              "**/jest.setup.ts",
+              "**/vue.config.js",
+              "**/vue.config.ts",
+              "**/webpack.config.js",
+              "**/webpack.config.ts",
+              "**/webpack.config.*.js",
+              "**/webpack.config.*.ts",
+              "**/rollup.config.js",
+              "**/rollup.config.ts",
+              "**/rollup.config.*.js",
+              "**/rollup.config.*.ts",
+              "**/gulpfile.js",
+              "**/gulpfile.ts",
+              "**/gulpfile.*.js",
+              "**/gulpfile.*.ts",
+              "**/Gruntfile{,.js}",
+              "**/Gruntfile{,.ts}",
+              "**/protractor.conf.js",
+              "**/protractor.conf.ts",
+              "**/protractor.conf.*.js",
+              "**/protractor.conf.*.ts",
+              "**/karma.conf.js",
+              "**/karma.conf.ts",
+              "**/.eslintrc.js",
+              "**/.eslintrc.ts"
+            ],
+            "optionalDependencies": false
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Adds TypeScript variants of the development file globs, as airbnb-typescript does."
+      }
     },
     {
       "source": "import/no-mutable-exports",
@@ -5091,7 +5346,25 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-import/extensions",
+        "setting": [
+          "error",
+          "ignorePackages",
+          {
+            "js": "never",
+            "mjs": "never",
+            "jsx": "never",
+            "ts": "never",
+            "tsx": "never",
+            "mts": "never",
+            "cts": "never"
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "TypeScript module specifiers omit TypeScript extensions as well."
+      }
     },
     {
       "source": "import/order",
@@ -5182,6 +5455,13 @@
       "target": "ag-import/no-webpack-loader-syntax",
       "setting": "error",
       "implementation": "javascript",
+      "origin": "airbnb@19.0.4/base@15.0.0"
+    },
+    {
+      "source": "import/no-unassigned-import",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
       "origin": "airbnb@19.0.4/base@15.0.0"
     },
     {
@@ -5849,7 +6129,21 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "airbnb@19.0.4/base@15.0.0"
+      "origin": "airbnb@19.0.4/base@15.0.0",
+      "typescript": {
+        "target": "ag-react/jsx-filename-extension",
+        "setting": [
+          "error",
+          {
+            "extensions": [
+              ".jsx",
+              ".tsx"
+            ]
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Allows JSX in .tsx files."
+      }
     },
     {
       "source": "react/jsx-no-comment-textnodes",
@@ -6831,7 +7125,18 @@
       "target": "ag-jsdoc/check-tag-names",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": "ag-jsdoc/check-tag-names",
+        "setting": [
+          "warn",
+          {
+            "typed": true
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Uses TypeScript tag semantics."
+      }
     },
     {
       "source": "jsdoc/check-template-names",
@@ -6978,14 +7283,26 @@
       "target": null,
       "setting": "off",
       "implementation": "disabled",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": "ag-jsdoc/no-types",
+        "setting": "error",
+        "implementation": "javascript",
+        "reason": "Types come from TypeScript annotations rather than duplicated JSDoc types."
+      }
     },
     {
       "source": "jsdoc/no-undefined-types",
       "target": "ag-jsdoc/no-undefined-types",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/no-unnecessary-type-assertion",
@@ -7030,7 +7347,28 @@
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
+      "source": "jsdoc/require-description",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "jsdoc@64.3.6/recommended"
+    },
+    {
+      "source": "jsdoc/require-description-complete-sentence",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "jsdoc@64.3.6/recommended"
+    },
+    {
       "source": "jsdoc/require-example",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "jsdoc@64.3.6/recommended"
+    },
+    {
+      "source": "jsdoc/require-hyphen-before-param-description",
       "target": null,
       "setting": "off",
       "implementation": "disabled",
@@ -7055,7 +7393,13 @@
       "target": "ag-jsdoc/require-next-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/require-param",
@@ -7083,7 +7427,13 @@
       "target": "ag-jsdoc/require-param-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/require-property",
@@ -7111,7 +7461,13 @@
       "target": "ag-jsdoc/require-property-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/require-rejects",
@@ -7146,7 +7502,13 @@
       "target": "ag-jsdoc/require-returns-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/require-tags",
@@ -7170,6 +7532,13 @@
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
+      "source": "jsdoc/require-throws",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "jsdoc@64.3.6/recommended"
+    },
+    {
       "source": "jsdoc/require-throws-description",
       "target": null,
       "setting": "off",
@@ -7181,7 +7550,13 @@
       "target": "ag-jsdoc/require-throws-type",
       "setting": "warn",
       "implementation": "javascript",
-      "origin": "jsdoc@64.3.6/recommended"
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
     },
     {
       "source": "jsdoc/require-yields",
@@ -7209,6 +7584,19 @@
       "target": "ag-jsdoc/require-yields-type",
       "setting": "warn",
       "implementation": "javascript",
+      "origin": "jsdoc@64.3.6/recommended",
+      "typescript": {
+        "target": null,
+        "setting": "off",
+        "implementation": "disabled",
+        "reason": "Types come from TypeScript annotations."
+      }
+    },
+    {
+      "source": "jsdoc/sort-tags",
+      "target": null,
+      "setting": "off",
+      "implementation": "disabled",
       "origin": "jsdoc@64.3.6/recommended"
     },
     {
@@ -7275,44 +7663,6 @@
       "origin": "Javascript.md"
     },
     {
-      "source": "jsdoc/require-description",
-      "target": "ag-jsdoc/require-description",
-      "setting": "error",
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "jsdoc/require-description-complete-sentence",
-      "target": "ag-jsdoc/require-description-complete-sentence",
-      "setting": "error",
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "jsdoc/require-hyphen-before-param-description",
-      "target": "ag-jsdoc/require-hyphen-before-param-description",
-      "setting": [
-        "error",
-        "never"
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "jsdoc/require-throws",
-      "target": "ag-jsdoc/require-throws",
-      "setting": "error",
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "jsdoc/sort-tags",
-      "target": "ag-jsdoc/sort-tags",
-      "setting": "error",
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
       "source": "sort-imports",
       "target": "ag-compat/sort-imports",
       "setting": [
@@ -7330,174 +7680,6 @@
         }
       ],
       "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "no-restricted-imports",
-      "target": "ag-compat/no-restricted-imports",
-      "setting": [
-        "error",
-        {
-          "patterns": [
-            {
-              "group": [
-                "**/*-mv2",
-                "**/*-mv3"
-              ],
-              "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
-            }
-          ]
-        }
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "import/no-unassigned-import",
-      "target": "ag-import/no-unassigned-import",
-      "setting": [
-        "error",
-        {
-          "allow": [
-            "**/*.pcss"
-          ]
-        }
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "import-newlines/enforce",
-      "target": "ag-newlines/enforce",
-      "setting": [
-        "error",
-        {
-          "items": 3,
-          "max-len": 120
-        }
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "boundaries/element-types",
-      "target": "ag-boundaries/element-types",
-      "setting": [
-        "error",
-        {
-          "default": "allow",
-          "rules": [
-            {
-              "from": "test-folder",
-              "disallow": [
-                "src-index"
-              ],
-              "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
-            }
-          ]
-        }
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "notice/notice",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@adguard/logger-context/require-logger-context",
-      "target": "ag-logger/require-logger-context",
-      "setting": [
-        "error",
-        {
-          "contextModuleName": "ext"
-        }
-      ],
-      "implementation": "javascript",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/consistent-type-imports",
-      "target": "typescript/consistent-type-imports",
-      "setting": [
-        "error",
-        {
-          "fixStyle": "inline-type-imports"
-        }
-      ],
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/consistent-type-exports",
-      "target": "typescript/consistent-type-exports",
-      "setting": "error",
-      "implementation": "native",
-      "origin": "Javascript.md",
-      "requiresTypeInfo": true
-    },
-    {
-      "source": "@typescript-eslint/explicit-function-return-type",
-      "target": "typescript/explicit-function-return-type",
-      "setting": "error",
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/explicit-member-accessibility",
-      "target": "typescript/explicit-member-accessibility",
-      "setting": [
-        "error",
-        {
-          "accessibility": "explicit",
-          "overrides": {
-            "accessors": "explicit",
-            "constructors": "no-public",
-            "methods": "explicit",
-            "properties": "off",
-            "parameterProperties": "explicit"
-          }
-        }
-      ],
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/no-explicit-any",
-      "target": "typescript/no-explicit-any",
-      "setting": "error",
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/no-var-requires",
-      "target": "typescript/no-var-requires",
-      "setting": "error",
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/ban-ts-comment",
-      "target": "typescript/ban-ts-comment",
-      "setting": "error",
-      "implementation": "native",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/dot-notation",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
-      "origin": "Javascript.md"
-    },
-    {
-      "source": "@typescript-eslint/no-non-null-assertion",
-      "target": null,
-      "setting": "off",
-      "implementation": "disabled",
       "origin": "Javascript.md"
     },
     {
@@ -7555,6 +7737,516 @@
       "setting": "error",
       "implementation": "custom",
       "origin": "Javascript.md"
+    },
+    {
+      "source": "ag/enum-name",
+      "target": "ag/enum-name",
+      "setting": "error",
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "language": "typescript"
+    },
+    {
+      "source": "ag/unknown-catch",
+      "target": "ag/unknown-catch",
+      "setting": "error",
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "language": "typescript"
+    },
+    {
+      "source": "import/no-commonjs",
+      "target": "import/no-commonjs",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "import/no-namespace",
+      "target": "import/no-namespace",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "import/prefer-default-export",
+      "target": "ag-import/prefer-default-export",
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "import/no-default-export",
+      "target": "import/no-default-export",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "import/order",
+      "target": "ag-import/order",
+      "setting": [
+        "error",
+        {
+          "groups": [
+            [
+              "builtin",
+              "external",
+              "internal"
+            ],
+            "parent",
+            [
+              "sibling",
+              "index"
+            ]
+          ],
+          "newlines-between": "always",
+          "alphabetize": {
+            "order": "asc",
+            "caseInsensitive": true
+          }
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "line-comment-position",
+      "target": "ag-compat/line-comment-position",
+      "setting": [
+        "error",
+        {
+          "position": "above",
+          "ignorePattern": "^\\s*(?:oxlint-|@ts-)",
+          "applyDefaultPatterns": true
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "lines-around-comment",
+      "target": "ag-compat/lines-around-comment",
+      "setting": [
+        "error",
+        {
+          "beforeBlockComment": false,
+          "beforeLineComment": true,
+          "allowBlockStart": true,
+          "allowObjectStart": true,
+          "allowArrayStart": true,
+          "allowClassStart": true
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline",
+      "typescript": {
+        "target": "ag-style/lines-around-comment",
+        "setting": [
+          "error",
+          {
+            "beforeBlockComment": false,
+            "beforeLineComment": true,
+            "allowBlockStart": true,
+            "allowObjectStart": true,
+            "allowArrayStart": true,
+            "allowClassStart": true,
+            "allowInterfaceStart": true,
+            "allowTypeStart": true,
+            "allowEnumStart": true,
+            "allowModuleStart": true
+          }
+        ],
+        "implementation": "javascript",
+        "reason": "Treats interface, type literal, enum, and namespace bodies like blocks."
+      }
+    },
+    {
+      "source": "prefer-destructuring",
+      "target": "ag-compat/prefer-destructuring",
+      "setting": [
+        "error",
+        {
+          "VariableDeclarator": {
+            "array": true,
+            "object": true
+          },
+          "AssignmentExpression": {
+            "array": true,
+            "object": false
+          }
+        },
+        {
+          "enforceForRenamedProperties": false
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "react/jsx-indent",
+      "target": "ag-react/jsx-indent",
+      "setting": [
+        "error",
+        4
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "react/jsx-indent-props",
+      "target": "ag-react/jsx-indent-props",
+      "setting": [
+        "error",
+        4
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "newline-per-chained-call",
+      "target": "ag-compat/newline-per-chained-call",
+      "setting": [
+        "error",
+        {
+          "ignoreChainWithDepth": 2
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "padding-line-between-statements",
+      "target": "ag-compat/padding-line-between-statements",
+      "setting": [
+        "error",
+        {
+          "blankLine": "always",
+          "prev": "block-like",
+          "next": "*"
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "id-length",
+      "target": "ag-compat/id-length",
+      "setting": [
+        "error",
+        {
+          "min": 2,
+          "properties": "never"
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "max-len",
+      "target": "ag-compat/max-len",
+      "setting": [
+        "error",
+        {
+          "code": 120,
+          "comments": 120,
+          "tabWidth": 4,
+          "ignoreUrls": false,
+          "ignoreTrailingComments": false,
+          "ignoreComments": false,
+          "ignoreStrings": true,
+          "ignoreTemplateLiterals": true
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "ag/no-multiline-string-concat",
+      "target": "ag/no-multiline-string-concat",
+      "setting": "error",
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "ag/multiline-condition-layout",
+      "target": "ag/multiline-condition-layout",
+      "setting": "error",
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "ag/require-docblock",
+      "target": "ag/require-docblock",
+      "setting": [
+        "error",
+        {
+          "lineCommentRuns": true
+        }
+      ],
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "ag/constant-name",
+      "target": "ag/constant-name",
+      "setting": "error",
+      "implementation": "custom",
+      "origin": "Javascript.md",
+      "scope": "guideline"
+    },
+    {
+      "source": "jsdoc/require-description",
+      "target": "ag-jsdoc/require-description",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "jsdoc/require-description-complete-sentence",
+      "target": "ag-jsdoc/require-description-complete-sentence",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "jsdoc/require-hyphen-before-param-description",
+      "target": "ag-jsdoc/require-hyphen-before-param-description",
+      "setting": [
+        "error",
+        "never"
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "jsdoc/require-throws",
+      "target": "ag-jsdoc/require-throws",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "jsdoc/sort-tags",
+      "target": "ag-jsdoc/sort-tags",
+      "setting": "error",
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "no-restricted-imports",
+      "target": "ag-compat/no-restricted-imports",
+      "setting": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": [
+                "**/*-mv2",
+                "**/*-mv3"
+              ],
+              "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
+            }
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "import/no-unassigned-import",
+      "target": "ag-import/no-unassigned-import",
+      "setting": [
+        "error",
+        {
+          "allow": [
+            "**/*.pcss"
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "import-newlines/enforce",
+      "target": "ag-newlines/enforce",
+      "setting": [
+        "error",
+        {
+          "items": 3,
+          "max-len": 120
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "boundaries/element-types",
+      "target": "ag-boundaries/element-types",
+      "setting": [
+        "error",
+        {
+          "default": "allow",
+          "rules": [
+            {
+              "from": "test-folder",
+              "disallow": [
+                "src-index"
+              ],
+              "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
+            }
+          ]
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "notice/notice",
+      "target": "ag-notice/notice",
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "@adguard/logger-context/require-logger-context",
+      "target": "ag-logger/require-logger-context",
+      "setting": [
+        "error",
+        {
+          "contextModuleName": "ext"
+        }
+      ],
+      "implementation": "javascript",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects"
+    },
+    {
+      "source": "@typescript-eslint/consistent-type-imports",
+      "target": "typescript/consistent-type-imports",
+      "setting": [
+        "error",
+        {
+          "fixStyle": "inline-type-imports"
+        }
+      ],
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/consistent-type-exports",
+      "target": "typescript/consistent-type-exports",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript",
+      "requiresTypeInfo": true
+    },
+    {
+      "source": "@typescript-eslint/explicit-function-return-type",
+      "target": "typescript/explicit-function-return-type",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/explicit-member-accessibility",
+      "target": "typescript/explicit-member-accessibility",
+      "setting": [
+        "error",
+        {
+          "accessibility": "explicit",
+          "overrides": {
+            "accessors": "explicit",
+            "constructors": "no-public",
+            "methods": "explicit",
+            "properties": "off",
+            "parameterProperties": "explicit"
+          }
+        }
+      ],
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/no-explicit-any",
+      "target": "typescript/no-explicit-any",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/no-var-requires",
+      "target": "typescript/no-var-requires",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/ban-ts-comment",
+      "target": "typescript/ban-ts-comment",
+      "setting": "error",
+      "implementation": "native",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
+    },
+    {
+      "source": "@typescript-eslint/dot-notation",
+      "target": "typescript/dot-notation",
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript",
+      "requiresTypeInfo": true
+    },
+    {
+      "source": "@typescript-eslint/no-non-null-assertion",
+      "target": "typescript/no-non-null-assertion",
+      "setting": "off",
+      "implementation": "disabled",
+      "origin": "adguard-projects",
+      "scope": "adguard-projects",
+      "language": "typescript"
     }
   ],
   "clauses": [
@@ -7565,7 +8257,12 @@
       "line": 43,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational semantics; supported browser targets must be selected by the consumer."
+      "reason": "Educational semantics; supported browser targets must be selected by the consumer.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational semantics; supported browser targets must be selected by the consumer."
+      }
     },
     {
       "id": "types--complex",
@@ -7574,7 +8271,12 @@
       "line": 65,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of reference values."
+      "reason": "Educational explanation of reference values.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of reference values."
+      }
     },
     {
       "id": "references--prefer-const",
@@ -7586,7 +8288,15 @@
         "no-const-assign"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-const",
+          "no-const-assign"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "references--disallow-var",
@@ -7597,7 +8307,14 @@
         "no-var"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-var"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "references--block-scope",
@@ -7608,7 +8325,14 @@
         "no-undef"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-undef"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "objects--quoted-props",
@@ -7619,7 +8343,14 @@
         "quote-props"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "quote-props"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "objects--prototype-builtins",
@@ -7630,7 +8361,14 @@
         "no-prototype-builtins"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-prototype-builtins"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "objects--rest-spread",
@@ -7641,7 +8379,14 @@
         "prefer-object-spread"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-object-spread"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "es6-array-spreads",
@@ -7650,7 +8395,12 @@
       "line": 205,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Recognizing arbitrary copying algorithms requires semantic intent; reviewed manually."
+      "reason": "Recognizing arbitrary copying algorithms requires semantic intent; reviewed manually.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Recognizing arbitrary copying algorithms requires semantic intent; reviewed manually."
+      }
     },
     {
       "id": "arrays--from-iterable",
@@ -7659,7 +8409,12 @@
       "line": 222,
       "rules": [],
       "enforcement": "manual",
-      "reason": "An unknown JavaScript value may be array-like rather than iterable; no speculative rewrite."
+      "reason": "An unknown JavaScript value may be array-like rather than iterable; no speculative rewrite.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "An unknown JavaScript value may be array-like rather than iterable; no speculative rewrite."
+      }
     },
     {
       "id": "arrays--from-array-like",
@@ -7668,7 +8423,12 @@
       "line": 235,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Whether an arbitrary runtime value is array-like requires runtime information."
+      "reason": "Whether an arbitrary runtime value is array-like requires runtime information.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Whether an arbitrary runtime value is array-like requires runtime information."
+      }
     },
     {
       "id": "arrays--mapping",
@@ -7679,7 +8439,14 @@
         "ag/prefer-array-from-map"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/prefer-array-from-map"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "arrays--callback-return",
@@ -7690,7 +8457,14 @@
         "array-callback-return"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "array-callback-return"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "destructuring--object",
@@ -7701,7 +8475,14 @@
         "prefer-destructuring"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-destructuring"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "destructuring--array",
@@ -7711,8 +8492,15 @@
       "rules": [
         "prefer-destructuring"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "Inherited prefer-destructuring checks assignments but not declarations such as `const first = arr[0]`; the guideline policy checks both.",
+      "guideline": {
+        "rules": [
+          "prefer-destructuring"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "destructuring--object-over-array",
@@ -7721,7 +8509,12 @@
       "line": 328,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Distinguishing multiple return values from an intentional array API requires review."
+      "reason": "Distinguishing multiple return values from an intentional array API requires review.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Distinguishing multiple return values from an intentional array API requires review."
+      }
     },
     {
       "id": "strings--quotes",
@@ -7732,7 +8525,14 @@
         "quotes"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "quotes"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "strings--line-length",
@@ -7744,7 +8544,15 @@
         "no-useless-concat"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: max-len, no-useless-concat retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: max-len, no-useless-concat retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "max-len",
+          "ag/no-multiline-string-concat"
+        ],
+        "enforcement": "custom",
+        "reason": "max-len ignores strings and template literals; ag/no-multiline-string-concat rejects strings broken across lines with concatenation."
+      }
     },
     {
       "id": "es6-template-literals",
@@ -7756,7 +8564,15 @@
         "template-curly-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-template",
+          "template-curly-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "strings--eval",
@@ -7767,7 +8583,14 @@
         "no-eval"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-eval"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "strings--escaping",
@@ -7778,7 +8601,14 @@
         "no-useless-escape"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-useless-escape"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--iife",
@@ -7789,7 +8619,14 @@
         "wrap-iife"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "wrap-iife"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--in-blocks",
@@ -7797,10 +8634,19 @@
       "text": "Never declare a function in a non-function block (`if`, `while`, etc). Assign the function to a variable instead. Browsers will allow you to do it, but they all interpret it differently, which is bad news bears. eslint: [`no-loop-func`](https://eslint.org/docs/rules/no-loop-func)",
       "line": 452,
       "rules": [
-        "no-loop-func"
+        "no-loop-func",
+        "no-inner-declarations"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-loop-func",
+          "no-inner-declarations"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--arguments-shadow",
@@ -7811,7 +8657,14 @@
         "no-shadow-restricted-names"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-shadow-restricted-names"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "es6-rest",
@@ -7822,7 +8675,14 @@
         "prefer-rest-params"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-rest-params"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "es6-default-parameters",
@@ -7833,7 +8693,14 @@
         "no-param-reassign"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-param-reassign"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--default-side-effects",
@@ -7844,7 +8711,14 @@
         "ag/no-default-side-effects"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/no-default-side-effects"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--defaults-last",
@@ -7855,7 +8729,14 @@
         "default-param-last"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "default-param-last"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--constructor",
@@ -7866,7 +8747,14 @@
         "no-new-func"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-new-func"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--signature-spacing",
@@ -7878,7 +8766,15 @@
         "space-before-blocks"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "space-before-function-paren",
+          "space-before-blocks"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--mutate-params",
@@ -7889,7 +8785,14 @@
         "no-param-reassign"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-param-reassign"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--reassign-params",
@@ -7900,7 +8803,14 @@
         "no-param-reassign"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-param-reassign"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--spread-vs-apply",
@@ -7911,7 +8821,14 @@
         "prefer-spread"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-spread"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "functions--signature-invocation-indentation",
@@ -7922,7 +8839,14 @@
         "function-paren-newline"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "function-paren-newline"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "arrows--use-them",
@@ -7934,7 +8858,15 @@
         "arrow-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "prefer-arrow-callback",
+          "arrow-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "arrows--one-arg-parens",
@@ -7945,7 +8877,14 @@
         "arrow-parens"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "arrow-parens"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--implicit-arrow-linebreak",
@@ -7956,7 +8895,14 @@
         "implicit-arrow-linebreak"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "implicit-arrow-linebreak"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "constructors--use-class",
@@ -7967,7 +8913,14 @@
         "ag/no-prototype-mutation"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/no-prototype-mutation"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "constructors--extends",
@@ -7978,7 +8931,14 @@
         "ag/no-prototype-mutation"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/no-prototype-mutation"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "constructors--chaining",
@@ -7987,7 +8947,12 @@
       "line": 811,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Method chaining is optional API design guidance."
+      "reason": "Method chaining is optional API design guidance.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Method chaining is optional API design guidance."
+      }
     },
     {
       "id": "constructors--no-useless",
@@ -7998,7 +8963,14 @@
         "no-useless-constructor"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-useless-constructor"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "classes--methods-use-this",
@@ -8009,7 +8981,14 @@
         "class-methods-use-this"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "class-methods-use-this"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--use-them",
@@ -8021,7 +9000,15 @@
         "import/no-amd"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: import/no-commonjs, import/no-amd retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: import/no-commonjs, import/no-amd retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "import/no-commonjs",
+          "import/no-amd"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--no-wildcard",
@@ -8032,7 +9019,14 @@
         "import/no-namespace"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: import/no-namespace retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: import/no-namespace retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "import/no-namespace"
+        ],
+        "enforcement": "native",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--no-export-from-import",
@@ -8043,7 +9037,14 @@
         "ag/no-direct-reexport"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/no-direct-reexport"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--no-duplicate-imports",
@@ -8051,10 +9052,19 @@
       "text": "Only import from a path in one place.",
       "line": 962,
       "rules": [
-        "no-duplicate-imports"
+        "no-duplicate-imports",
+        "import/no-duplicates"
       ],
-      "enforcement": "overridden",
-      "reason": "Sample precedence: no-duplicate-imports retains its inherited/explicit options and severity."
+      "enforcement": "javascript",
+      "reason": "Airbnb disables no-duplicate-imports in favor of import/no-duplicates, which enforces the clause.",
+      "guideline": {
+        "rules": [
+          "no-duplicate-imports",
+          "import/no-duplicates"
+        ],
+        "enforcement": "javascript",
+        "reason": "Airbnb disables no-duplicate-imports in favor of import/no-duplicates, which enforces the clause."
+      }
     },
     {
       "id": "modules--no-mutable-exports",
@@ -8065,7 +9075,14 @@
         "import/no-mutable-exports"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "import/no-mutable-exports"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--prefer-named-export",
@@ -8076,7 +9093,14 @@
         "import/prefer-default-export"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: import/prefer-default-export retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: import/prefer-default-export retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "import/no-default-export"
+        ],
+        "enforcement": "native",
+        "reason": "import/prefer-default-export is disabled and import/no-default-export rejects default exports."
+      }
     },
     {
       "id": "modules--imports-first",
@@ -8087,7 +9111,14 @@
         "import/first"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "import/first"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--multiline-imports-over-newlines",
@@ -8098,7 +9129,14 @@
         "object-curly-newline"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "object-curly-newline"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--import-extensions",
@@ -8109,7 +9147,14 @@
         "import/extensions"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "import/extensions"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--import-grouping",
@@ -8119,8 +9164,15 @@
       "rules": [
         "import/order"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "Inherited import/order places built-in, package, and internal imports first, but does not require blank lines between groups or separate parent from sibling imports; use the guideline policy.",
+      "guideline": {
+        "rules": [
+          "import/order"
+        ],
+        "enforcement": "javascript",
+        "reason": "import/order requires blank lines between groups. `importGroups: example` follows the clause example (built-in and package imports share a block); `prose` separates every listed category."
+      }
     },
     {
       "id": "modules--import-order",
@@ -8130,8 +9182,15 @@
       "rules": [
         "import/order"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "overridden",
+      "reason": "Inherited import/order options do not alphabetize; the guideline policy orders imports by path.",
+      "guideline": {
+        "rules": [
+          "import/order"
+        ],
+        "enforcement": "javascript",
+        "reason": "import/order alphabetizes imports by path within each group."
+      }
     },
     {
       "id": "modules--import-member-order",
@@ -8143,7 +9202,15 @@
         "sort-imports"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "import/order",
+          "sort-imports"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "modules--import-node-protocol",
@@ -8154,7 +9221,14 @@
         "unicorn/prefer-node-protocol"
       ],
       "enforcement": "native",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "unicorn/prefer-node-protocol"
+        ],
+        "enforcement": "native",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "properties--dot",
@@ -8165,7 +9239,14 @@
         "dot-notation"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "dot-notation"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "properties--bracket",
@@ -8176,7 +9257,14 @@
         "dot-notation"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "dot-notation"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "es2016-properties--exponentiation-operator",
@@ -8187,7 +9275,14 @@
         "no-restricted-properties"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-restricted-properties"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--const",
@@ -8199,7 +9294,15 @@
         "prefer-const"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-undef",
+          "prefer-const"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--one-const",
@@ -8210,7 +9313,14 @@
         "one-var"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "one-var"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--define-where-used",
@@ -8219,7 +9329,12 @@
       "line": 1231,
       "rules": [],
       "enforcement": "manual",
-      "reason": "A reasonable declaration location is a human judgment."
+      "reason": "A reasonable declaration location is a human judgment.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "A reasonable declaration location is a human judgment."
+      }
     },
     {
       "id": "variables--no-chain-assignment",
@@ -8230,7 +9345,14 @@
         "no-multi-assign"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-multi-assign"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--unary-increment-decrement",
@@ -8241,7 +9363,14 @@
         "no-plusplus"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-plusplus"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--linebreak",
@@ -8253,7 +9382,15 @@
         "operator-linebreak"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "max-len",
+          "operator-linebreak"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "variables--no-unused-vars",
@@ -8264,7 +9401,14 @@
         "no-unused-vars"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-unused-vars"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "hoisting--about",
@@ -8273,7 +9417,12 @@
       "line": 1404,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of hoisting and temporal dead zones."
+      "reason": "Educational explanation of hoisting and temporal dead zones.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of hoisting and temporal dead zones."
+      }
     },
     {
       "id": "hoisting--anon-expressions",
@@ -8282,7 +9431,12 @@
       "line": 1440,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of anonymous function hoisting."
+      "reason": "Educational explanation of anonymous function hoisting.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of anonymous function hoisting."
+      }
     },
     {
       "id": "hoisting--named-expresions",
@@ -8291,7 +9445,12 @@
       "line": 1455,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of named function expression hoisting."
+      "reason": "Educational explanation of named function expression hoisting.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of named function expression hoisting."
+      }
     },
     {
       "id": "hoisting--declarations",
@@ -8300,7 +9459,12 @@
       "line": 1484,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of function declaration hoisting."
+      "reason": "Educational explanation of function declaration hoisting.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of function declaration hoisting."
+      }
     },
     {
       "id": "comparison--eqeqeq",
@@ -8311,7 +9475,14 @@
         "eqeqeq"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "eqeqeq"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comparison--if",
@@ -8320,7 +9491,12 @@
       "line": 1506,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational explanation of boolean coercion."
+      "reason": "Educational explanation of boolean coercion.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational explanation of boolean coercion."
+      }
     },
     {
       "id": "comparison--shortcuts",
@@ -8329,7 +9505,12 @@
       "line": 1523,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Requires semantic types for arbitrary JavaScript expressions; review manually."
+      "reason": "Requires semantic types for arbitrary JavaScript expressions; review manually.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Requires semantic types for arbitrary JavaScript expressions; review manually."
+      }
     },
     {
       "id": "comparison--moreinfo",
@@ -8338,7 +9519,12 @@
       "line": 1558,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Further-reading reference, not a code requirement."
+      "reason": "Further-reading reference, not a code requirement.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Further-reading reference, not a code requirement."
+      }
     },
     {
       "id": "comparison--switch-blocks",
@@ -8349,7 +9535,14 @@
         "no-case-declarations"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-case-declarations"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comparison--nested-ternaries",
@@ -8360,7 +9553,14 @@
         "no-nested-ternary"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-nested-ternary"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comparison--unneeded-ternary",
@@ -8371,7 +9571,14 @@
         "no-unneeded-ternary"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-unneeded-ternary"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comparison--no-mixed-operators",
@@ -8382,7 +9589,14 @@
         "no-mixed-operators"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-mixed-operators"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "blocks--braces",
@@ -8394,7 +9608,15 @@
         "brace-style"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "curly",
+          "brace-style"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "blocks--cuddled-elses",
@@ -8405,7 +9627,14 @@
         "brace-style"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "brace-style"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "blocks--no-else-return",
@@ -8416,7 +9645,14 @@
         "no-else-return"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-else-return"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "control-statements",
@@ -8426,8 +9662,16 @@
       "rules": [
         "operator-linebreak"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "operator-linebreak puts logical operators first; starting the condition on its own line is enforced by the guideline policy.",
+      "guideline": {
+        "rules": [
+          "operator-linebreak",
+          "ag/multiline-condition-layout"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "control-statement--value-selection",
@@ -8438,7 +9682,14 @@
         "no-unused-expressions"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-unused-expressions"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comments--multiline",
@@ -8448,8 +9699,15 @@
       "rules": [
         "ag/require-docblock"
       ],
-      "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "Multiline /* */ blocks are rejected; runs of // line comments (the clause example) are rejected only by the guideline policy.",
+      "guideline": {
+        "rules": [
+          "ag/require-docblock"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comments--singleline",
@@ -8461,7 +9719,15 @@
         "lines-around-comment"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: line-comment-position, lines-around-comment retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: line-comment-position, lines-around-comment retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "line-comment-position",
+          "lines-around-comment"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comments--spaces",
@@ -8472,7 +9738,14 @@
         "spaced-comment"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "spaced-comment"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "comments--actionitems",
@@ -8481,7 +9754,12 @@
       "line": 1979,
       "rules": [],
       "enforcement": "manual",
-      "reason": "TODO/FIXME classify work urgency; the author annotation is explicitly optional."
+      "reason": "TODO/FIXME classify work urgency; the author annotation is explicitly optional.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "TODO/FIXME classify work urgency; the author annotation is explicitly optional."
+      }
     },
     {
       "id": "comments-jsdoc",
@@ -8489,15 +9767,17 @@
       "text": "To force right style of comments every eslint config should connect [eslint-plugin-jsdoc](https://github.com/gajus/eslint-plugin-jsdoc). With all recommended rules + `jsdoc/require-file-overview`",
       "line": 1988,
       "rules": [
-        "jsdoc/require-file-overview",
-        "jsdoc/require-description",
-        "jsdoc/require-description-complete-sentence",
-        "jsdoc/require-hyphen-before-param-description",
-        "jsdoc/require-throws",
-        "jsdoc/sort-tags"
+        "jsdoc/require-file-overview"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "The recommended eslint-plugin-jsdoc configuration plus jsdoc/require-file-overview.",
+      "guideline": {
+        "rules": [
+          "jsdoc/require-file-overview"
+        ],
+        "enforcement": "javascript",
+        "reason": "The recommended eslint-plugin-jsdoc configuration plus jsdoc/require-file-overview."
+      }
     },
     {
       "id": "whitespace--spaces",
@@ -8505,10 +9785,21 @@
       "text": "Use soft tabs (space character) set to 4 spaces. eslint: [`indent`](https://eslint.org/docs/rules/indent)",
       "line": 1995,
       "rules": [
-        "indent"
+        "indent",
+        "react/jsx-indent",
+        "react/jsx-indent-props"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "indent requires four spaces; inherited react/jsx-indent and react/jsx-indent-props require two-space JSX, which the guideline policy changes to four.",
+      "guideline": {
+        "rules": [
+          "indent",
+          "react/jsx-indent",
+          "react/jsx-indent-props"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--before-blocks",
@@ -8519,7 +9810,14 @@
         "space-before-blocks"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "space-before-blocks"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--around-keywords",
@@ -8530,7 +9828,14 @@
         "keyword-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "keyword-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--infix-ops",
@@ -8541,7 +9846,14 @@
         "space-infix-ops"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "space-infix-ops"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--newline-at-end",
@@ -8552,7 +9864,14 @@
         "eol-last"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "eol-last"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--chains",
@@ -8563,8 +9882,16 @@
         "newline-per-chained-call",
         "no-whitespace-before-property"
       ],
-      "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "enforcement": "partial",
+      "reason": "Inherited newline-per-chained-call allows four calls on one line; the guideline policy allows two.",
+      "guideline": {
+        "rules": [
+          "newline-per-chained-call",
+          "no-whitespace-before-property"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--after-blocks",
@@ -8575,7 +9902,14 @@
         "padding-line-between-statements"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: padding-line-between-statements retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: padding-line-between-statements retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "padding-line-between-statements"
+        ],
+        "enforcement": "partial",
+        "reason": "padding-line-between-statements requires a blank line after block-like statements; blank lines between multiline members of object and array literals remain reviewable."
+      }
     },
     {
       "id": "whitespace--padded-blocks",
@@ -8586,7 +9920,14 @@
         "padded-blocks"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "padded-blocks"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--no-multiple-blanks",
@@ -8597,7 +9938,14 @@
         "no-multiple-empty-lines"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-multiple-empty-lines"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--in-parens",
@@ -8608,7 +9956,14 @@
         "space-in-parens"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "space-in-parens"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--in-brackets",
@@ -8619,7 +9974,14 @@
         "array-bracket-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "array-bracket-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--in-braces",
@@ -8630,7 +9992,14 @@
         "object-curly-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "object-curly-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--max-len",
@@ -8641,7 +10010,14 @@
         "max-len"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "max-len"
+        ],
+        "enforcement": "javascript",
+        "reason": "max-len exempts strings and template literals, as the clause notes."
+      }
     },
     {
       "id": "whitespace--block-spacing",
@@ -8652,7 +10028,14 @@
         "block-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "block-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--comma-spacing",
@@ -8663,7 +10046,14 @@
         "comma-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "comma-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--computed-property-spacing",
@@ -8674,7 +10064,14 @@
         "computed-property-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "computed-property-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--func-call-spacing",
@@ -8685,7 +10082,14 @@
         "func-call-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "func-call-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--key-spacing",
@@ -8696,7 +10100,14 @@
         "key-spacing"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "key-spacing"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--no-trailing-spaces",
@@ -8707,7 +10118,14 @@
         "no-trailing-spaces"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-trailing-spaces"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "whitespace--no-multiple-empty-lines",
@@ -8718,7 +10136,14 @@
         "no-multiple-empty-lines"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-multiple-empty-lines"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "commas--leading-trailing",
@@ -8729,7 +10154,14 @@
         "comma-style"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "comma-style"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "commas--dangling",
@@ -8740,7 +10172,14 @@
         "comma-dangle"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "comma-dangle"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "semicolons--required",
@@ -8751,7 +10190,14 @@
         "semi"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "semi"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "coercion--explicit",
@@ -8760,7 +10206,12 @@
       "line": 2671,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Determining where a semantic conversion belongs requires review."
+      "reason": "Determining where a semantic conversion belongs requires review.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Determining where a semantic conversion belongs requires review."
+      }
     },
     {
       "id": "coercion--strings",
@@ -8771,7 +10222,14 @@
         "no-new-wrappers"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-new-wrappers"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "coercion--numbers",
@@ -8783,7 +10241,15 @@
         "no-new-wrappers"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "radix",
+          "no-new-wrappers"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "coercion--comment-deviations",
@@ -8794,7 +10260,14 @@
         "no-bitwise"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: no-bitwise retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: no-bitwise retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "no-bitwise"
+        ],
+        "enforcement": "overridden",
+        "reason": "Sample precedence: no-bitwise retains its inherited/explicit options and severity."
+      }
     },
     {
       "id": "coercion--bitwise",
@@ -8803,7 +10276,12 @@
       "line": 2733,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Educational warning about bitwise numeric range."
+      "reason": "Educational warning about bitwise numeric range.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Educational warning about bitwise numeric range."
+      }
     },
     {
       "id": "coercion--booleans",
@@ -8814,7 +10292,14 @@
         "no-new-wrappers"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-new-wrappers"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--descriptive",
@@ -8825,7 +10310,14 @@
         "id-length"
       ],
       "enforcement": "overridden",
-      "reason": "Sample precedence: id-length retains its inherited/explicit options and severity."
+      "reason": "Sample precedence: id-length retains its inherited/explicit options and severity.",
+      "guideline": {
+        "rules": [
+          "id-length"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--camelCase",
@@ -8836,7 +10328,14 @@
         "camelcase"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "camelcase"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--PascalCase",
@@ -8847,7 +10346,14 @@
         "new-cap"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "new-cap"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--leading-underscore",
@@ -8858,7 +10364,14 @@
         "no-underscore-dangle"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-underscore-dangle"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--self-this",
@@ -8869,7 +10382,14 @@
         "unicorn/no-this-assignment"
       ],
       "enforcement": "native",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "unicorn/no-this-assignment"
+        ],
+        "enforcement": "native",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "naming--PascalCase-singleton",
@@ -8878,7 +10398,12 @@
       "line": 2864,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Identifying a singleton or function library requires API-level intent."
+      "reason": "Identifying a singleton or function library requires API-level intent.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Identifying a singleton or function library requires API-level intent."
+      }
     },
     {
       "id": "naming--Acronyms-and-Initialisms",
@@ -8887,7 +10412,12 @@
       "line": 2876,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Recognizing domain acronyms requires a project vocabulary."
+      "reason": "Recognizing domain acronyms requires a project vocabulary.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Recognizing domain acronyms requires a project vocabulary."
+      }
     },
     {
       "id": "naming--constants",
@@ -8896,7 +10426,14 @@
       "line": 2912,
       "rules": [],
       "enforcement": "manual",
-      "reason": "The guide distinguishes semantic constants from ordinary const bindings without defining a boundary."
+      "reason": "The guide distinguishes semantic constants from ordinary const bindings without defining a boundary.",
+      "guideline": {
+        "rules": [
+          "ag/constant-name"
+        ],
+        "enforcement": "partial",
+        "reason": "ag/constant-name requires UPPER_SNAKE_CASE for module-level const bindings initialized with primitive literals; other semantic constants remain reviewable."
+      }
     },
     {
       "id": "accessors--not-required",
@@ -8905,7 +10442,12 @@
       "line": 2927,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Accessor functions are explicitly optional."
+      "reason": "Accessor functions are explicitly optional.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Accessor functions are explicitly optional."
+      }
     },
     {
       "id": "accessors--no-getters-setters",
@@ -8916,7 +10458,14 @@
         "ag/no-accessors"
       ],
       "enforcement": "custom",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "ag/no-accessors"
+        ],
+        "enforcement": "custom",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "accessors--boolean-prefix",
@@ -8925,7 +10474,12 @@
       "line": 2957,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Boolean API intent cannot be inferred reliably for arbitrary JavaScript methods."
+      "reason": "Boolean API intent cannot be inferred reliably for arbitrary JavaScript methods.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Boolean API intent cannot be inferred reliably for arbitrary JavaScript methods."
+      }
     },
     {
       "id": "accessors--consistent",
@@ -8934,7 +10488,12 @@
       "line": 2972,
       "rules": [],
       "enforcement": "manual",
-      "reason": "Consistency of get/set APIs is a design-review requirement."
+      "reason": "Consistency of get/set APIs is a design-review requirement.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "manual",
+        "reason": "Consistency of get/set APIs is a design-review requirement."
+      }
     },
     {
       "id": "standard-library--isnan",
@@ -8945,7 +10504,14 @@
         "no-restricted-globals"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-restricted-globals"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "standard-library--isfinite",
@@ -8956,7 +10522,14 @@
         "no-restricted-globals"
       ],
       "enforcement": "javascript",
-      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable.",
+      "guideline": {
+        "rules": [
+          "no-restricted-globals"
+        ],
+        "enforcement": "javascript",
+        "reason": "Configured rule enforces the linked syntactic requirement; semantic intent remains reviewable."
+      }
     },
     {
       "id": "typescript--enum-naming-conventions",
@@ -8967,7 +10540,14 @@
         "ag/enum-name"
       ],
       "enforcement": "custom",
-      "reason": "Enum and member casing is enforced. Singular English names require review; values are unrestricted."
+      "reason": "Enum and member casing is enforced. Singular English names require review; values are unrestricted.",
+      "guideline": {
+        "rules": [
+          "ag/enum-name"
+        ],
+        "enforcement": "custom",
+        "reason": "Enum and member casing is enforced. Singular English names require review; values are unrestricted."
+      }
     },
     {
       "id": "typescript--tsconfig-strict",
@@ -8976,7 +10556,12 @@
       "line": 3084,
       "rules": [],
       "enforcement": "compiler",
-      "reason": "Enforced by shared tsconfig settings and compiler integration tests."
+      "reason": "Enforced by the shared tsconfig and verified with `ag-oxlint-config --check-tsconfig`.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "compiler",
+        "reason": "Enforced by the shared tsconfig and verified with `ag-oxlint-config --check-tsconfig`."
+      }
     },
     {
       "id": "typescript--tsconfig-nouncheckedindexedaccess",
@@ -8985,7 +10570,12 @@
       "line": 3095,
       "rules": [],
       "enforcement": "compiler",
-      "reason": "Enforced by shared tsconfig settings and compiler integration tests."
+      "reason": "Enforced by the shared tsconfig and verified with `ag-oxlint-config --check-tsconfig`.",
+      "guideline": {
+        "rules": [],
+        "enforcement": "compiler",
+        "reason": "Enforced by the shared tsconfig and verified with `ag-oxlint-config --check-tsconfig`."
+      }
     },
     {
       "id": "typescript--caught-error-type",
@@ -8996,7 +10586,14 @@
         "ag/unknown-catch"
       ],
       "enforcement": "custom",
-      "reason": "Explicit any is rejected; unannotated catches use unknown through strict compiler settings."
+      "reason": "Explicit any is rejected on every catch binding; unannotated catches are unknown under the shared strict compiler settings.",
+      "guideline": {
+        "rules": [
+          "ag/unknown-catch"
+        ],
+        "enforcement": "custom",
+        "reason": "Explicit any is rejected on every catch binding; unannotated catches are unknown under the shared strict compiler settings."
+      }
     }
   ],
   "rules": {
@@ -10637,14 +12234,6 @@
     "ag-jsdoc/ts-no-empty-object-type": "warn",
     "ag-jsdoc/valid-types": "warn",
     "ag-jsdoc/require-file-overview": "error",
-    "ag-jsdoc/require-description": "error",
-    "ag-jsdoc/require-description-complete-sentence": "error",
-    "ag-jsdoc/require-hyphen-before-param-description": [
-      "error",
-      "never"
-    ],
-    "ag-jsdoc/require-throws": "error",
-    "ag-jsdoc/sort-tags": "error",
     "ag-compat/sort-imports": [
       "error",
       {
@@ -10659,56 +12248,6 @@
         ]
       }
     ],
-    "ag-compat/no-restricted-imports": [
-      "error",
-      {
-        "patterns": [
-          {
-            "group": [
-              "**/*-mv2",
-              "**/*-mv3"
-            ],
-            "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
-          }
-        ]
-      }
-    ],
-    "ag-import/no-unassigned-import": [
-      "error",
-      {
-        "allow": [
-          "**/*.pcss"
-        ]
-      }
-    ],
-    "ag-newlines/enforce": [
-      "error",
-      {
-        "items": 3,
-        "max-len": 120
-      }
-    ],
-    "ag-boundaries/element-types": [
-      "error",
-      {
-        "default": "allow",
-        "rules": [
-          {
-            "from": "test-folder",
-            "disallow": [
-              "src-index"
-            ],
-            "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
-          }
-        ]
-      }
-    ],
-    "ag-logger/require-logger-context": [
-      "error",
-      {
-        "contextModuleName": "ext"
-      }
-    ],
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-this-assignment": "error",
     "ag/no-accessors": "error",
@@ -10717,5 +12256,483 @@
     "ag/no-default-side-effects": "error",
     "ag/prefer-array-from-map": "error",
     "ag/require-docblock": "error"
+  },
+  "typescriptRules": {
+    "ag-compat/default-param-last": "off",
+    "eslint/default-param-last": "error",
+    "ag-compat/no-empty-function": "off",
+    "eslint/no-empty-function": [
+      "error",
+      {
+        "allow": [
+          "arrowFunctions",
+          "functions",
+          "methods"
+        ]
+      }
+    ],
+    "ag-compat/no-redeclare": "off",
+    "ag-ts/no-redeclare": "error",
+    "ag-compat/comma-dangle": "off",
+    "ag-style/comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "always-multiline",
+        "enums": "always-multiline",
+        "generics": "always-multiline",
+        "tuples": "always-multiline"
+      }
+    ],
+    "ag-compat/comma-spacing": "off",
+    "ag-style/comma-spacing": [
+      "error",
+      {
+        "before": false,
+        "after": true
+      }
+    ],
+    "ag-compat/indent": "off",
+    "ag-style/indent": [
+      "error",
+      4,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "ag-compat/key-spacing": "off",
+    "ag-style/key-spacing": [
+      "error",
+      {
+        "beforeColon": false,
+        "afterColon": true
+      }
+    ],
+    "ag-compat/lines-between-class-members": "off",
+    "ag-style/lines-between-class-members": [
+      "error",
+      "always",
+      {
+        "exceptAfterSingleLine": false
+      }
+    ],
+    "ag-compat/no-array-constructor": "off",
+    "eslint/no-array-constructor": "error",
+    "ag-compat/object-curly-spacing": "off",
+    "ag-style/object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "ag-compat/semi": "off",
+    "ag-style/semi": [
+      "error",
+      "always"
+    ],
+    "ag-compat/space-before-blocks": "off",
+    "ag-style/space-before-blocks": "error",
+    "ag-compat/space-infix-ops": "off",
+    "ag-style/space-infix-ops": "error",
+    "ag-compat/no-shadow": "off",
+    "eslint/no-shadow": "error",
+    "ag-compat/no-undef": "off",
+    "ag-compat/no-unused-vars": "off",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "caughtErrors": "none",
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "ag-compat/no-use-before-define": "off",
+    "eslint/no-use-before-define": [
+      "error",
+      {
+        "functions": true,
+        "classes": true,
+        "variables": true
+      }
+    ],
+    "ag-compat/no-dupe-class-members": "off",
+    "eslint/no-dupe-class-members": "error",
+    "ag-compat/no-useless-constructor": "off",
+    "eslint/no-useless-constructor": "error",
+    "ag-import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "test/**",
+          "tests/**",
+          "spec/**",
+          "**/__tests__/**",
+          "**/__mocks__/**",
+          "test.{js,jsx}",
+          "test.{ts,tsx}",
+          "test-*.{js,jsx}",
+          "test-*.{ts,tsx}",
+          "**/*{.,_}{test,spec}.{js,jsx}",
+          "**/*{.,_}{test,spec}.{ts,tsx}",
+          "**/jest.config.js",
+          "**/jest.config.ts",
+          "**/jest.setup.js",
+          "**/jest.setup.ts",
+          "**/vue.config.js",
+          "**/vue.config.ts",
+          "**/webpack.config.js",
+          "**/webpack.config.ts",
+          "**/webpack.config.*.js",
+          "**/webpack.config.*.ts",
+          "**/rollup.config.js",
+          "**/rollup.config.ts",
+          "**/rollup.config.*.js",
+          "**/rollup.config.*.ts",
+          "**/gulpfile.js",
+          "**/gulpfile.ts",
+          "**/gulpfile.*.js",
+          "**/gulpfile.*.ts",
+          "**/Gruntfile{,.js}",
+          "**/Gruntfile{,.ts}",
+          "**/protractor.conf.js",
+          "**/protractor.conf.ts",
+          "**/protractor.conf.*.js",
+          "**/protractor.conf.*.ts",
+          "**/karma.conf.js",
+          "**/karma.conf.ts",
+          "**/.eslintrc.js",
+          "**/.eslintrc.ts"
+        ],
+        "optionalDependencies": false
+      }
+    ],
+    "ag-import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "mjs": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never",
+        "mts": "never",
+        "cts": "never"
+      }
+    ],
+    "ag-react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [
+          ".jsx",
+          ".tsx"
+        ]
+      }
+    ],
+    "ag-jsdoc/check-tag-names": [
+      "warn",
+      {
+        "typed": true
+      }
+    ],
+    "ag-jsdoc/no-types": "error",
+    "ag-jsdoc/no-undefined-types": "off",
+    "ag-jsdoc/require-next-type": "off",
+    "ag-jsdoc/require-param-type": "off",
+    "ag-jsdoc/require-property-type": "off",
+    "ag-jsdoc/require-returns-type": "off",
+    "ag-jsdoc/require-throws-type": "off",
+    "ag-jsdoc/require-yields-type": "off",
+    "ag/enum-name": "error",
+    "ag/unknown-catch": "error"
+  },
+  "policies": {
+    "guideline": {
+      "rules": {
+        "import/no-commonjs": "error",
+        "import/no-namespace": "error",
+        "ag-import/prefer-default-export": "off",
+        "import/no-default-export": "error",
+        "ag-import/order": [
+          "error",
+          {
+            "groups": [
+              [
+                "builtin",
+                "external",
+                "internal"
+              ],
+              "parent",
+              [
+                "sibling",
+                "index"
+              ]
+            ],
+            "newlines-between": "always",
+            "alphabetize": {
+              "order": "asc",
+              "caseInsensitive": true
+            }
+          }
+        ],
+        "ag-compat/line-comment-position": [
+          "error",
+          {
+            "position": "above",
+            "ignorePattern": "^\\s*(?:oxlint-|@ts-)",
+            "applyDefaultPatterns": true
+          }
+        ],
+        "ag-compat/lines-around-comment": [
+          "error",
+          {
+            "beforeBlockComment": false,
+            "beforeLineComment": true,
+            "allowBlockStart": true,
+            "allowObjectStart": true,
+            "allowArrayStart": true,
+            "allowClassStart": true
+          }
+        ],
+        "ag-compat/prefer-destructuring": [
+          "error",
+          {
+            "VariableDeclarator": {
+              "array": true,
+              "object": true
+            },
+            "AssignmentExpression": {
+              "array": true,
+              "object": false
+            }
+          },
+          {
+            "enforceForRenamedProperties": false
+          }
+        ],
+        "ag-react/jsx-indent": [
+          "error",
+          4
+        ],
+        "ag-react/jsx-indent-props": [
+          "error",
+          4
+        ],
+        "ag-compat/newline-per-chained-call": [
+          "error",
+          {
+            "ignoreChainWithDepth": 2
+          }
+        ],
+        "ag-compat/padding-line-between-statements": [
+          "error",
+          {
+            "blankLine": "always",
+            "prev": "block-like",
+            "next": "*"
+          }
+        ],
+        "ag-compat/id-length": [
+          "error",
+          {
+            "min": 2,
+            "properties": "never"
+          }
+        ],
+        "ag-compat/max-len": [
+          "error",
+          {
+            "code": 120,
+            "comments": 120,
+            "tabWidth": 4,
+            "ignoreUrls": false,
+            "ignoreTrailingComments": false,
+            "ignoreComments": false,
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true
+          }
+        ],
+        "ag/no-multiline-string-concat": "error",
+        "ag/multiline-condition-layout": "error",
+        "ag/require-docblock": [
+          "error",
+          {
+            "lineCommentRuns": true
+          }
+        ],
+        "ag/constant-name": "error"
+      },
+      "typescriptRules": {
+        "ag-compat/lines-around-comment": "off",
+        "ag-style/lines-around-comment": [
+          "error",
+          {
+            "beforeBlockComment": false,
+            "beforeLineComment": true,
+            "allowBlockStart": true,
+            "allowObjectStart": true,
+            "allowArrayStart": true,
+            "allowClassStart": true,
+            "allowInterfaceStart": true,
+            "allowTypeStart": true,
+            "allowEnumStart": true,
+            "allowModuleStart": true
+          }
+        ]
+      },
+      "settings": {},
+      "importGroups": {
+        "example": [
+          "error",
+          {
+            "groups": [
+              [
+                "builtin",
+                "external",
+                "internal"
+              ],
+              "parent",
+              [
+                "sibling",
+                "index"
+              ]
+            ],
+            "newlines-between": "always",
+            "alphabetize": {
+              "order": "asc",
+              "caseInsensitive": true
+            }
+          }
+        ],
+        "prose": [
+          "error",
+          {
+            "groups": [
+              "builtin",
+              "external",
+              "internal",
+              "parent",
+              [
+                "sibling",
+                "index"
+              ]
+            ],
+            "newlines-between": "always",
+            "alphabetize": {
+              "order": "asc",
+              "caseInsensitive": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  "profiles": {
+    "adguard-projects": {
+      "rules": {
+        "ag-jsdoc/require-description": "error",
+        "ag-jsdoc/require-description-complete-sentence": "error",
+        "ag-jsdoc/require-hyphen-before-param-description": [
+          "error",
+          "never"
+        ],
+        "ag-jsdoc/require-throws": "error",
+        "ag-jsdoc/sort-tags": "error",
+        "ag-compat/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/*-mv2",
+                  "**/*-mv3"
+                ],
+                "message": "Do not import directly from MV2/MV3 implementations. Use the appropriate alias or index file instead."
+              }
+            ]
+          }
+        ],
+        "ag-import/no-unassigned-import": [
+          "error",
+          {
+            "allow": [
+              "**/*.pcss"
+            ]
+          }
+        ],
+        "ag-newlines/enforce": [
+          "error",
+          {
+            "items": 3,
+            "max-len": 120
+          }
+        ],
+        "ag-boundaries/element-types": [
+          "error",
+          {
+            "default": "allow",
+            "rules": [
+              {
+                "from": "test-folder",
+                "disallow": [
+                  "src-index"
+                ],
+                "message": "Do not import directly from src/. Use specific submodules like src/utils instead."
+              }
+            ]
+          }
+        ],
+        "ag-notice/notice": "off",
+        "ag-logger/require-logger-context": [
+          "error",
+          {
+            "contextModuleName": "ext"
+          }
+        ]
+      },
+      "typescriptRules": {
+        "typescript/consistent-type-imports": [
+          "error",
+          {
+            "fixStyle": "inline-type-imports"
+          }
+        ],
+        "typescript/consistent-type-exports": "error",
+        "typescript/explicit-function-return-type": "error",
+        "typescript/explicit-member-accessibility": [
+          "error",
+          {
+            "accessibility": "explicit",
+            "overrides": {
+              "accessors": "explicit",
+              "constructors": "no-public",
+              "methods": "explicit",
+              "properties": "off",
+              "parameterProperties": "explicit"
+            }
+          }
+        ],
+        "typescript/no-explicit-any": "error",
+        "typescript/no-var-requires": "error",
+        "typescript/ban-ts-comment": "error",
+        "typescript/dot-notation": "off",
+        "typescript/no-non-null-assertion": "off"
+      },
+      "settings": {
+        "boundaries/elements": [
+          {
+            "type": "src-index",
+            "pattern": "src/index.ts",
+            "mode": "file"
+          },
+          {
+            "type": "test-folder",
+            "pattern": "test",
+            "mode": "folder"
+          }
+        ]
+      }
+    }
   }
 }

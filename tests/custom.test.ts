@@ -17,6 +17,7 @@ Object.entries(rules).forEach(([name, rule]) => {
         name: item.name,
         code: item.code,
         languageOptions: { parserOptions: { lang: item.lang } },
+        ...(item.options ? { options: item.options } : {}),
     });
     tester.run(name, rule, {
         valid: cases.filter((item) => !item.errors).map(makeCase),
@@ -34,8 +35,11 @@ describe('custom plugin contract', () => {
     it('exports stable names and source-linked metadata', () => {
         expect(plugin.meta?.name).toBe('ag');
         expect(Object.keys(rules)).toEqual(Object.keys(rules));
-        Object.values(rules).forEach((rule) => {
-            expect(rule.meta?.schema).toEqual([]);
+        Object.entries(rules).forEach(([name, rule]) => {
+            // Only the multiline comment rule has an option: the guideline policy's line-comment runs.
+            expect(rule.meta?.schema).toEqual(name === 'require-docblock'
+                ? [{ type: 'object', properties: { lineCommentRuns: { type: 'boolean' } }, additionalProperties: false }]
+                : []);
             expect(rule.meta?.docs?.url).toContain('CodeGuidelines/blob/master/JavaScript/Javascript.md#');
             expect(rule.meta?.fixable).toBeUndefined();
         });
