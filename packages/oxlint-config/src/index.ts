@@ -124,7 +124,7 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
             restriction: 'off',
             nursery: 'off',
         },
-        plugins: ['eslint', 'unicorn', 'typescript', 'import'],
+        plugins: ['eslint', 'unicorn', 'typescript', 'import', 'react'],
         jsPlugins: Object.entries(providers).map(([name, specifier]) => ({ name, specifier })),
         env: {
             ...catalog.env,

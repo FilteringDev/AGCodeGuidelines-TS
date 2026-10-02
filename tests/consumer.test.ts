@@ -124,9 +124,11 @@ beforeAll(async () => {
         [
             "import { createConfig } from '@agcodeguidelines/oxlint-config';",
             "import plugin from '@agcodeguidelines/oxlint-plugin';",
-            "import { catalog } from '@agcodeguidelines/rule-catalog';",
+            "import { catalog, resolveRule } from '@agcodeguidelines/rule-catalog';",
             "const config = createConfig({ language: 'typescript', environment: 'both', typeAware: true });",
             "if (!config.rules || !plugin.rules || !catalog.clauses.length) throw new Error('Broken public API');",
+            "const resolution = resolveRule('@typescript-eslint/return-await', { setting: ['warn', 'in-try-catch'] });",
+            "if (resolution.status !== 'resolved' || !resolution.requiresTypeInfo) throw new Error('Broken resolver');",
             '// @ts-expect-error Unsupported language must remain a compile-time error.',
             "createConfig({ language: 'flow' });",
         ].join('\n'),
@@ -152,6 +154,34 @@ describe('installed package contract', () => {
         const installed = await readdir(join(directory, 'node_modules/.pnpm'));
         expect(installed.filter((name) => /^eslint@/u.test(name))).toEqual([]);
         expect(installed.filter((name) => /^oxlint-tsgolint@/u.test(name))).toEqual([]);
+    });
+
+    it('resolves legacy settings and executes the packed naming rule without ESLint', async () => {
+        await writeFile(join(directory, 'legacy-config.ts'), [
+            "import { writeFileSync } from 'node:fs';",
+            "import { createConfig } from '@agcodeguidelines/oxlint-config';",
+            "import { resolveRule } from '@agcodeguidelines/rule-catalog';",
+            "const result = resolveRule('@typescript-eslint/naming-convention', {",
+            "    setting: ['warn', { selector: 'variable', format: ['camelCase'] }],",
+            '});',
+            "if (result.status !== 'resolved' || !result.target) throw new Error(JSON.stringify(result));",
+            "const config = createConfig({ language: 'typescript' });",
+            'config.rules = { [result.target]: result.setting };',
+            'config.overrides = [];',
+            'config.jsPlugins = config.jsPlugins.filter((provider) => provider.name === result.provider);',
+            "writeFileSync('legacy.json', JSON.stringify(config));",
+        ].join('\n'));
+        const configuration = run(tsx, ['legacy-config.ts']);
+        expect(configuration.status, configuration.output).toBe(0);
+        await writeFile(join(directory, 'legacy.ts'), 'const bad_name = 1;');
+        const invalid = run(oxlint, ['--config', 'legacy.json', 'legacy.ts', '--format', 'json']);
+        const { diagnostics } = JSON.parse(invalid.output);
+        expect(diagnostics).toHaveLength(1);
+        expect(diagnostics[0]).toMatchObject({ code: 'ag-ts(naming-convention)', severity: 'warning' });
+        await writeFile(join(directory, 'legacy.ts'), 'const goodName = 1;');
+        const valid = run(oxlint, ['--config', 'legacy.json', 'legacy.ts', '--format', 'json']);
+        expect(valid.status, valid.output).toBe(0);
+        expect(JSON.parse(valid.output).diagnostics).toEqual([]);
     });
 
     it('executes the published configuration CLI and surfaces argument errors', () => {

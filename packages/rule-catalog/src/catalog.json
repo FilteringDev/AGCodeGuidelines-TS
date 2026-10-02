@@ -13106,5 +13106,450 @@
         ]
       }
     }
+  },
+  "compatibility": {
+    "@typescript-eslint/member-delimiter-style": {
+      "canonicalSource": "member-delimiter-style",
+      "target": "ag-style/member-delimiter-style",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "$defs": {
+              "multiLineOption": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "semi",
+                  "comma"
+                ]
+              },
+              "singleLineOption": {
+                "type": "string",
+                "enum": [
+                  "semi",
+                  "comma"
+                ]
+              },
+              "delimiterConfig": {
+                "type": "object",
+                "properties": {
+                  "multiline": {
+                    "type": "object",
+                    "properties": {
+                      "delimiter": {
+                        "$ref": "#/items/0/$defs/multiLineOption"
+                      },
+                      "requireLast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "singleline": {
+                    "type": "object",
+                    "properties": {
+                      "delimiter": {
+                        "$ref": "#/items/0/$defs/singleLineOption"
+                      },
+                      "requireLast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "type": "object",
+            "properties": {
+              "multiline": {
+                "type": "object",
+                "properties": {
+                  "delimiter": {
+                    "$ref": "#/items/0/$defs/multiLineOption"
+                  },
+                  "requireLast": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "singleline": {
+                "type": "object",
+                "properties": {
+                  "delimiter": {
+                    "$ref": "#/items/0/$defs/singleLineOption"
+                  },
+                  "requireLast": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "overrides": {
+                "type": "object",
+                "properties": {
+                  "interface": {
+                    "$ref": "#/items/0/$defs/delimiterConfig"
+                  },
+                  "typeLiteral": {
+                    "$ref": "#/items/0/$defs/delimiterConfig"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "multilineDetection": {
+                "type": "string",
+                "enum": [
+                  "brackets",
+                  "last-member"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "stylistic@5.10.0"
+    },
+    "@typescript-eslint/func-call-spacing": {
+      "canonicalSource": "func-call-spacing",
+      "target": "ag-style/function-call-spacing",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "enum": [
+                  "never"
+                ]
+              }
+            ],
+            "minItems": 0,
+            "maxItems": 1
+          },
+          {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "enum": [
+                  "always"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "allowNewlines": {
+                    "type": "boolean"
+                  },
+                  "optionalChain": {
+                    "type": "object",
+                    "properties": {
+                      "before": {
+                        "type": "boolean"
+                      },
+                      "after": {
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            ],
+            "minItems": 0,
+            "maxItems": 2
+          }
+        ]
+      },
+      "origin": "stylistic@5.10.0"
+    },
+    "@typescript-eslint/no-extra-semi": {
+      "canonicalSource": "no-extra-semi",
+      "target": "ag-style/no-extra-semi",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "stylistic@5.10.0"
+    },
+    "@typescript-eslint/quotes": {
+      "canonicalSource": "quotes",
+      "target": "ag-style/quotes",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "string",
+            "enum": [
+              "single",
+              "double",
+              "backtick"
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "avoid-escape"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "avoidEscape": {
+                    "type": "boolean"
+                  },
+                  "allowTemplateLiterals": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "never",
+                          "avoidEscape",
+                          "always"
+                        ]
+                      }
+                    ]
+                  },
+                  "ignoreStringLiterals": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 2
+      },
+      "origin": "stylistic@5.10.0"
+    },
+    "@typescript-eslint/no-loss-of-precision": {
+      "canonicalSource": "no-loss-of-precision",
+      "target": "eslint/no-loss-of-precision",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/no-loop-func": {
+      "canonicalSource": "no-loop-func",
+      "target": "eslint/no-loop-func",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/no-unused-expressions": {
+      "canonicalSource": "no-unused-expressions",
+      "target": "eslint/no-unused-expressions",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "allowShortCircuit": {
+                "type": "boolean",
+                "default": false
+              },
+              "allowTernary": {
+                "type": "boolean",
+                "default": false
+              },
+              "allowTaggedTemplates": {
+                "type": "boolean",
+                "default": false
+              },
+              "enforceForJSX": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/no-implied-eval": {
+      "canonicalSource": "no-implied-eval",
+      "target": "typescript/no-implied-eval",
+      "implementation": "native",
+      "requiresTypeInfo": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/no-throw-literal": {
+      "canonicalSource": "no-throw-literal",
+      "target": "typescript/only-throw-error",
+      "implementation": "native",
+      "requiresTypeInfo": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/return-await": {
+      "canonicalSource": "return-await",
+      "target": "typescript/return-await",
+      "implementation": "native",
+      "requiresTypeInfo": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "enum": [
+              "always",
+              "never",
+              "in-try-catch",
+              "error-handling-correctness-only"
+            ]
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "react-hooks/rules-of-hooks": {
+      "canonicalSource": "react-hooks/rules-of-hooks",
+      "target": "react/rules-of-hooks",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "react-hooks/exhaustive-deps": {
+      "canonicalSource": "react-hooks/exhaustive-deps",
+      "target": "react/exhaustive-deps",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "additionalHooks": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/naming-convention": {
+      "canonicalSource": "naming-convention",
+      "target": "ag-ts/naming-convention",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "schema": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "enum": [
+                "variable",
+                "function",
+                "typeLike"
+              ]
+            },
+            "format": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "camelCase",
+                      "PascalCase",
+                      "UPPER_CASE"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "selector",
+            "format"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "origin": "ag-ts; formats from typescript-eslint@8.70.0"
+    }
   }
 }

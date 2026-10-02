@@ -15,6 +15,7 @@ import { severity } from '../packages/rule-catalog/src/index';
 import type {
     Catalog,
     Clause,
+    CompatibilityRule,
     Disposition,
     ImportGroups,
     Mapping,
@@ -68,6 +69,56 @@ const nativeList = JSON.parse(
 const native = new Set(nativeList.map(({ scope, value }) => `${scope.replaceAll('_', '-')}/${value}`));
 const typedNative = new Set(nativeList.filter((rule) => rule.type_aware)
     .map(({ scope, value }) => `${scope.replaceAll('_', '-')}/${value}`));
+const legacyCompatibility: Record<string, CompatibilityRule> = {};
+const optionSchema = (schema: unknown): object => (Array.isArray(schema)
+    ? {
+        type: 'array', items: schema, minItems: 0, maxItems: schema.length,
+    }
+    : schema as object);
+const registerCompatibility = (source: string, target: string, schema: unknown, origin: string): void => {
+    if (!native.has(target) && !target.startsWith('ag-style/') && !target.startsWith('ag-ts/')) {
+        throw new Error(`Missing compatibility implementation ${target}`);
+    }
+    legacyCompatibility[source] = {
+        canonicalSource: source.startsWith('@typescript-eslint/') ? source.slice('@typescript-eslint/'.length) : source,
+        target,
+        implementation: native.has(target) ? 'native' : 'javascript',
+        requiresTypeInfo: typedNative.has(target),
+        ...(source.startsWith('@typescript-eslint/') ? { language: 'typescript' as const } : {}),
+        schema: optionSchema(schema),
+        origin,
+    };
+};
+for (const [name, target] of Object.entries({
+    'member-delimiter-style': 'member-delimiter-style',
+    'func-call-spacing': 'function-call-spacing',
+    'no-extra-semi': 'no-extra-semi',
+    quotes: 'quotes',
+})) {
+    const rule = style.rules[target] as { meta: { schema: unknown } };
+    registerCompatibility(`@typescript-eslint/${name}`, `ag-style/${target}`, rule.meta.schema, 'stylistic@5.10.0');
+}
+for (const name of ['no-loss-of-precision', 'no-loop-func', 'no-unused-expressions']) {
+    registerCompatibility(
+        `@typescript-eslint/${name}`,
+        `eslint/${name}`,
+        builtinRules.get(name)!.meta!.schema,
+        'oxlint@1.82.0',
+    );
+}
+registerCompatibility('@typescript-eslint/no-implied-eval', 'typescript/no-implied-eval', [], 'oxlint@1.82.0');
+registerCompatibility('@typescript-eslint/no-throw-literal', 'typescript/only-throw-error', [], 'oxlint@1.82.0');
+registerCompatibility('@typescript-eslint/return-await', 'typescript/return-await', [
+    { enum: ['always', 'never', 'in-try-catch', 'error-handling-correctness-only'] },
+], 'oxlint@1.82.0');
+registerCompatibility('react-hooks/rules-of-hooks', 'react/rules-of-hooks', [], 'oxlint@1.82.0');
+registerCompatibility('react-hooks/exhaustive-deps', 'react/exhaustive-deps', [{
+    type: 'object',
+    properties: {
+        additionalHooks: { type: 'string' },
+    },
+    additionalProperties: false,
+}], 'oxlint@1.82.0');
 const origins: Record<string, string> = {};
 const baseline: RuleMap = {};
 const settings: Record<string, unknown> = {};
@@ -458,6 +509,13 @@ const typescriptTargets = new Set([
     ...Object.keys(style.rules).map((name) => `ag-style/${name}`),
     ...Object.keys(typescriptPlugin.rules).map((name) => `ag-ts/${name}`),
 ]);
+registerCompatibility(
+    '@typescript-eslint/naming-convention',
+    'ag-ts/naming-convention',
+    typescriptPlugin.rules['naming-convention'].meta.schema,
+    'ag-ts; formats from typescript-eslint@8.70.0',
+);
+delete legacyCompatibility['@typescript-eslint/naming-convention']!.language;
 
 const extraClauses: Record<string, string[]> = {
     'types--primitives': [],
@@ -964,6 +1022,7 @@ const catalog: Catalog = {
     profiles: {
         'adguard-projects': { ...layers['adguard-projects'], settings: projectSettings },
     },
+    compatibility: legacyCompatibility,
 };
 
 const cell = (text: string) => text.replaceAll('|', '\\|');
@@ -1003,6 +1062,15 @@ const report = [
             + ` | ${mapping.typescript ? `${mapping.typescript.target ?? 'disabled'}: ${cell(mapping.typescript.reason)}` : ''}`
             + ` | ${mapping.requiresTypeInfo ? 'opt-in required' : ''} |`,
     ),
+    '',
+    '## Legacy compatibility identifiers',
+    '',
+    'These identifiers are resolved by `resolveRule`; they do not activate additional preset rules. Caller settings '
+    + 'are preserved, unsupported options are rejected, and typed rules require a separate type-aware lane.',
+    '',
+    '| Legacy source | Target | Type information | Origin |',
+    '| --- | --- | --- | --- |',
+    ...Object.entries(legacyCompatibility).map(([source, rule]) => `| ${source} | ${rule.target} | ${rule.requiresTypeInfo ? 'required' : 'no'} | ${rule.origin} |`),
     '',
 ].join('\n');
 

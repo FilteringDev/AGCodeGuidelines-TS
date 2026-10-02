@@ -740,3 +740,23 @@ Scope `base` is always active, `guideline` is added by `policy: 'guideline'`, an
 | @typescript-eslint/ban-ts-comment | typescript/ban-ts-comment | native | `"error"` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/dot-notation | typescript/dot-notation | disabled | `"off"` | adguard-projects | adguard-projects |  | opt-in required |
 | @typescript-eslint/no-non-null-assertion | typescript/no-non-null-assertion | disabled | `"off"` | adguard-projects | adguard-projects |  |  |
+
+## Legacy compatibility identifiers
+
+These identifiers are resolved by `resolveRule`; they do not activate additional preset rules. Caller settings are preserved, unsupported options are rejected, and typed rules require a separate type-aware lane.
+
+| Legacy source | Target | Type information | Origin |
+| --- | --- | --- | --- |
+| @typescript-eslint/member-delimiter-style | ag-style/member-delimiter-style | no | stylistic@5.10.0 |
+| @typescript-eslint/func-call-spacing | ag-style/function-call-spacing | no | stylistic@5.10.0 |
+| @typescript-eslint/no-extra-semi | ag-style/no-extra-semi | no | stylistic@5.10.0 |
+| @typescript-eslint/quotes | ag-style/quotes | no | stylistic@5.10.0 |
+| @typescript-eslint/no-loss-of-precision | eslint/no-loss-of-precision | no | oxlint@1.82.0 |
+| @typescript-eslint/no-loop-func | eslint/no-loop-func | no | oxlint@1.82.0 |
+| @typescript-eslint/no-unused-expressions | eslint/no-unused-expressions | no | oxlint@1.82.0 |
+| @typescript-eslint/no-implied-eval | typescript/no-implied-eval | required | oxlint@1.82.0 |
+| @typescript-eslint/no-throw-literal | typescript/only-throw-error | required | oxlint@1.82.0 |
+| @typescript-eslint/return-await | typescript/return-await | required | oxlint@1.82.0 |
+| react-hooks/rules-of-hooks | react/rules-of-hooks | no | oxlint@1.82.0 |
+| react-hooks/exhaustive-deps | react/exhaustive-deps | no | oxlint@1.82.0 |
+| @typescript-eslint/naming-convention | ag-ts/naming-convention | no | ag-ts; formats from typescript-eslint@8.70.0 |

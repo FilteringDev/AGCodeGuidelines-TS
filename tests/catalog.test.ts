@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { catalog, severity } from '../packages/rule-catalog/src/index';
+import { catalog, resolveRule, severity } from '../packages/rule-catalog/src/index';
 import { customCases } from './custom-cases';
 import { gapCases } from './gap-cases';
 
@@ -17,6 +17,69 @@ const upstream = JSON.parse(
 ) as Fixture[];
 
 const helpers = ['react/jsx-uses-react', 'react/jsx-uses-vars'];
+
+describe('legacy rule resolution', () => {
+    it('resolves the delimiter alias without changing preset activation', () => {
+        const before = structuredClone(catalog);
+        const options = { language: 'typescript', profile: 'adguard-projects' } as const;
+        const canonical = resolveRule('member-delimiter-style', options);
+        const alias = resolveRule('@typescript-eslint/member-delimiter-style', options);
+        expect(alias).toEqual({ ...canonical, source: '@typescript-eslint/member-delimiter-style' });
+        expect(alias).toMatchObject({ status: 'resolved', target: 'ag-style/member-delimiter-style' });
+        expect(catalog).toEqual(before);
+    });
+
+    it('selects TypeScript replacements and preserves disabled rules', () => {
+        expect(resolveRule('no-redeclare', { language: 'typescript' })).toMatchObject({
+            status: 'resolved', target: 'ag-ts/no-redeclare',
+        });
+        expect(resolveRule('no-undef', { language: 'typescript' })).toMatchObject({
+            status: 'compiler', target: null,
+        });
+        const disabled = catalog.mappings.find((mapping) => !mapping.scope && severity(mapping.setting) === 0)!;
+        expect(resolveRule(disabled.source)).toMatchObject({ status: 'disabled', target: null });
+    });
+
+    it('reports unknown names and returns independent settings', () => {
+        expect(resolveRule('unknown/missing')).toMatchObject({ status: 'unsupported' });
+        const resolved = resolveRule('quotes');
+        if (resolved.status === 'resolved' && Array.isArray(resolved.setting)) {
+            resolved.setting[1] = 'double';
+        }
+        expect(resolveRule('quotes')).toMatchObject({ setting: ['error', 'single', { avoidEscape: true }] });
+    });
+
+    it('preserves caller options and explicitly rejects unsupported options', () => {
+        expect(resolveRule('@typescript-eslint/quotes', { setting: ['warn', 'double', { avoidEscape: true }] }))
+            .toMatchObject({ status: 'resolved', target: 'ag-style/quotes', setting: ['warn', 'double', { avoidEscape: true }] });
+        expect(resolveRule('@typescript-eslint/member-delimiter-style', { setting: ['error', { unknownOption: true }] }))
+            .toMatchObject({ status: 'unsupported' });
+        expect(resolveRule('@typescript-eslint/return-await', { setting: ['error', 'in-try-catch'] }))
+            .toMatchObject({ status: 'resolved', target: 'typescript/return-await', requiresTypeInfo: true });
+        expect(resolveRule('@typescript-eslint/return-await', { setting: ['error', 'invalid'] }))
+            .toMatchObject({ status: 'unsupported' });
+        expect(resolveRule('@typescript-eslint/return-await', { setting: ['off', 'invalid'] }))
+            .toMatchObject({ status: 'disabled', setting: ['off', 'invalid'] });
+        expect(resolveRule('@typescript-eslint/member-delimiter-style', { language: 'javascript' }))
+            .toMatchObject({ status: 'unsupported' });
+        expect(resolveRule('react-hooks/exhaustive-deps', {
+            setting: ['error', { enableDangerousAutofixThisMayCauseInfiniteLoops: true }],
+        })).toMatchObject({ status: 'unsupported' });
+        expect(resolveRule('@typescript-eslint/naming-convention')).toMatchObject({ status: 'unsupported' });
+        for (const option of [
+            { selector: 'parameter', format: ['camelCase'] },
+            { selector: 'variable', format: ['camelCase'], modifiers: ['const'] },
+            { selector: 'variable', format: ['camelCase'], types: ['boolean'] },
+            { selector: 'variable', format: ['camelCase'], filter: 'skip' },
+        ]) {
+            expect(resolveRule('@typescript-eslint/naming-convention', { setting: ['error', option] }))
+                .toMatchObject({ status: 'unsupported' });
+        }
+        expect(resolveRule('@typescript-eslint/naming-convention', {
+            setting: ['error', { selector: 'variable', format: null }], language: 'javascript',
+        })).toMatchObject({ status: 'resolved', target: 'ag-ts/naming-convention', requiresTypeInfo: false });
+    });
+});
 
 describe('source and scenario inventory', () => {
     it('accounts for every numbered guideline clause with an explicit disposition', () => {

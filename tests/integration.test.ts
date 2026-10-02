@@ -11,10 +11,11 @@ import {
 } from 'vitest';
 
 import { createConfig, node } from '../packages/oxlint-config/src/index';
-import { catalog, severity } from '../packages/rule-catalog/src/index';
+import { catalog, resolveRule, severity } from '../packages/rule-catalog/src/index';
 import { lintBatch } from './cli';
 
 import type { Diagnostic } from './cli';
+import type { RuleSetting } from '../packages/rule-catalog/src/index';
 
 const REQUIRE = createRequire(import.meta.url);
 const languages = ['js', 'mjs', 'cjs', 'jsx', 'ts', 'mts', 'cts', 'tsx'];
@@ -36,6 +37,130 @@ const examples = [
 ];
 const modes = ['baseline', 'warning', 'disabled'] as const;
 const outcomes = new Map<string, Diagnostic[]>();
+
+const legacyCases: { source: string; setting: RuleSetting; valid: string; invalid: string }[] = [
+    {
+        source: '@typescript-eslint/naming-convention',
+        setting: ['error',
+            { selector: 'variable', format: ['camelCase', 'PascalCase', 'UPPER_CASE'] },
+            { selector: 'function', format: ['camelCase', 'PascalCase'] },
+            { selector: 'typeLike', format: ['PascalCase'] },
+        ],
+        valid: 'const { bad_key: goodName } = source; interface Shape {}',
+        invalid: 'const bad_name = 1; interface badName {}',
+    },
+    {
+        source: '@typescript-eslint/member-delimiter-style',
+        setting: 'error',
+        valid: 'interface Shape {\n area: number;\n}',
+        invalid: 'interface Shape {\n area: number\n}',
+    },
+    {
+        source: '@typescript-eslint/func-call-spacing',
+        setting: ['error', 'never'],
+        valid: 'work();',
+        invalid: 'work ();',
+    },
+    {
+        source: '@typescript-eslint/no-extra-semi',
+        setting: 'error',
+        valid: 'const value = 1;',
+        invalid: 'const value = 1;;',
+    },
+    {
+        source: '@typescript-eslint/quotes',
+        setting: ['warn', 'single', { avoidEscape: true }],
+        valid: "type Mode = 'light';",
+        invalid: 'type Mode = "light";',
+    },
+    {
+        source: '@typescript-eslint/no-loss-of-precision',
+        setting: 'error',
+        valid: 'const value = 123;',
+        invalid: 'const value = 9007199254740993;',
+    },
+    {
+        source: '@typescript-eslint/no-loop-func',
+        setting: 'error',
+        valid: 'for (let index = 0; index < 3; index++) { callbacks.push(() => index); }',
+        invalid: 'for (var index = 0; index < 3; index++) { callbacks.push(() => index); }',
+    },
+    {
+        source: '@typescript-eslint/no-unused-expressions',
+        setting: ['error', { allowShortCircuit: true }],
+        valid: 'ready && work();',
+        invalid: 'ready;',
+    },
+    {
+        source: 'react-hooks/rules-of-hooks',
+        setting: 'error',
+        valid: 'function Component() { useState(0); return null; }',
+        invalid: 'function Component() { if (ready) useState(0); return null; }',
+    },
+    {
+        source: 'react-hooks/exhaustive-deps',
+        setting: ['error', { additionalHooks: 'useCustomEffect' }],
+        valid: 'function Component({ value }) { useCustomEffect(() => { console.log(value); }, [value]); }',
+        invalid: 'function Component({ value }) { useCustomEffect(() => { console.log(value); }, []); }',
+    },
+    {
+        source: '@typescript-eslint/no-implied-eval',
+        setting: 'error',
+        valid: 'setTimeout(() => work(), 1);',
+        invalid: 'setTimeout("work()", 1);',
+    },
+    {
+        source: '@typescript-eslint/no-throw-literal',
+        setting: 'error',
+        valid: 'throw new Error("failure");',
+        invalid: 'throw "failure";',
+    },
+    {
+        source: '@typescript-eslint/return-await',
+        setting: ['error', 'in-try-catch'],
+        valid: 'async function work() { try { return await Promise.resolve(1); } catch (error) { throw error; } }',
+        invalid: 'async function work() { try { return Promise.resolve(1); } catch (error) { throw error; } }',
+    },
+];
+
+describe('legacy compatibility through the real CLI', () => {
+    it.each(legacyCases)('$source preserves options and reports its target', async (example) => {
+        const resolved = resolveRule(example.source, { language: 'typescript', setting: example.setting });
+        expect(resolved.status).toBe('resolved');
+        if (resolved.status !== 'resolved' || !resolved.target) {
+            throw new Error(JSON.stringify(resolved));
+        }
+        const base = createConfig({ language: 'typescript', typeAware: resolved.requiresTypeInfo });
+        const config = {
+            ...base,
+            overrides: [],
+            jsPlugins: (base.jsPlugins as { name: string; specifier: string }[])
+                .filter((provider) => provider.name === resolved.provider)
+                .map((provider) => ({ ...provider, specifier: REQUIRE.resolve(provider.specifier) })),
+            rules: { [resolved.target]: resolved.setting },
+        };
+        const results = await lintBatch(config, {
+            'tsconfig.json': JSON.stringify({ compilerOptions: { strict: true, target: 'esnext' }, include: ['*.ts'] }),
+            'valid.ts': example.valid,
+            'invalid.ts': example.invalid,
+        });
+        expect(results.get('valid.ts')).toEqual([]);
+        const diagnostics = results.get('invalid.ts')!;
+        expect(diagnostics.some((diagnostic) => diagnostic.code?.replace(/^([^()]+)\(([^)]+)\)$/u, '$1/$2')
+            .replace(/^react-hooks\//u, 'react/')
+            === resolved.target), JSON.stringify(diagnostics)).toBe(true);
+        expect(diagnostics.every((diagnostic) => diagnostic.severity === (severity(example.setting) === 1 ? 'warning' : 'error')))
+            .toBe(true);
+        const disabled = await lintBatch({ ...config, rules: { [resolved.target]: 'off' } }, { 'invalid.ts': example.invalid });
+        expect(disabled.get('invalid.ts')).toEqual([]);
+        if (resolved.target === 'ag-ts/naming-convention') {
+            const suppressed = await lintBatch(config, {
+                'suppressed.ts': `/* eslint-disable ${resolved.target} */\n${example.invalid}`,
+            });
+            expect(suppressed.get('suppressed.ts')).toEqual([]);
+        }
+    });
+});
 
 beforeAll(async () => {
     for (const example of examples) {
