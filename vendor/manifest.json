@@ -4,6 +4,13 @@
     "revision": "4774d8e04322b9d6a195ba677269bbdb00082a1d"
   },
   "sources": {
+    "naming-format": {
+      "repository": "typescript-eslint/typescript-eslint",
+      "version": "8.70.0",
+      "ref": "v8.70.0",
+      "directory": "typescript-eslint-8.70.0",
+      "archiveSha256": "e962bc6b336c053175deae235ed397a5415aa1141c1811c47fbfc9df86d1d771"
+    },
     "core": {
       "repository": "eslint/eslint",
       "version": "8.57.1",
@@ -80,7 +87,7 @@
     "docs/reference/airbnb.json": "22563ee49a8e3c8ec31e1352eb0885850b3191c585f391a3f6486c404a42e527",
     "docs/reference/eslintrc.ts": "8e24e92384202396ff8a1f37762e3d6eba38bfc819af783f4656c45b83962e4d",
     "docs/reference/eslintrc.upstream.txt": "b96e64afd08549d58726e8c102f71cd928d0992f26dfc6a0d0d25575c9351253",
-    "docs/reference/sources.json": "574aa34e2d68f314a42e01b5c8fb9486b128de92e6970fde5677dd4bcd8d043a",
+    "docs/reference/sources.json": "14d9ff7e7fd86cc4d33704331e03a5687aa3e2a50132d2dad5439e8ca6ff9518",
     "scripts/reference-patches.json": "c91e5d7bf472e5e53987165c23b2d003dc4b560ca31dd4348d0f33a63d007eff",
     "scripts/vendor-patches/boundaries/src/constants/settings.ts.json": "aad1c5b7093162d970100df66b154dfe34be17a25e8351b81391e087c6b4478b",
     "scripts/vendor-patches/boundaries/src/core/elementsInfo.ts.json": "65ccb19c59f308f214be17d2c24a010a3d739b08924e8a83b8e50799fb960a34",
@@ -647,7 +654,7 @@
     "scripts/vendor-patches/react/lib/util/version.ts.json": "06bb41ffd7962746493046af366c2ead268727058ab9ceed28b0fac63ded2636",
     "scripts/vendor-patches/react/package.json.json": "f6df6ee9043c2430da298b9c35d264471026b80a80543f6d31ac392986c8c5ce",
     "scripts/vendor-patches/react/types/rules/jsx-no-literals.ts.json": "3a98d8d00f2733973d4f82163282a7b06e57306a16032bf55ae69a4421240705",
-    "scripts/vendor-recipes.json": "5d70d441bede04f35eaf75fdb2e8ac1a665478b772bed0959826420325791a6d",
+    "scripts/vendor-recipes.json": "11aff3778af357451d75756c2f462775fc8ba222276717913814900c8abd51f7",
     "tests/fixtures/import-report.json": "74ddf1ba3f4f8d7ab41d52ee804332acd089506bb3e1d090c5b0031deb348333",
     "tests/fixtures/upstream.json": "38597a81c5529224be4bdca8ae4d604a52a90f884bf210ca55f1e475fe643025",
     "vendor/boundaries/index.ts": "e065cbcbf071b460c14db0868a258185ce476bfe2039746b64436991d85068e8",
@@ -1098,6 +1105,8 @@
     "vendor/logger-context/src/helpers.ts": "734fe0c1d9228908a30e860b02b66ef91f03fcd93f3775760b0111d57115842b",
     "vendor/logger-context/src/log-method.ts": "20fbd89499acf1eff6aeb1bdf6c582783d2ff1a48ab72bf34f48a3d5b035db26",
     "vendor/logger-context/src/require-logger-context.ts": "0c0b861e4d125d592de61479e20446494c78c1392a655209976afc9460665fbd",
+    "vendor/naming-format/LICENSE": "29d2396df301a5abb7eb833b01b034ae67c0050d0bcb966c3e373dd8600f4053",
+    "vendor/naming-format/format.ts": "92814b771fe3be42318a20564157cdd9d83b223ada0c90489576e5e414aa8212",
     "vendor/notice/index.ts": "91e88c5fa6d00cfa88828f8d0e1c84266336718c8a16f06a03b1a041b1f30a29",
     "vendor/notice/src/notice.ts": "2db433e4d1020ddbf8c25f038dcd7f1541f3673850412203a70e57ea765d7791",
     "vendor/notice/src/utils.ts": "42a2423abc7c870e27c05613aae86cdd0f37d13e95bcf747398be87fb30b594d",
@@ -1242,7 +1251,7 @@
     "vendor/react/package.json": "7fda7ef35e8c1df0bf0e339fb305de029a688c2d3dd2034e071cd3ad12dd4bb8",
     "vendor/react/types.ts": "b794d55d8c70b4faf5a21f6da2011793bf4501ab13b3d4a5089ff77a184085a8",
     "vendor/react/types/rules/jsx-no-literals.ts": "67c0b653dfc1480c81ee17e4429a77f75e54b4dbe3fe15603bcad4a35616d7eb",
-    "vendor/tsconfig.json": "702e2d10a37aee048cd1643b9492729b6c43196aa8871ba6f908fe1d2a9e6808",
+    "vendor/tsconfig.json": "1441ecf441804176f90ff3a54bc2ba15704ca64a5a26f74d592bb6b2e747a481",
     "vendor/types.ts": "ab257211919a071ea0fcb68a3120187f1e9f3a25dc72a7b7ec685ff471294c8c"
   }
 }

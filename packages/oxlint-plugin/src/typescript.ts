@@ -8,6 +8,7 @@ import type {
     RuleMeta,
 } from '@oxlint/plugins';
 import builtinRules from '../../../vendor/core/lib/rules/index';
+import { isCamelCase, isPascalCase, isUpperCase } from '../../../vendor/naming-format/format';
 
 import { legacyContext } from './legacy-context';
 
@@ -114,7 +115,115 @@ export function isAllowedMerge(declarations: Declaration[]): boolean {
 
 const noRedeclare = builtinRules.get('no-redeclare')!;
 
+const FORMATS = { camelCase: isCamelCase, PascalCase: isPascalCase, UPPER_CASE: isUpperCase };
+type NamingSelector = 'variable' | 'function' | 'typeLike';
+interface NamingOption {
+    selector: NamingSelector;
+    format: (keyof typeof FORMATS)[] | null;
+}
+const namingSchema = {
+    type: 'array',
+    minItems: 1,
+    items: {
+        type: 'object',
+        properties: {
+            selector: { enum: ['variable', 'function', 'typeLike'] },
+            format: {
+                anyOf: [
+                    { type: 'null' },
+                    {
+                        type: 'array', minItems: 1, uniqueItems: true, items: { enum: Object.keys(FORMATS) },
+                    },
+                ],
+            },
+        },
+        required: ['selector', 'format'],
+        additionalProperties: false,
+    },
+} satisfies NonNullable<RuleMeta['schema']>;
+
+/**
+ * Collect local variable bindings without treating property keys as declared names.
+ * @param node - A variable binding or destructuring pattern.
+ * @returns Identifiers declared by the pattern.
+ */
+function bindingIdentifiers(node: ESTree.Node): ESTree.Node[] {
+    switch (node.type) {
+        case 'Identifier': return [node];
+        case 'ObjectPattern': return node.properties.flatMap((property) => bindingIdentifiers(property));
+        case 'ArrayPattern': return node.elements.flatMap((element) => (element ? bindingIdentifiers(element) : []));
+        case 'Property': return bindingIdentifiers(node.value);
+        case 'AssignmentPattern': return bindingIdentifiers(node.left);
+        case 'RestElement': return bindingIdentifiers(node.argument);
+        default: return [];
+    }
+}
+
 export const rules = {
+    'naming-convention': {
+        meta: {
+            type: 'suggestion',
+            docs: { description: 'Check variable, function, and typeLike names with explicitly supported formats.' },
+            schema: namingSchema,
+            messages: { doesNotMatchFormat: '{{type}} name `{{name}}` must match one of the following formats: {{formats}}' },
+        },
+        create(context) {
+            const options = context.options as unknown as readonly NamingOption[];
+            if (options.length === 0) {
+                throw new Error('naming-convention requires explicit supported selector/format options.');
+            }
+            if (new Set(options.map((option) => option.selector)).size !== options.length) {
+                throw new Error('Repeated naming selectors are not supported.');
+            }
+            const check = (node: ESTree.Node | null | undefined, selector: NamingSelector) => {
+                if (node?.type !== 'Identifier') {
+                    return;
+                }
+                const option = options.find((entry) => entry.selector === selector);
+                if (option?.format && !option.format.some((format) => FORMATS[format](node.name))) {
+                    context.report({
+                        node,
+                        messageId: 'doesNotMatchFormat',
+                        data: {
+                            type: selector, name: node.name, formats: option.format.join(', '),
+                        },
+                    });
+                }
+            };
+            return {
+                VariableDeclarator(node) {
+                    bindingIdentifiers(node.id).forEach((identifier) => check(identifier, 'variable'));
+                },
+                FunctionDeclaration(node) {
+                    check(node.id, 'function');
+                },
+                FunctionExpression(node) {
+                    check(node.id, 'function');
+                },
+                TSDeclareFunction(node) {
+                    check(node.id, 'function');
+                },
+                ClassDeclaration(node) {
+                    check(node.id, 'typeLike');
+                },
+                ClassExpression(node) {
+                    check(node.id, 'typeLike');
+                },
+                TSInterfaceDeclaration(node) {
+                    check(node.id, 'typeLike');
+                },
+                TSTypeAliasDeclaration(node) {
+                    check(node.id, 'typeLike');
+                },
+                TSEnumDeclaration(node) {
+                    check(node.id, 'typeLike');
+                },
+                TSTypeParameter(node) {
+                    check(node.name, 'typeLike');
+                },
+            };
+        },
+    } satisfies Rule,
     'no-redeclare': {
         meta: noRedeclare.meta as RuleMeta,
         create(context) {

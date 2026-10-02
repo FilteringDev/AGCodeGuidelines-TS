@@ -4,6 +4,13 @@
     "revision": "4774d8e04322b9d6a195ba677269bbdb00082a1d"
   },
   "sources": {
+    "naming-format": {
+      "repository": "typescript-eslint/typescript-eslint",
+      "version": "8.70.0",
+      "ref": "v8.70.0",
+      "directory": "typescript-eslint-8.70.0",
+      "archiveSha256": "e962bc6b336c053175deae235ed397a5415aa1141c1811c47fbfc9df86d1d771"
+    },
     "core": {
       "repository": "eslint/eslint",
       "version": "8.57.1",

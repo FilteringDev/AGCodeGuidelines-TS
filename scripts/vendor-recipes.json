@@ -1,4 +1,20 @@
 {
+  "vendor/naming-format/format.ts": {
+    "provider": "naming-format",
+    "guard": {
+      "source": "packages/eslint-plugin/src/rules/naming-convention-utils/format.ts",
+      "sha256": "9ef7dc8b34eb8ab19a6fd3c0a15a4816f39a11c112589e4ef4adb15cf62ae361"
+    },
+    "content": "/**\n * Reject leading, trailing, and adjacent underscores as the upstream format checker does.\n * @param name - Identifier text.\n * @returns Whether underscore positions are valid.\n */\nfunction validateUnderscores(name: string): boolean {\n    if (name.startsWith('_')) {\n        return false;\n    }\n    let wasUnderscore = false;\n    for (let index = 1; index < name.length; index += 1) {\n        if (name[index] === '_') {\n            if (wasUnderscore) {\n                return false;\n            }\n            wasUnderscore = true;\n        } else {\n            wasUnderscore = false;\n        }\n    }\n    return !wasUnderscore;\n}\n\n/**\n * Check the upstream PascalCase format, including Unicode letters.\n * @param name - Identifier text.\n * @returns Whether the format matches.\n */\nexport function isPascalCase(name: string): boolean {\n    return name.length === 0 || (name[0] === name[0]!.toUpperCase() && !name.includes('_'));\n}\n\n/**\n * Check the upstream camelCase format, including Unicode letters.\n * @param name - Identifier text.\n * @returns Whether the format matches.\n */\nexport function isCamelCase(name: string): boolean {\n    return name.length === 0 || (name[0] === name[0]!.toLowerCase() && !name.includes('_'));\n}\n\n/**\n * Check the upstream UPPER_CASE format and underscore positions.\n * @param name - Identifier text.\n * @returns Whether the format matches.\n */\nexport function isUpperCase(name: string): boolean {\n    return name.length === 0 || (name === name.toUpperCase() && validateUnderscores(name));\n}\n"
+  },
+  "vendor/naming-format/LICENSE": {
+    "provider": "naming-format",
+    "source": "LICENSE",
+    "patches": [{
+      "before": "SOFTWARE.\n",
+      "after": "SOFTWARE.\n\nThe MIT License (MIT)\n\nCopyright (c) 2016 Klaus Meinhardt\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+    }]
+  },
   "vendor/core/LICENSE": {
     "provider": "core",
     "source": "LICENSE"

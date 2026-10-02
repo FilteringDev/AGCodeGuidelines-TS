@@ -11,6 +11,51 @@ RuleTester.it = it;
 
 const typescript = { languageOptions: { parserOptions: { lang: 'ts' } } } as const;
 
+const namingOptions = [
+    { selector: 'variable', format: ['camelCase', 'PascalCase', 'UPPER_CASE'] },
+    { selector: 'function', format: ['camelCase', 'PascalCase'] },
+    { selector: 'typeLike', format: ['PascalCase'] },
+];
+new RuleTester().run('naming-convention', rules['naming-convention'], {
+    valid: [
+        'const lowerCase = 1; const PascalCase = 2; const UPPER_CASE = 3;',
+        'function work() {} function Component() {}',
+        'class Widget {} interface Shape {} type Mode = string; enum Color { red }',
+        'function work<Input>(input: Input): Input { return input; }',
+        'const { bad_key: goodName, other: { valueName }, ...REST } = source;',
+        'const [firstName, , ...REST] = source;',
+        'const { bad_key: goodName = 1 } = source;',
+        'const value = { bad_key: 1 }; function work(bad_parameter: number) {} namespace lower_namespace {}',
+        'const element = <Component bad_prop="value" />;',
+        'const \u00e9l\u00e9ment = 1; class \u00c9l\u00e9ment {}',
+    ].map((code) => ({
+        code,
+        options: namingOptions,
+        filename: 'main.tsx',
+        languageOptions: { parserOptions: { lang: 'tsx' } },
+    })),
+    invalid: [
+        'const bad_name = 1;',
+        'const BAD__NAME = 1;',
+        'const _BAD = 1;',
+        'const BAD_ = 1;',
+        'const { good: bad_name } = source;',
+        'const { bad_name } = source;',
+        'const [bad_name = 1] = source;',
+        'function bad_name() {}',
+        'const value = function bad_name() {};',
+        'declare function bad_name(): void;',
+        'class badName {}',
+        'const value = class badName {};',
+        'interface badName {}',
+        'type badName = string;',
+        'enum badName { Good }',
+        'function work<badName>(input: badName): badName { return input; }',
+    ].map((code) => ({
+        code, options: namingOptions, ...typescript, errors: [{ messageId: 'doesNotMatchFormat' }],
+    })),
+});
+
 const valid = [
     ['function overloads', 'function convert(input: string): string;\nfunction convert(input: number): number;\nfunction convert(input: unknown): unknown { return input; }'],
     ['exported overloads', 'export function convert(input: string): string;\nexport function convert(input: unknown): unknown { return input; }'],
@@ -65,7 +110,7 @@ new RuleTester().run('no-redeclare', rules['no-redeclare'], {
 describe('TypeScript rule plugin contract', () => {
     it('exposes TypeScript-aware rules under their core names', () => {
         expect(plugin.meta?.name).toBe('ag-ts');
-        expect(Object.keys(rules)).toEqual(['no-redeclare']);
+        expect(Object.keys(rules)).toEqual(['naming-convention', 'no-redeclare']);
     });
 
     it('rejects merges that TypeScript does not permit', () => {

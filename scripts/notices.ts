@@ -8,6 +8,8 @@ import {
 import { dirname, join, resolve } from 'node:path';
 
 const vendors = [
+    ['naming-format', 'Naming format helpers (typescript-eslint and tslint-consistent-codestyle)', '8.70.0',
+        'https://github.com/typescript-eslint/typescript-eslint'],
     ['core', 'ESLint core rule source', '8.57.1', 'https://github.com/eslint/eslint'],
     ['jsdoc', 'eslint-plugin-jsdoc', '64.3.6', 'https://github.com/gajus/eslint-plugin-jsdoc'],
     ['react', 'eslint-plugin-react', '7.37.5', 'https://github.com/jsx-eslint/eslint-plugin-react'],
