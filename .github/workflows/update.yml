@@ -38,19 +38,123 @@ jobs:
         if: steps.refresh.outcome == 'success'
         continue-on-error: true
         run: pnpm run check
-      - name: Open a signed draft update
+      - name: Open or update a signed draft update
         id: proposal
-        uses: peter-evans/create-pull-request@v8
+        uses: actions/github-script@v8
         with:
-          branch: automation/guideline-snapshot
-          title: 'chore: refresh AdGuard guideline snapshot'
-          draft: true
-          sign-commits: true
-          commit-message: |
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require("node:fs");
+            const path = require("node:path");
+            const { execFileSync } = require("node:child_process");
+            const { owner, repo } = context.repo;
+            const branch = "automation/guideline-snapshot";
+            if (!context.ref.startsWith("refs/heads/")) {
+              throw new Error(`Expected a branch ref, received ${context.ref}`);
+            }
+            const baseBranch = context.ref.slice("refs/heads/".length);
+            const base = await github.rest.repos.getBranch({ owner, repo, branch: baseBranch });
+            const baseSha = base.data.commit.sha;
+            const baseCommit = await github.rest.git.getCommit({ owner, repo, commit_sha: baseSha });
+            const changedPaths = new Set([
+              ...execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", "HEAD"], { encoding: "utf8" }).split("\0"),
+              ...execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { encoding: "utf8" }).split("\0"),
+            ].filter(Boolean));
+            const treeEntries = [];
+            const largeBlobs = [];
+            for (const filePath of changedPaths) {
+              const absolutePath = path.resolve(filePath);
+              if (!fs.existsSync(absolutePath) && !fs.lstatSync(absolutePath, { throwIfNoEntry: false })) {
+                treeEntries.push({ path: filePath, mode: "100644", type: "blob", sha: null });
+                continue;
+              }
+              const stat = fs.lstatSync(absolutePath);
+              const symlink = stat.isSymbolicLink();
+              const content = symlink ? Buffer.from(fs.readlinkSync(absolutePath)) : fs.readFileSync(absolutePath);
+              const mode = symlink ? "120000" : (stat.mode & 0o111) !== 0 ? "100755" : "100644";
+              const text = content.toString("utf8");
+              if (content.length <= 100000 && Buffer.from(text, "utf8").equals(content)) {
+                treeEntries.push({ path: filePath, mode, type: "blob", content: text });
+              } else {
+                largeBlobs.push({ path: filePath, mode, content });
+              }
+            }
+            for (let index = 0; index < largeBlobs.length; index += 10) {
+              const batch = largeBlobs.slice(index, index + 10);
+              const blobs = await Promise.all(batch.map(({ content }) =>
+                github.rest.git.createBlob({ owner, repo, content: content.toString("base64"), encoding: "base64" }),
+              ));
+              batch.forEach(({ path: filePath, mode }, offset) => {
+                treeEntries.push({ path: filePath, mode, type: "blob", sha: blobs[offset].data.sha });
+              });
+            }
+            let treeSha = baseCommit.data.tree.sha;
+            if (treeEntries.length > 0) {
+              const tree = await github.rest.git.createTree({
+                owner,
+                repo,
+                base_tree: baseCommit.data.tree.sha,
+                tree: treeEntries,
+              });
+              treeSha = tree.data.sha;
+            }
+            const openPullRequests = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              head: `${owner}:${branch}`,
+              base: baseBranch,
+              per_page: 100,
+            });
+            const existingPullRequest = openPullRequests.data[0];
+            if (treeSha === baseCommit.data.tree.sha) {
+              if (existingPullRequest) {
+                await github.rest.pulls.update({ owner, repo, pull_number: existingPullRequest.number, state: "closed" });
+                core.setOutput("pull-request-number", String(existingPullRequest.number));
+              } else {
+                core.setOutput("pull-request-number", "");
+              }
+              return;
+            }
+            const commit = await github.rest.git.createCommit({
+              owner,
+              repo,
+              message: process.env.PR_COMMIT_MESSAGE,
+              tree: treeSha,
+              parents: [baseSha],
+            });
+            try {
+              await github.rest.git.getRef({ owner, repo, ref: `heads/${branch}` });
+              await github.rest.git.updateRef({ owner, repo, ref: `heads/${branch}`, sha: commit.data.sha, force: true });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${branch}`, sha: commit.data.sha });
+            }
+            const pullRequest = existingPullRequest
+              ? await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: existingPullRequest.number,
+                  title: process.env.PR_TITLE,
+                  body: process.env.PR_BODY,
+                })
+              : await github.rest.pulls.create({
+                  owner,
+                  repo,
+                  title: process.env.PR_TITLE,
+                  body: process.env.PR_BODY,
+                  head: branch,
+                  base: baseBranch,
+                  draft: true,
+                });
+            core.setOutput("pull-request-number", String(pullRequest.data.number));
+        env:
+          PR_TITLE: 'chore: refresh AdGuard guideline snapshot'
+          PR_COMMIT_MESSAGE: |
             chore: refresh AdGuard guideline snapshot
 
             Co-authored-by: Codex <codex@openai.com>
-          body: |
+          PR_BODY: |
             Refresh the frozen AdGuard JavaScript guide and sample, reproduce the isolated rule sources, and regenerate the catalog and attributed Vitest corpus.
 
             Refresh: ${{ steps.refresh.outcome }}. Acceptance check: ${{ steps.check.outcome }}.
