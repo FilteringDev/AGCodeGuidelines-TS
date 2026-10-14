@@ -1,6 +1,11 @@
 {
   "name": "@agcodeguidelines/oxlint-plugin",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FilteringDev/AGCodeGuidelines-TS.git",
+    "directory": "packages/oxlint-plugin"
+  },
   "description": "AdGuard guideline rules and JavaScript rule adapters for Oxlint",
   "type": "module",
   "exports": {

@@ -1,0 +1,161 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: pnpm/setup@v3
+        with:
+          version: 12.3.4
+      - name: Install OIDC-capable npm
+        run: npm install --global npm@11.21.0 --ignore-scripts
+      - run: pnpm install --frozen-lockfile
+      - name: Validate release version and channel
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          import semver from 'semver';
+
+          const version = semver.valid(process.env.RELEASE_TAG);
+          if (!version || process.env.RELEASE_TAG.includes('+')) {
+            throw new Error('Release tag must be SemVer without build metadata, optionally prefixed with v');
+          }
+          const prerelease = semver.prerelease(version) !== null;
+          if (String(prerelease) !== process.env.RELEASE_PRERELEASE) {
+            throw new Error('Release prerelease flag must match the SemVer tag');
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\ntag=${prerelease ? 'next' : 'latest'}\n`);
+          NODE
+      - run: pnpm run check
+      - name: Require deterministic generated files
+        run: git diff --exit-code
+      - name: Set plugin release version
+        uses: TypescriptPrime/bump-packagejson-version@8b461d950090eae85d58d8a0085bfc993abdea0d # 1.1.9
+        with:
+          package-json-dir-path: packages/oxlint-plugin
+      - name: Set catalog release version
+        uses: TypescriptPrime/bump-packagejson-version@8b461d950090eae85d58d8a0085bfc993abdea0d # 1.1.9
+        with:
+          package-json-dir-path: packages/rule-catalog
+      - name: Set config release version
+        uses: TypescriptPrime/bump-packagejson-version@8b461d950090eae85d58d8a0085bfc993abdea0d # 1.1.9
+        with:
+          package-json-dir-path: packages/oxlint-config
+      - name: Build and test release packages
+        run: |
+          pnpm run build
+          pnpm exec vitest run tests/consumer.test.ts
+      - name: Pack and validate all release artifacts
+        id: pack
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          DIST_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
+          import { join, resolve } from 'node:path';
+
+          const directory = mkdtempSync(join(process.env.RUNNER_TEMP, 'ag-publish-'));
+          const version = process.env.RELEASE_VERSION;
+          for (const name of ['oxlint-plugin', 'rule-catalog', 'oxlint-config']) {
+            const destination = join(directory, name);
+            mkdirSync(destination);
+            execFileSync('pnpm', ['pack', '--pack-destination', destination], {
+              cwd: resolve('packages', name), stdio: 'inherit',
+            });
+            const archives = readdirSync(destination).filter((file) => file.endsWith('.tgz'));
+            assert.equal(archives.length, 1, `Expected one archive for ${name}`);
+            const archive = join(destination, archives[0]);
+            const manifest = JSON.parse(execFileSync('tar', ['-xOf', archive, 'package/package.json'], {
+              encoding: 'utf8',
+            }));
+            assert.equal(manifest.name, `@agcodeguidelines/${name}`);
+            assert.equal(manifest.version, version);
+            assert.notEqual(manifest.private, true);
+            assert.equal(manifest.repository.type, 'git');
+            assert.equal(manifest.repository.url, `git+https://github.com/${process.env.GITHUB_REPOSITORY}.git`);
+            assert.equal(manifest.repository.directory, `packages/${name}`);
+            for (const section of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+              for (const range of Object.values(manifest[section] ?? {})) {
+                assert.ok(!range.startsWith('workspace:'), `Unresolved workspace dependency in ${name}`);
+              }
+            }
+            if (name === 'oxlint-config') {
+              assert.equal(manifest.dependencies['@agcodeguidelines/oxlint-plugin'], version);
+            }
+            const files = execFileSync('tar', ['-tzf', archive], { encoding: 'utf8' }).split('\n');
+            for (const file of ['dist/index.js', 'dist/index.d.ts', 'LICENSE', 'README.md', 'THIRD_PARTY_NOTICES.md']) {
+              assert.ok(files.includes(`package/${file}`), `Missing ${file} in ${name}`);
+            }
+            if (name === 'oxlint-config') {
+              assert.ok(files.includes('package/tsconfig.base.json'));
+            }
+            execFileSync('npm', ['publish', archive, '--dry-run', '--access', 'public', '--tag', process.env.DIST_TAG], {
+              stdio: 'inherit',
+            });
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `directory=${directory}\n`);
+          NODE
+      - name: Reject already published versions
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { spawnSync } from 'node:child_process';
+
+          for (const name of ['oxlint-plugin', 'rule-catalog', 'oxlint-config']) {
+            const result = spawnSync('npm', ['view', `@agcodeguidelines/${name}`, 'versions', '--json',
+              '--registry=https://registry.npmjs.org'], { encoding: 'utf8' });
+            if (result.error) throw result.error;
+            if (result.status !== 0) {
+              const failure = JSON.parse(result.stdout || '{}');
+              if (result.status !== null && failure.error?.code === 'E404') continue;
+              throw new Error(`Cannot check ${name}: ${result.stderr}`);
+            }
+            const versions = JSON.parse(result.stdout);
+            const published = Array.isArray(versions) ? versions : [versions];
+            if (published.includes(process.env.RELEASE_VERSION)) {
+              throw new Error(`${name}@${process.env.RELEASE_VERSION} already exists; inspect any partial release before retrying`);
+            }
+          }
+          NODE
+      - name: Publish with npm trusted publishing
+        env:
+          PACK_DIRECTORY: ${{ steps.pack.outputs.directory }}
+          DIST_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          for package in oxlint-plugin rule-catalog oxlint-config; do
+            archives=( "$PACK_DIRECTORY/$package/"*.tgz )
+            [[ ${#archives[@]} -eq 1 && -f "${archives[0]}" ]]
+            npm publish "${archives[0]}" --access public --tag "$DIST_TAG"
+          done

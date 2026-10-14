@@ -27,7 +27,7 @@ The weekly GitHub workflow opens a **signed draft PR**, runs acceptance checks, 
 
 Review the generated rule catalog, effective sample options and disabled rules, fixture changes, exclusions, source/patch hashes, license notices, and all platform checks. Use `pnpm run snapshots:record` only after intentionally reviewing a snapshot change; normal checks reject drift.
 
-Local commits use `git commit -S` and include `Co-authored-by: Codex <codex@openai.com>`. Published packages are prepared with `pnpm pack`; publication is a separate maintainer action.
+Local commits use `git commit -S` and include `Co-authored-by: Codex <codex@openai.com>`. Published packages are prepared with `pnpm pack`; maintainers initiate publication by publishing a GitHub Release as described below.
 
 All 540 JavaScript sources from the migration baseline now have TypeScript ports: 308 core files, 44 JSDoc files, 133 React files, 54 import files, and the reference configuration. Emitted JavaScript in package `dist` directories remains the consumer runtime format. Upstream JavaScript filenames in provenance, patch inputs, and fixture strings remain unchanged.
 
@@ -36,6 +36,42 @@ All 540 JavaScript sources from the migration baseline now have TypeScript ports
 `pnpm check` runs the source guard, build, strict project and tool type checks, the complete Oxlint configuration, catalog and integrity checks, coverage tests, and Git whitespace checks. Vendor TypeScript and external declarations have no blanket lint exclusions. Strict compiler options and coverage thresholds remain in force; do not replace type contracts with unchecked files or permissive ambient module shims.
 
 The existing development overrides permit sequential `for...of` traversal and early `continue` in the scope, context, and dependency parser adapters, where mutable graph traversal is required. Parser nodes are annotated in place. Internal application helpers retain named exports where already configured. All vendor families follow the repository's TypeScript import extension policy and full lint rules. Test-capture classes model upstream APIs. These development settings do not change the published presets.
+
+## npm releases
+
+`.github/workflows/publish.yml` runs when a GitHub Release is published. It checks out the release tag, installs the frozen dependencies, runs `pnpm run check`, and rejects generated-file drift before preparing any release artifacts. Review the normal cross-platform Check workflow before publishing a release; the Publish workflow independently runs checks on Ubuntu, not the full platform matrix.
+
+Use a SemVer tag such as `v1.2.3` for a regular release or `v1.2.3-rc.1` for a prerelease. The GitHub Release's prerelease flag must match the tag. Build metadata (`+...`) is rejected to avoid npm version normalization collisions. All three public packages receive the same version through `TypescriptPrime/bump-packagejson-version`, pinned to the reviewed `1.1.9` commit. The action installs its own dependencies at runtime, so the commit pin does not freeze that dependency resolution. Version changes are made only in the runner: the private root version, committed package versions, and dependency lockfile remain unchanged, and the workflow never commits or pushes.
+
+After updating versions, the workflow rebuilds and reruns the packed-consumer tests. It prepares all packages with `pnpm pack`, validates the archive manifests and required files, and performs `npm publish --dry-run`. Packing converts the config's `workspace:*` plugin dependency to the exact release version. Publication uses the npm CLI, not `pnpm publish`, in this order:
+
+1. `@agcodeguidelines/oxlint-plugin`
+2. `@agcodeguidelines/rule-catalog`
+3. `@agcodeguidelines/oxlint-config`
+
+Regular releases use `latest`; prereleases use `next`. Only these public packages are published. A shared concurrency group prevents simultaneous publication, and an active run is never canceled by a newer release. GitHub concurrency retains only one pending run; publish releases one at a time and confirm each completes before starting the next.
+
+### Trusted publisher setup
+
+For each package, configure a GitHub Actions trusted publisher in its npm settings:
+
+- Organization or user: `FilteringDev`
+- Repository: `AGCodeGuidelines-TS`
+- Workflow filename: `publish.yml` (not the full path)
+- Environment name: leave empty; this workflow does not use a GitHub environment
+- Allow direct `npm publish`; stage-only permission is not sufficient
+
+The workflow uses a GitHub-hosted runner, `id-token: write`, Node from `.node-version`, and npm `11.21.0` (trusted publishing requires npm >=11.5.1 and Node >=22.14.0). It does not need an `NPM_TOKEN` or `NODE_AUTH_TOKEN` secret. The public package manifests identify this repository and their workspace directories. npm automatically attaches provenance to OIDC publications from this public repository; no separate provenance token is needed.
+
+A new trusted publisher configuration must complete its first successful publish within two days; otherwise delete and recreate it. If a package does not yet exist and its trusted publisher cannot be configured, an authorized maintainer must bootstrap it manually with `pnpm pack` and an authenticated npm CLI before registering the trusted publisher. Use a new release version afterward. Do not add a long-lived token fallback to the workflow. After confirming OIDC publication works, npm recommends requiring two-factor authentication and disallowing traditional publishing tokens.
+
+See [npm's trusted publishing documentation](https://docs.npmjs.com/trusted-publishers/) for setup and troubleshooting. Dry runs and `npm whoami` do not validate OIDC publishing permission; the first real release is the authentication and provenance acceptance check.
+
+### Failed or partial releases
+
+The workflow checks all three packages for an existing release version before the first publish. An existing version stops the run; registry/authentication/network failures other than a package-not-found response also stop the run. npm versions cannot be overwritten, and three publish operations are not atomic.
+
+If a run fails, inspect the workflow log and the registry versions and dist-tags for all three packages before retrying. If none were published, rerun the failed workflow after fixing the cause. If any were published, do not blindly rerun: the duplicate-version guard will stop it. Prefer fixing the cause and publishing a new version for all three packages. If completing the original version is necessary, an authorized maintainer must reproduce the tagged build and version updates, validate the packed artifacts, and manually publish only the missing packages with the original `latest` or `next` tag. Never republish an existing version or move dist-tags without review.
 
 ## Read-only consumer rehearsals
 

@@ -1,6 +1,11 @@
 {
   "name": "@agcodeguidelines/rule-catalog",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FilteringDev/AGCodeGuidelines-TS.git",
+    "directory": "packages/rule-catalog"
+  },
   "type": "module",
   "exports": {
     ".": {
