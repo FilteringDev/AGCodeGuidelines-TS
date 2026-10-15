@@ -1,4 +1,7 @@
 /** @file Verify repeatable command measurement without claiming consumer performance. */
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { benchmark, summarize } from '../scripts/benchmark';
@@ -18,6 +21,26 @@ const MANIFEST: BenchmarkManifest = {
 };
 
 describe('benchmark protocol', () => {
+    it('streams complete outputs and accepts separate current/optimized startup controls', () => {
+        const directory = mkdtempSync(join(tmpdir(), 'ag-benchmark-artifacts-'));
+        try {
+            const report = benchmark({
+                ...MANIFEST,
+                artifactsDirectory: directory,
+                variants: { current: VARIANT, optimized: VARIANT },
+            });
+            expect(report.samples).toHaveLength(40);
+            const sample = report.samples[0]!;
+            expect(sample.stdout).toBe('');
+            expect(readFileSync(sample.stdoutFile!, 'utf8')).toBe('ok');
+            expect(report.summary.cold!.optimized!.median).toBeGreaterThan(0);
+            expect(() => benchmark({ ...MANIFEST, variants: { '../escape': VARIANT, valid: VARIANT } }))
+                .toThrow('safely named');
+        } finally {
+            rmSync(directory, { recursive: true, force: true });
+        }
+    });
+
     it('summarizes median and spread without mutating samples', () => {
         const samples = [4, 1, 3, 2];
         expect(summarize(samples)).toEqual({

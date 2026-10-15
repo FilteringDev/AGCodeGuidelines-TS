@@ -1,16 +1,27 @@
 /** @file Measure complete lint commands with explicit cache and coverage boundaries. */
 import { createHash } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
+import {
+    closeSync,
+    fstatSync,
+    mkdirSync,
+    openSync,
+    readFileSync,
+    readSync,
+} from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { cpus, platform, release } from 'node:os';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+import type { SpawnSyncReturns } from 'node:child_process';
 
 export interface BenchmarkVariant {
     cold: string[];
     warm: string[];
     coverage: string;
     expectedExitCodes?: number[];
+    resourceProfile?: string;
 }
 
 export interface BenchmarkManifest {
@@ -19,7 +30,25 @@ export interface BenchmarkManifest {
     warmDefinition: string;
     iterations?: number;
     warmups?: number;
-    variants: Record<'eslint' | 'native' | 'hybrid', BenchmarkVariant>;
+    variants: Record<string, BenchmarkVariant>;
+    artifactsDirectory?: string;
+}
+
+/**
+ * Read a bounded diagnostic tail without loading arbitrarily large engine output.
+ * @param filename - A completed command's output artifact.
+ * @returns At most two KiB of diagnostic text.
+ */
+function diagnosticTail(filename: string): string {
+    const descriptor = openSync(filename, 'r');
+    try {
+        const { size } = fstatSync(descriptor);
+        const buffer = Buffer.alloc(Math.min(size, 2048));
+        readSync(descriptor, buffer, 0, buffer.length, Math.max(0, size - buffer.length));
+        return buffer.toString('utf8');
+    } finally {
+        closeSync(descriptor);
+    }
 }
 
 /**
@@ -56,9 +85,9 @@ export function benchmark(manifest: BenchmarkManifest) {
     if (!Number.isInteger(iterations) || iterations < 10 || !Number.isInteger(warmups) || warmups < 3) {
         throw new TypeError('Use at least 10 measured repetitions and 3 warmups.');
     }
-    if (!manifest.coldDefinition || !manifest.warmDefinition
-        || Object.keys(manifest.variants).sort().join(',') !== 'eslint,hybrid,native') {
-        throw new TypeError('Define cold/warm cache semantics and exactly eslint, native and hybrid variants.');
+    if (!manifest.coldDefinition || !manifest.warmDefinition || Object.keys(manifest.variants).length < 2
+        || Object.keys(manifest.variants).some((name) => !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/u.test(name))) {
+        throw new TypeError('Define cold/warm cache semantics and at least two safely named variants.');
     }
     const variants = Object.entries(manifest.variants);
     for (const [, variant] of variants) {
@@ -68,9 +97,14 @@ export function benchmark(manifest: BenchmarkManifest) {
         }
     }
     const cwd = resolve(manifest.cwd);
+    const artifacts = manifest.artifactsDirectory ? resolve(manifest.artifactsDirectory) : undefined;
+    if (artifacts) {
+        mkdirSync(artifacts, { recursive: true });
+    }
     const samples: {
         phase: 'cold' | 'warm'; variant: string; iteration: number; durationMs: number;
         status: number; stdout: string; stderr: string;
+        stdoutFile?: string; stderrFile?: string; resourceProfile?: unknown;
     }[] = [];
     for (const phase of ['cold', 'warm'] as const) {
         const start = phase === 'warm' ? -warmups : 0;
@@ -78,14 +112,30 @@ export function benchmark(manifest: BenchmarkManifest) {
             const offset = ((iteration % variants.length) + variants.length) % variants.length;
             for (const [name, variant] of [...variants.slice(offset), ...variants.slice(0, offset)]) {
                 const [command, ...args] = variant[phase];
+                const stdoutFile = artifacts ? join(artifacts, `${phase}-${name}-${iteration}.stdout`) : undefined;
+                const stderrFile = artifacts ? join(artifacts, `${phase}-${name}-${iteration}.stderr`) : undefined;
+                const descriptors = stdoutFile && stderrFile
+                    ? [openSync(stdoutFile, 'w'), openSync(stderrFile, 'w')] : undefined;
                 const before = performance.now();
-                const result = spawnSync(command!, args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+                let result: SpawnSyncReturns<string>;
+                try {
+                    result = spawnSync(command!, args, {
+                        cwd,
+                        encoding: 'utf8',
+                        maxBuffer: 64 * 1024 * 1024,
+                        ...(descriptors ? { stdio: ['ignore', descriptors[0]!, descriptors[1]!] } : {}),
+                    });
+                } finally {
+                    descriptors?.forEach((descriptor) => closeSync(descriptor));
+                }
                 const durationMs = performance.now() - before;
                 if (result.error) {
                     throw result.error;
                 }
                 if (result.status === null || !(variant.expectedExitCodes ?? [0]).includes(result.status)) {
-                    throw new Error(`${name} ${phase} failed (${result.status}): ${result.stderr || result.stdout}`);
+                    const diagnostic = stderrFile ? diagnosticTail(stderrFile) || diagnosticTail(stdoutFile!)
+                        : result.stderr || result.stdout;
+                    throw new Error(`${name} ${phase} failed (${result.status}): ${diagnostic}`);
                 }
                 if (iteration >= 0) {
                     samples.push({
@@ -94,8 +144,12 @@ export function benchmark(manifest: BenchmarkManifest) {
                         iteration,
                         durationMs,
                         status: result.status,
-                        stdout: result.stdout,
-                        stderr: result.stderr,
+                        stdout: result.stdout ?? '',
+                        stderr: result.stderr ?? '',
+                        ...(stdoutFile ? { stdoutFile, stderrFile } : {}),
+                        ...(variant.resourceProfile ? {
+                            resourceProfile: JSON.parse(readFileSync(resolve(cwd, variant.resourceProfile), 'utf8')) as unknown,
+                        } : {}),
                     });
                 }
             }
