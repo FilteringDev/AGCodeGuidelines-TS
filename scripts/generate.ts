@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 import sample from '../docs/reference/eslintrc';
 import { verifyReference } from './reference';
 import builtinRules from '../vendor/core/lib/rules/index';
-import { severity } from '../packages/rule-catalog/src/index';
+import { nativeEvidence, severity } from '../packages/rule-catalog/src/index';
 
 import type {
     Catalog,
@@ -20,6 +20,7 @@ import type {
     ImportGroups,
     Mapping,
     Policy,
+    RuleInventory,
     RuleMap,
     RuleSetting,
 } from '../packages/rule-catalog/src/index';
@@ -1007,6 +1008,59 @@ clauses.forEach((clause) => {
     });
 });
 
+const inventory: NonNullable<Catalog['inventory']> = [];
+const inventoryRow = (
+    source: string,
+    target: string | null,
+    setting: RuleSetting,
+    implementation: Mapping['implementation'],
+    scope: string,
+    language: 'javascript' | 'typescript',
+): RuleInventory => {
+    const sourceCandidate = source.startsWith('@typescript-eslint/')
+        ? source.replace('@typescript-eslint/', 'typescript/') : source.replace('react-hooks/', 'react/');
+    const candidate = [target, `eslint/${source}`, sourceCandidate]
+        .find((name): name is string => name !== null && native.has(name)) ?? null;
+    return {
+        source,
+        target,
+        scope,
+        language,
+        setting,
+        implementation,
+        nativeCandidate: candidate,
+        requiresTypeInfo: target !== null && typedNative.has(target),
+        candidateRequiresTypeInfo: candidate !== null && typedNative.has(candidate),
+        verification: candidate === null ? 'no-native-candidate'
+            : Object.hasOwn(nativeEvidence, source) ? 'diagnostic-differences' : 'candidate-only',
+        oxlint: '1.82.0',
+    };
+};
+mappings.forEach((mapping) => {
+    inventory.push(inventoryRow(
+        mapping.source,
+        mapping.target,
+        mapping.setting,
+        mapping.implementation,
+        mapping.scope ?? 'base',
+        mapping.language ?? 'javascript',
+    ));
+    if (mapping.typescript) {
+        const equivalent = mapping.typescript;
+        inventory.push(inventoryRow(
+            mapping.source,
+            equivalent.target,
+            equivalent.setting,
+            equivalent.implementation,
+            mapping.scope ?? 'base',
+            'typescript',
+        ));
+    }
+});
+Object.entries(legacyCompatibility).forEach(([source, rule]) => {
+    inventory.push(inventoryRow(source, rule.target, 'error', rule.implementation, 'alias', rule.language ?? 'javascript'));
+});
+
 const catalog: Catalog = {
     sources: hashes,
     baseline,
@@ -1023,6 +1077,7 @@ const catalog: Catalog = {
         'adguard-projects': { ...layers['adguard-projects'], settings: projectSettings },
     },
     compatibility: legacyCompatibility,
+    inventory,
 };
 
 const cell = (text: string) => text.replaceAll('|', '\\|');
@@ -1071,6 +1126,18 @@ const report = [
     '| Legacy source | Target | Type information | Origin |',
     '| --- | --- | --- | --- |',
     ...Object.entries(legacyCompatibility).map(([source, rule]) => `| ${source} | ${rule.target} | ${rule.requiresTypeInfo ? 'required' : 'no'} | ${rule.origin} |`),
+    '',
+    '## Native candidate inventory',
+    '',
+    'The packed catalog exposes `catalog.inventory` for every mapping, TypeScript replacement and compatibility alias. '
+    + 'A `candidate-only` entry proves existence in Oxlint 1.82.0, not option or behavior parity. Disabled entries remain '
+    + 'disabled. Existing presets retain their identifiers; native candidate migration is explicit.',
+    '',
+    '| Source | Native candidate | Verified boundary |',
+    '| --- | --- | --- |',
+    ...Object.entries(nativeEvidence).map(([source, evidence]) => `| ${source} | ${evidence.target} | No options. ${cell(evidence.differences.join(' '))} |`),
+    '',
+    'See [consumer compatibility and acceptance](compatibility.md) for unresolved options, ownership and consumer exceptions.',
     '',
 ].join('\n');
 

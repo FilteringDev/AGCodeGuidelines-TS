@@ -6,6 +6,19 @@ Import `catalog`, `severity`, and `resolveRule` from the package. Each clause ha
 
 ## Legacy Rule Resolution
 
+`resolveRuleDetailed()` adds explicit `native`, `javascript`, `type-aware`,
+`compiler`, `manual`, `disabled` and `unsupported` dispositions, cloned context
+and source settings, alias metadata and native evidence. `listRuleOwnership()`
+enumerates only caller-supplied rules. `catalog.inventory` lists native candidates
+for every mapping, TS replacement and alias; existence alone does not prove parity.
+The legacy `resolveRule()` result and default targets remain unchanged.
+
+The three tested no-options native candidates (`no-debugger`, `no-duplicate-case`,
+`no-sparse-arrays`) have diagnostic differences. Select them only by explicitly
+passing `acceptNativeDifferences: true` to the detailed resolver and migrating
+their identifiers/suppressions. Unverified options remain unsupported. Source
+parser assumptions and consumer settings still need independent verification.
+
 ```ts
 import { resolveRule } from '@agcodeguidelines/rule-catalog';
 

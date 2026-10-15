@@ -1,0 +1,830 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Oxlint 1.82.0 native candidate parity > no-debugger records exact differences across the upstream corpus 1`] = `
+[
+  {
+    "code": "if (foo) debugger",
+    "compat": [
+      {
+        "message": "Unexpected 'debugger' statement.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 10,
+            "length": 8,
+            "line": 1,
+            "offset": 9,
+          },
+        ],
+      },
+    ],
+    "id": "75cdee28696bc9de",
+    "native": [
+      {
+        "message": "\`debugger\` statement is not allowed",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 10,
+            "length": 8,
+            "line": 1,
+            "offset": 9,
+          },
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Oxlint 1.82.0 native candidate parity > no-duplicate-case records exact differences across the upstream corpus 1`] = `
+[
+  {
+    "code": "var a = 1; switch (a) {case 1: break; case 1: break; case 2: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 39,
+            "length": 14,
+            "line": 1,
+            "offset": 38,
+          },
+        ],
+      },
+    ],
+    "id": "539f90b8a4482225",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 29,
+            "length": 1,
+            "line": 1,
+            "offset": 28,
+          },
+          {
+            "column": 44,
+            "length": 1,
+            "line": 1,
+            "offset": 43,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = '1'; switch (a) {case '1': break; case '1': break; case '2': break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 43,
+            "length": 16,
+            "line": 1,
+            "offset": 42,
+          },
+        ],
+      },
+    ],
+    "id": "30ed44201228696b",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 31,
+            "length": 3,
+            "line": 1,
+            "offset": 30,
+          },
+          {
+            "column": 48,
+            "length": 3,
+            "line": 1,
+            "offset": 47,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, one = 1; switch (a) {case one: break; case one: break; case 2: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 50,
+            "length": 16,
+            "line": 1,
+            "offset": 49,
+          },
+        ],
+      },
+    ],
+    "id": "c345362d10d3ab8b",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 38,
+            "length": 3,
+            "line": 1,
+            "offset": 37,
+          },
+          {
+            "column": 55,
+            "length": 3,
+            "line": 1,
+            "offset": 54,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, p = {p: {p1: 1, p2: 1}}; switch (a) {case p.p.p1: break; case p.p.p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 69,
+            "length": 19,
+            "line": 1,
+            "offset": 68,
+          },
+        ],
+      },
+    ],
+    "id": "8252c38b45834e5d",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 6,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 74,
+            "length": 6,
+            "line": 1,
+            "offset": 73,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f = function(b) { return b ? { p1: 1 } : { p1: 2 }; }; switch (a) {case f(true).p1: break; case f(true).p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 103,
+            "length": 23,
+            "line": 1,
+            "offset": 102,
+          },
+        ],
+      },
+    ],
+    "id": "56b657cf128a8b51",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 84,
+            "length": 10,
+            "line": 1,
+            "offset": 83,
+          },
+          {
+            "column": 108,
+            "length": 10,
+            "line": 1,
+            "offset": 107,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f = function(s) { return { p1: s } }; switch (a) {case f(a + 1).p1: break; case f(a + 1).p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 87,
+            "length": 24,
+            "line": 1,
+            "offset": 86,
+          },
+        ],
+      },
+    ],
+    "id": "70157273d17282df",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 67,
+            "length": 11,
+            "line": 1,
+            "offset": 66,
+          },
+          {
+            "column": 92,
+            "length": 11,
+            "line": 1,
+            "offset": 91,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f = function(s) { return { p1: s } }; switch (a) {case f(a === 1 ? 2 : 3).p1: break; case f(a === 1 ? 2 : 3).p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 97,
+            "length": 34,
+            "line": 1,
+            "offset": 96,
+          },
+        ],
+      },
+    ],
+    "id": "a785e98c3366b671",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 67,
+            "length": 21,
+            "line": 1,
+            "offset": 66,
+          },
+          {
+            "column": 102,
+            "length": 21,
+            "line": 1,
+            "offset": 101,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f1 = function() { return { p1: 1 } }; switch (a) {case f1().p1: break; case f1().p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 83,
+            "length": 20,
+            "line": 1,
+            "offset": 82,
+          },
+        ],
+      },
+    ],
+    "id": "7e9dc1e586eaf7ba",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 67,
+            "length": 7,
+            "line": 1,
+            "offset": 66,
+          },
+          {
+            "column": 88,
+            "length": 7,
+            "line": 1,
+            "offset": 87,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = [1, 2]; switch(a.toString()){case ([1, 2]).toString():break; case ([1, 2]).toString():break; default:break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 70,
+            "length": 31,
+            "line": 1,
+            "offset": 69,
+          },
+        ],
+      },
+    ],
+    "id": "fe56eeb4e045688f",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 43,
+            "length": 19,
+            "line": 1,
+            "offset": 42,
+          },
+          {
+            "column": 75,
+            "length": 19,
+            "line": 1,
+            "offset": 74,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "switch (a) { case a: case a: }",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 22,
+            "length": 7,
+            "line": 1,
+            "offset": 21,
+          },
+        ],
+      },
+    ],
+    "id": "f87e206044d2b16f",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 19,
+            "length": 1,
+            "line": 1,
+            "offset": 18,
+          },
+          {
+            "column": 27,
+            "length": 1,
+            "line": 1,
+            "offset": 26,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "switch (a) { case a: break; case b: break; case a: break; case c: break; case a: break; }",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 44,
+            "length": 14,
+            "line": 1,
+            "offset": 43,
+          },
+        ],
+      },
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 74,
+            "length": 14,
+            "line": 1,
+            "offset": 73,
+          },
+        ],
+      },
+    ],
+    "id": "ef8ee6083f74f8bb",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 19,
+            "length": 1,
+            "line": 1,
+            "offset": 18,
+          },
+          {
+            "column": 49,
+            "length": 1,
+            "line": 1,
+            "offset": 48,
+          },
+        ],
+      },
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 19,
+            "length": 1,
+            "line": 1,
+            "offset": 18,
+          },
+          {
+            "column": 79,
+            "length": 1,
+            "line": 1,
+            "offset": 78,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, p = {p: {p1: 1, p2: 1}}; switch (a) {case p.p.p1: break; case p. p // comment
+ .p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 69,
+            "length": 33,
+            "line": 1,
+            "offset": 68,
+          },
+        ],
+      },
+    ],
+    "id": "085fe3ebbbbb1295",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 6,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 74,
+            "length": 20,
+            "line": 1,
+            "offset": 73,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, p = {p: {p1: 1, p2: 1}}; switch (a) {case p .p
+/* comment */
+.p1: break; case p.p.p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 13,
+            "length": 19,
+            "line": 3,
+            "offset": 84,
+          },
+        ],
+      },
+    ],
+    "id": "2e08c54fe7f67473",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 22,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 18,
+            "length": 6,
+            "line": 3,
+            "offset": 89,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, p = {p: {p1: 1, p2: 1}}; switch (a) {case p .p
+/* comment */
+.p1: break; case p. p // comment
+ .p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 13,
+            "length": 33,
+            "line": 3,
+            "offset": 84,
+          },
+        ],
+      },
+    ],
+    "id": "7cd75b611deca657",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 22,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 18,
+            "length": 20,
+            "line": 3,
+            "offset": 89,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, p = {p: {p1: 1, p2: 1}}; switch (a) {case p.p.p1: break; case p. p // comment
+ .p1: break; case p .p
+/* comment */
+.p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 69,
+            "length": 33,
+            "line": 1,
+            "offset": 68,
+          },
+        ],
+      },
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 14,
+            "length": 35,
+            "line": 2,
+            "offset": 102,
+          },
+        ],
+      },
+    ],
+    "id": "fd496418b951ea99",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 6,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 74,
+            "length": 20,
+            "line": 1,
+            "offset": 73,
+          },
+        ],
+      },
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 54,
+            "length": 6,
+            "line": 1,
+            "offset": 53,
+          },
+          {
+            "column": 19,
+            "length": 22,
+            "line": 2,
+            "offset": 107,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f = function(s) { return { p1: s } }; switch (a) {case f(a + 1).p1: break; case f(a+1).p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 87,
+            "length": 22,
+            "line": 1,
+            "offset": 86,
+          },
+        ],
+      },
+    ],
+    "id": "670553452d115817",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 67,
+            "length": 11,
+            "line": 1,
+            "offset": 66,
+          },
+          {
+            "column": 92,
+            "length": 9,
+            "line": 1,
+            "offset": 91,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = 1, f = function(s) { return { p1: s } }; switch (a) {case f(
+a + 1 // comment
+).p1: break; case f(a+1)
+.p1: break; default: break;}",
+    "compat": [
+      {
+        "message": "Duplicate case label.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 14,
+            "length": 23,
+            "line": 3,
+            "offset": 99,
+          },
+        ],
+      },
+    ],
+    "id": "0763c754e48cfcce",
+    "native": [
+      {
+        "message": "Duplicate case label",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 67,
+            "length": 24,
+            "line": 1,
+            "offset": 66,
+          },
+          {
+            "column": 19,
+            "length": 10,
+            "line": 3,
+            "offset": 104,
+          },
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Oxlint 1.82.0 native candidate parity > no-sparse-arrays records exact differences across the upstream corpus 1`] = `
+[
+  {
+    "code": "var a = [,];",
+    "compat": [
+      {
+        "message": "Unexpected comma in middle of array.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 9,
+            "length": 3,
+            "line": 1,
+            "offset": 8,
+          },
+        ],
+      },
+    ],
+    "id": "1ba0b3de476a307c",
+    "native": [
+      {
+        "message": "Unexpected comma in middle of array",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 10,
+            "length": 0,
+            "line": 1,
+            "offset": 9,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    "code": "var a = [ 1,, 2];",
+    "compat": [
+      {
+        "message": "Unexpected comma in middle of array.",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 9,
+            "length": 8,
+            "line": 1,
+            "offset": 8,
+          },
+        ],
+      },
+    ],
+    "id": "d8d28c9c4d9224a9",
+    "native": [
+      {
+        "message": "Unexpected comma in middle of array",
+        "severity": "error",
+        "spans": [
+          {
+            "column": 13,
+            "length": 0,
+            "line": 1,
+            "offset": 12,
+          },
+        ],
+      },
+    ],
+  },
+]
+`;

@@ -6,7 +6,13 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { catalog, resolveRule, severity } from '../packages/rule-catalog/src/index';
+import {
+    catalog,
+    listRuleOwnership,
+    resolveRule,
+    resolveRuleDetailed,
+    severity,
+} from '../packages/rule-catalog/src/index';
 import { customCases } from './custom-cases';
 import { gapCases } from './gap-cases';
 
@@ -17,6 +23,63 @@ const upstream = JSON.parse(
 ) as Fixture[];
 
 const helpers = ['react/jsx-uses-react', 'react/jsx-uses-vars'];
+
+describe('explicit ownership decisions', () => {
+    it('requires an explicit decision to use native candidates with diagnostic differences', () => {
+        expect(resolveRuleDetailed('no-debugger', { setting: 'warn' })).toMatchObject({
+            disposition: 'javascript',
+            target: 'ag-compat/no-debugger',
+            setting: 'warn',
+            nativeCandidate: { target: 'eslint/no-debugger', oxlint: '1.82.0' },
+        });
+        for (const source of ['no-debugger', 'no-duplicate-case', 'no-sparse-arrays']) {
+            expect(resolveRuleDetailed(source, { setting: ['warn'], acceptNativeDifferences: true }))
+                .toMatchObject({
+                    disposition: 'native', target: `eslint/${source}`, setting: ['warn'], provider: 'eslint',
+                });
+            expect(resolveRuleDetailed(source, { setting: ['error', {}], acceptNativeDifferences: true }))
+                .toMatchObject({ disposition: 'unsupported' });
+            expect(resolveRuleDetailed(source, { setting: 'off', acceptNativeDifferences: true }))
+                .toMatchObject({ disposition: 'disabled' });
+        }
+        expect(resolveRule('no-debugger')).toMatchObject({ target: 'ag-compat/no-debugger' });
+    });
+
+    it('distinguishes aliases, typed rules, compiler checks, manual clauses and unsupported options', () => {
+        expect(resolveRuleDetailed('@typescript-eslint/quotes', { setting: ['warn', 'single'] }))
+            .toMatchObject({ disposition: 'javascript', alias: true, provider: 'ag-style' });
+        expect(resolveRuleDetailed('@typescript-eslint/return-await', { setting: ['error', 'in-try-catch'] }))
+            .toMatchObject({ disposition: 'type-aware', requiresTypeInfo: true });
+        expect(resolveRuleDetailed('no-undef', { language: 'typescript' })).toMatchObject({ disposition: 'compiler' });
+        const manual = catalog.clauses.find((clause) => clause.enforcement === 'manual')!;
+        expect(resolveRuleDetailed(manual.id)).toMatchObject({ disposition: 'manual', reason: manual.reason });
+        expect(resolveRuleDetailed('unknown/rule')).toMatchObject({ disposition: 'unsupported' });
+        expect(resolveRuleDetailed('@adguard/logger-context/logger-context', {
+            setting: ['error', { contextModuleName: 'vpn', loggerVariableName: 'log' }],
+        })).toMatchObject({ disposition: 'unsupported' });
+    });
+
+    it('keeps scope, parser assumptions and settings independent and enumerates only requested rules', () => {
+        const context = { files: ['src/**/*.ts'], parserOptions: { ecmaVersion: 2022 }, settings: { custom: true } };
+        const decisions = listRuleOwnership({ 'no-debugger': 'off', 'unknown/rule': 'warn' }, { context });
+        expect(decisions).toHaveLength(2);
+        expect(decisions[0]).toMatchObject({ disposition: 'disabled', context });
+        decisions[0]!.context.files!.push('tests/**/*.ts');
+        expect(context.files).toEqual(['src/**/*.ts']);
+        expect(decisions[1]!.context.files).toEqual(['src/**/*.ts']);
+    });
+
+    it('rejects invalid selection settings rather than reinterpreting them', () => {
+        expect(resolveRule('no-debugger', { language: 'invalid' as 'javascript' })).toMatchObject({ status: 'unsupported' });
+        expect(resolveRuleDetailed('no-debugger', { acceptNativeDifferences: 'yes' as unknown as boolean }))
+            .toMatchObject({ disposition: 'unsupported' });
+        expect(resolveRuleDetailed('no-debugger', { setting: 'invalid' })).toMatchObject({ disposition: 'unsupported' });
+        const disabled = catalog.mappings.find((mapping) => !mapping.scope && mapping.implementation === 'disabled')!;
+        expect(resolveRuleDetailed(disabled.source, { setting: 'error' })).toMatchObject({ disposition: 'unsupported' });
+        expect(resolveRuleDetailed('no-undef', { language: 'typescript', setting: 'warn' }))
+            .toMatchObject({ disposition: 'compiler', sourceSetting: 'warn' });
+    });
+});
 
 describe('legacy rule resolution', () => {
     it('resolves the delimiter alias without changing preset activation', () => {
@@ -82,6 +145,21 @@ describe('legacy rule resolution', () => {
 });
 
 describe('source and scenario inventory', () => {
+    it('enumerates every mapping, TypeScript replacement and alias without claiming name-only parity', () => {
+        const inventory = catalog.inventory!;
+        const replacements = catalog.mappings.filter((mapping) => mapping.typescript).length;
+        const count = catalog.mappings.length + replacements + Object.keys(catalog.compatibility).length;
+        expect(inventory).toHaveLength(count);
+        expect(inventory.every((entry) => entry.oxlint === '1.82.0')).toBe(true);
+        expect(inventory.find((entry) => entry.source === 'no-debugger')).toMatchObject({
+            nativeCandidate: 'eslint/no-debugger',
+            verification: 'diagnostic-differences',
+            target: 'ag-compat/no-debugger',
+        });
+        expect(inventory.some((entry) => entry.verification === 'candidate-only')).toBe(true);
+        expect(inventory.some((entry) => entry.verification === 'no-native-candidate')).toBe(true);
+    });
+
     it('accounts for every numbered guideline clause with an explicit disposition', () => {
         const source = readFileSync('docs/reference/Javascript.md', 'utf8');
         const anchors = Array.from(source.matchAll(/^- \[\d+\.\d+\]\(#([^)]+)\)/gmu), (match) => match[1]);

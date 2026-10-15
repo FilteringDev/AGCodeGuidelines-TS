@@ -760,3 +760,15 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | react-hooks/rules-of-hooks | react/rules-of-hooks | no | oxlint@1.82.0 |
 | react-hooks/exhaustive-deps | react/exhaustive-deps | no | oxlint@1.82.0 |
 | @typescript-eslint/naming-convention | ag-ts/naming-convention | no | ag-ts; formats from typescript-eslint@8.70.0 |
+
+## Native candidate inventory
+
+The packed catalog exposes `catalog.inventory` for every mapping, TypeScript replacement and compatibility alias. A `candidate-only` entry proves existence in Oxlint 1.82.0, not option or behavior parity. Disabled entries remain disabled. Existing presets retain their identifiers; native candidate migration is explicit.
+
+| Source | Native candidate | Verified boundary |
+| --- | --- | --- |
+| no-debugger | eslint/no-debugger | No options. Diagnostic wording differs; rule identifiers and suppressions require migration. |
+| no-duplicate-case | eslint/no-duplicate-case | No options. Diagnostic wording, labels and ranges differ; see the native parity snapshots. |
+| no-sparse-arrays | eslint/no-sparse-arrays | No options. Diagnostic wording, labels and ranges differ; see the native parity snapshots. |
+
+See [consumer compatibility and acceptance](compatibility.md) for unresolved options, ownership and consumer exceptions.

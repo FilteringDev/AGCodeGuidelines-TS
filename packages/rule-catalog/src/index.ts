@@ -69,6 +69,21 @@ export interface Catalog {
     policies: { guideline: Overlay & { importGroups: Record<ImportGroups, RuleSetting> } };
     profiles: { 'adguard-projects': Overlay };
     compatibility: Record<string, CompatibilityRule>;
+    inventory?: RuleInventory[];
+}
+
+export interface RuleInventory {
+    source: string;
+    target: string | null;
+    scope: string;
+    language: 'javascript' | 'typescript';
+    setting: RuleSetting;
+    implementation: Implementation;
+    nativeCandidate: string | null;
+    requiresTypeInfo: boolean;
+    candidateRequiresTypeInfo: boolean;
+    verification: 'diagnostic-differences' | 'candidate-only' | 'no-native-candidate';
+    oxlint: string;
 }
 
 export interface CompatibilityRule {
@@ -89,6 +104,62 @@ export interface RuleResolutionOptions {
     profile?: Profile;
     setting?: RuleSetting;
 }
+
+export interface RuleContext {
+    files?: string[];
+    excludedFiles?: string[];
+    env?: Record<string, boolean>;
+    sourceType?: 'module' | 'script' | 'commonjs';
+    parserOptions?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
+    globals?: Record<string, boolean | 'readonly' | 'writable' | 'off'>;
+}
+
+export interface DetailedResolutionOptions extends RuleResolutionOptions {
+    /** Explicitly accept the recorded diagnostic differences for a verified native candidate. */
+    acceptNativeDifferences?: boolean;
+    context?: RuleContext;
+}
+
+export type ResolutionDisposition = 'native' | 'javascript' | 'type-aware' | 'compiler' | 'manual'
+    | 'disabled' | 'unsupported';
+
+export interface NativeEvidence {
+    target: string;
+    oxlint: string;
+    source: string;
+    differences: string[];
+}
+
+export const nativeEvidence: Record<string, NativeEvidence> = {
+    'no-debugger': {
+        target: 'eslint/no-debugger',
+        oxlint: '1.82.0',
+        source: 'eslint@8.57.1',
+        differences: ['Diagnostic wording differs; rule identifiers and suppressions require migration.'],
+    },
+    'no-duplicate-case': {
+        target: 'eslint/no-duplicate-case',
+        oxlint: '1.82.0',
+        source: 'eslint@8.57.1',
+        differences: ['Diagnostic wording, labels and ranges differ; see the native parity snapshots.'],
+    },
+    'no-sparse-arrays': {
+        target: 'eslint/no-sparse-arrays',
+        oxlint: '1.82.0',
+        source: 'eslint@8.57.1',
+        differences: ['Diagnostic wording, labels and ranges differ; see the native parity snapshots.'],
+    },
+};
+
+export type DetailedRuleResolution = RuleResolution & {
+    disposition: ResolutionDisposition;
+    context: RuleContext;
+    language: 'javascript' | 'typescript';
+    alias: boolean;
+    sourceSetting?: RuleSetting;
+    nativeCandidate?: NativeEvidence;
+};
 
 export type RuleResolution = {
     status: 'resolved' | 'disabled' | 'compiler';
@@ -136,6 +207,10 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         policy = 'compatibility',
         profile = 'guide',
     } = options;
+    if (!['javascript', 'typescript'].includes(language) || !['compatibility', 'guideline'].includes(policy)
+        || !['guide', 'adguard-projects'].includes(profile)) {
+        return { status: 'unsupported', source, reason: 'Unsupported language, policy, or profile.' };
+    }
     const compatibility = Object.hasOwn(catalog.compatibility ?? {}, source)
         ? catalog.compatibility[source] : undefined;
     const canonicalSource = compatibility?.canonicalSource ?? source;
@@ -186,4 +261,85 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         provider: target?.split('/')[0] ?? null,
         ...(equivalent ? { reason: equivalent.reason } : {}),
     };
+}
+
+/**
+ * Resolve ownership without treating aliases or native rule names as parity evidence.
+ * @param source - Source rule identifier, or a manual guideline clause identifier.
+ * @param options - Effective source setting, context and explicit native migration decision.
+ * @returns A lossless ownership decision, including unverified gaps.
+ */
+export function resolveRuleDetailed(source: string, options: DetailedResolutionOptions = {}): DetailedRuleResolution {
+    const language = options.language ?? (source.startsWith('@typescript-eslint/') ? 'typescript' : 'javascript');
+    const context = structuredClone(options.context ?? {});
+    const evidence = Object.hasOwn(nativeEvidence, source) ? structuredClone(nativeEvidence[source]) : undefined;
+    const metadata = {
+        language,
+        context,
+        alias: Object.hasOwn(catalog.compatibility, source),
+        ...(options.setting !== undefined ? { sourceSetting: structuredClone(options.setting) } : {}),
+        ...(evidence ? { nativeCandidate: evidence } : {}),
+    };
+    const unsupported = (reason: string): DetailedRuleResolution => ({
+        status: 'unsupported', disposition: 'unsupported', source, reason, ...metadata,
+    });
+    if (options.acceptNativeDifferences !== undefined && typeof options.acceptNativeDifferences !== 'boolean') {
+        return unsupported('acceptNativeDifferences must be a boolean.');
+    }
+    if (!['javascript', 'typescript'].includes(language)
+        || !['compatibility', 'guideline'].includes(options.policy ?? 'compatibility')
+        || !['guide', 'adguard-projects'].includes(options.profile ?? 'guide')) {
+        return unsupported('Unsupported language, policy, or profile.');
+    }
+    const clause = catalog.clauses.find((entry) => entry.id === source);
+    if (clause?.enforcement === 'manual') {
+        return { ...unsupported(clause.reason), disposition: 'manual' };
+    }
+    let resolution = resolveRule(source, options);
+    const sourceSetting = options.setting;
+    const level = Array.isArray(sourceSetting) ? sourceSetting[0] : sourceSetting;
+    if (sourceSetting !== undefined && ![0, 1, 2, 'off', 'warn', 'error'].includes(level)) {
+        return unsupported(`Invalid severity for ${source}.`);
+    }
+    if (evidence && sourceSetting !== undefined && severity(sourceSetting) > 0) {
+        if (Array.isArray(sourceSetting) && sourceSetting.length !== 1) {
+            return unsupported(`Unsupported options for ${source}: this rule accepts no options.`);
+        }
+        resolution = resolveRule(source);
+        if (resolution.status !== 'unsupported') {
+            resolution.setting = structuredClone(sourceSetting);
+        }
+    }
+    if (resolution.status === 'unsupported') {
+        const baseline = resolveRule(source, { ...options, setting: undefined });
+        const optionValues = (setting: RuleSetting) => (Array.isArray(setting) ? setting.slice(1) : []);
+        if (sourceSetting !== undefined && baseline.status !== 'unsupported'
+            && baseline.status !== 'disabled'
+            && JSON.stringify(optionValues(sourceSetting)) === JSON.stringify(optionValues(baseline.setting))) {
+            resolution = { ...baseline, setting: structuredClone(sourceSetting) };
+        }
+    }
+    if (resolution.status === 'unsupported') {
+        return { ...resolution, disposition: 'unsupported', ...metadata };
+    }
+    if (options.acceptNativeDifferences && evidence && resolution.status === 'resolved') {
+        resolution = {
+            ...resolution, target: evidence.target, provider: 'eslint', implementation: 'native',
+        };
+    }
+    const disposition = resolution.status === 'disabled' ? 'disabled'
+        : resolution.status === 'compiler' ? 'compiler'
+            : resolution.requiresTypeInfo ? 'type-aware'
+                : resolution.implementation === 'native' ? 'native' : 'javascript';
+    return { ...resolution, disposition, ...metadata };
+}
+
+/**
+ * Enumerate requested ownership decisions without activating preset rules.
+ * @param rules - Effective source rules, including disabled entries.
+ * @param options - Shared scope and provider selection for this effective configuration.
+ * @returns Independent decisions in source configuration order.
+ */
+export function listRuleOwnership(rules: RuleMap, options: DetailedResolutionOptions = {}): DetailedRuleResolution[] {
+    return Object.entries(rules).map(([source, setting]) => resolveRuleDetailed(source, { ...options, setting }));
 }
