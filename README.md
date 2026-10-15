@@ -61,7 +61,7 @@ TypeScript presets apply the JavaScript rules through TypeScript-aware implement
 
 ## Scope and maintenance
 
-There is no ESLint CLI, engine dependency, or second lint pipeline. Isolated rule code and standalone helper libraries execute inside Oxlint. Compatibility details, fixture exclusions, and exact upstream versions are documented in [conformance](docs/conformance.md) and [maintenance](docs/maintenance.md).
+The packages do not require an ESLint CLI or engine dependency. Isolated rule code and standalone helper libraries execute inside Oxlint. Incremental consumer integrations must keep ESLint for unverified and typed checks rather than claiming that installing the shared preset replaces their existing behavior. See [consumer compatibility](docs/compatibility.md) for requested-rule configuration, ownership reports, native diagnostic differences and migration obligations, and [performance acceptance](docs/performance.md) for repeatable whole-command measurements. Compatibility details, fixture exclusions, and exact upstream versions are documented in [conformance](docs/conformance.md) and [maintenance](docs/maintenance.md).
 
 Safe fixes come from the pinned rule implementations. Conflicting fixes can require another Oxlint pass; the tests check that formatting fixes preserve comments and converge. Custom policy rules report violations without rewriting potentially meaningful code.
 

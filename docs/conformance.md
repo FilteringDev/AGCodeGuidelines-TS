@@ -1,3 +1,17 @@
+## Incremental Consumer Boundary
+
+The [compatibility contract](compatibility.md) and [performance protocol](performance.md)
+separate shared-preset conformance from effective consumer-config parity.
+The generated catalog includes a complete native candidate inventory. Native
+candidate presence is not diagnostic/option parity; existing preset identifiers
+remain unchanged. The three tested native candidates have explicit diagnostic
+differences and require opt-in migration. Unverified parser/options/settings,
+typed checks and manual clauses retain their original owners.
+
+Packed tests now use strict engine/peer checks and TypeScript 5.9.3. A separate
+Node 22.12.0/pnpm 10.33.4 lane tests the exact archives and NodeNext declarations
+without requiring TS7 or a typed service for syntax-only consumers.
+
 # Conformance contract
 
 The pinned sample inherits Airbnb 19.0.4, Airbnb Base 15.0.0, and the recommended configuration from JSDoc 64.3.6. Core rule functions use the ESLint 8.57.1 source baseline without installing or executing its engine. Other providers are React 7.37.5, JSX a11y 6.10.2, import 2.32.0, and Stylistic 5.10.0. Oxlint 1.82.0 runs the rules.

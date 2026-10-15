@@ -1,5 +1,17 @@
 # Maintaining the guideline snapshot
 
+Development and consumer runtimes are separate contracts. Build with the pinned
+Node24/pnpm12 toolchain; emitted packages target Node22. The explicit minimum
+runtime job installs the tarballs with Node22.12/pnpm10.33.4, strict peers/engines
+and TS5.9.3, then checks runtime providers, native lint and NodeNext declarations.
+Syntax-only consumers need neither TS7 nor the optional typed lint service.
+See [compatibility and review staging](compatibility.md) and
+[whole-command performance acceptance](performance.md) before migrating consumers.
+
+On Node22.12 images, an old bundled Corepack can lack current pnpm signing keys.
+Use the pinned pnpm setup action or a current signature-verifying Corepack;
+never disable integrity verification to make the minimum-runtime lane pass.
+
 `docs/reference/sources.json` pins the guide commit and six upstream rule/test repositories. Each archive has a SHA-256 digest. `vendor/manifest.json` records the bytes of the frozen guide, inherited sample data, isolated sources, fixture corpus, and port recipes. Normal builds and tests use the committed snapshot and do not fetch upstream source.
 
 The guide's original configuration bytes are retained in `docs/reference/eslintrc.upstream.txt`. The executable port is `docs/reference/eslintrc.ts`. Exact reviewed replacements in `scripts/reference-patches.json` reproduce the typed port, and snapshot checks compare its configuration data with the original sample. The catalog retains the original `eslintrc.cjs` provenance label and upstream hash. A sample change that no longer matches the port must be reviewed before refresh writes snapshots.
