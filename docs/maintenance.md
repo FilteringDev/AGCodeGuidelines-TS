@@ -39,7 +39,18 @@ The weekly GitHub workflow opens a **signed draft PR**, runs acceptance checks, 
 
 Review the generated rule catalog, effective sample options and disabled rules, fixture changes, exclusions, source/patch hashes, license notices, and all platform checks. Use `pnpm run snapshots:record` only after intentionally reviewing a snapshot change; normal checks reject drift.
 
-Local commits use `git commit -S` and include `Co-authored-by: Codex <codex@openai.com>`. Published packages are prepared with `pnpm pack`; maintainers initiate publication by publishing a GitHub Release as described below.
+Local commits use `git commit -S`. For commits made with LLM agent assistance, add a `Co-authored-by: Agent Name <agent-email>` trailer using the actual agent's documented attribution name and email. Separate the trailer from the commit message body with a blank line. Do not invent an email or attribute another agent's work to Codex.
+
+Examples for the corresponding agents:
+
+```text
+Co-authored-by: Codex <codex@openai.com>
+Co-authored-by: Copilot <175728472+Copilot@users.noreply.github.com>
+```
+
+Include only the trailer for each agent that actually assisted with the commit. Commits without LLM assistance, including ordinary automated snapshot updates, do not include an LLM co-author trailer.
+
+Published packages are prepared with `pnpm pack`; maintainers initiate publication by publishing a GitHub Release as described below.
 
 All 540 JavaScript sources from the migration baseline now have TypeScript ports: 308 core files, 44 JSDoc files, 133 React files, 54 import files, and the reference configuration. Emitted JavaScript in package `dist` directories remains the consumer runtime format. Upstream JavaScript filenames in provenance, patch inputs, and fixture strings remain unchanged.
 

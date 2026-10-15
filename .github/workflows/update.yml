@@ -152,8 +152,6 @@ jobs:
           PR_TITLE: 'chore: refresh AdGuard guideline snapshot'
           PR_COMMIT_MESSAGE: |
             chore: refresh AdGuard guideline snapshot
-
-            Co-authored-by: Codex <codex@openai.com>
           PR_BODY: |
             Refresh the frozen AdGuard JavaScript guide and sample, reproduce the isolated rule sources, and regenerate the catalog and attributed Vitest corpus.
 
