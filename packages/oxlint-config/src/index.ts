@@ -1,16 +1,19 @@
 /** @file Complete, portable Oxlint configurations derived from the pinned guide. */
-import { catalog } from '@agcodeguidelines/rule-catalog';
+import { catalog, listRuleOwnership } from '@agcodeguidelines/rule-catalog';
 
 import type {
+    DetailedResolutionOptions,
+    DetailedRuleResolution,
     ImportGroups,
     Overlay,
     Policy,
     Profile,
+    RuleMap,
 } from '@agcodeguidelines/rule-catalog';
 import type { OxlintConfig } from 'oxlint';
-import { checkTsconfig, parseJsonc } from './compiler';
+import { checkTsconfig, parseJsonc } from './compiler.js';
 
-import type { TsconfigCheck } from './compiler';
+import type { TsconfigCheck } from './compiler.js';
 
 export type {
     ImportGroups,
@@ -34,6 +37,161 @@ export interface ConfigOptions {
 }
 
 type Rules = NonNullable<OxlintConfig['rules']>;
+
+export interface CompatibilityConfigOptions extends DetailedResolutionOptions {
+    rules: RuleMap;
+    ignorePatterns?: string[];
+    typeAware?: boolean;
+}
+
+export interface CompatibilityConfigResult {
+    config: OxlintConfig;
+    ownership: DetailedRuleResolution[];
+    fallback: DetailedRuleResolution[];
+}
+
+const PROVIDERS = {
+    ag: '@agcodeguidelines/oxlint-plugin',
+    'ag-ts': '@agcodeguidelines/oxlint-plugin/typescript',
+    'ag-compat': '@agcodeguidelines/oxlint-plugin/compat',
+    'ag-style': '@agcodeguidelines/oxlint-plugin/stylistic',
+    'ag-jsdoc': '@agcodeguidelines/oxlint-plugin/jsdoc',
+    'ag-react': '@agcodeguidelines/oxlint-plugin/react',
+    'ag-a11y': '@agcodeguidelines/oxlint-plugin/jsx-a11y',
+    'ag-import': '@agcodeguidelines/oxlint-plugin/import',
+    'ag-newlines': '@agcodeguidelines/oxlint-plugin/newlines',
+    'ag-boundaries': '@agcodeguidelines/oxlint-plugin/boundaries',
+    'ag-notice': '@agcodeguidelines/oxlint-plugin/notice',
+    'ag-logger': '@agcodeguidelines/oxlint-plugin/logger',
+};
+
+/**
+ * Select providers after finalizing explicit rules, including every override.
+ * @param config - An explicit configuration without inherited configurations.
+ * @returns An independent configuration omitting unused providers and their redundant off entries.
+ */
+export function finalizeProviders(config: OxlintConfig): OxlintConfig {
+    if (config.extends?.length) {
+        throw new TypeError('Resolve inherited configurations before finalizing providers.');
+    }
+    const result = structuredClone(config);
+    const active = new Set(
+        [result.rules, ...(result.overrides ?? []).map((override) => override.rules)]
+            .flatMap((rules) => Object.entries(rules ?? {}))
+            .filter(([, setting]) => {
+                const level = (Array.isArray(setting) ? setting[0] : setting) ?? 'off';
+                if (![0, 1, 2, 'off', 'allow', 'warn', 'error', 'deny'].includes(level)) {
+                    throw new TypeError(`Invalid Oxlint severity: ${level}.`);
+                }
+                return ['warn', 'error', 'deny', 1, 2].includes(level);
+            })
+            .map(([target]) => target.slice(0, target.lastIndexOf('/'))),
+    );
+    const registered = result.jsPlugins ?? [];
+    const removable = new Set([
+        ...Object.keys(PROVIDERS),
+        ...registered.flatMap((provider) => (typeof provider === 'string' ? [] : [provider.name])),
+    ].filter((name) => !active.has(name)));
+    [result.rules, ...(result.overrides ?? []).map((override) => override.rules)].forEach((rules) => {
+        Object.keys(rules ?? {}).forEach((target) => {
+            if (removable.has(target.slice(0, target.lastIndexOf('/')))) {
+                delete rules![target];
+            }
+        });
+    });
+    const providers = registered.filter((provider) => typeof provider === 'string' || active.has(provider.name));
+    Object.entries(PROVIDERS).forEach(([name, specifier]) => {
+        if (active.has(name) && !providers.some((provider) => typeof provider !== 'string' && provider.name === name)) {
+            providers.push({ name, specifier });
+        }
+    });
+    if (providers.length) {
+        result.jsPlugins = providers;
+    } else {
+        delete result.jsPlugins;
+    }
+    return result;
+}
+
+/**
+ * Translate one effective source configuration without enabling a preset.
+ * @param options - Explicit source rules and an already resolved file/configuration scope.
+ * @returns Selected rules and lossless decisions for rules retained by the original owner.
+ */
+export function createCompatibilityConfig(options: CompatibilityConfigOptions): CompatibilityConfigResult {
+    const { context = {}, typeAware = false } = options;
+    if (typeof typeAware !== 'boolean') {
+        throw new TypeError('typeAware must be a boolean.');
+    }
+    const ownership = listRuleOwnership(options.rules, { ...options, language: options.language ?? 'javascript' })
+        .map((decision): DetailedRuleResolution => {
+            if (decision.status === 'unsupported') {
+                return decision;
+            }
+            let reason: string | undefined;
+            if (context.sourceType !== undefined || Object.keys(context.parserOptions ?? {}).length) {
+                reason = 'Parser and sourceType assumptions need independent verification; retain the source owner.';
+            } else if (decision.requiresTypeInfo && !typeAware) {
+                reason = 'Type information is required; retain the typed owner or explicitly enable its service.';
+            } else if (Object.keys(context.settings ?? {}).length && !decision.nativeCandidate) {
+                reason = 'Consumer-specific settings have not been verified for this implementation.';
+            }
+            if (reason && decision.disposition !== 'disabled') {
+                return {
+                    ...decision,
+                    status: 'unsupported',
+                    disposition: 'unsupported',
+                    reason,
+                };
+            }
+            return decision;
+        });
+    const rules: Rules = {};
+    ownership.forEach((decision) => {
+        if (decision.status === 'unsupported' || !decision.target || decision.disposition === 'compiler') {
+            return;
+        }
+        const setting = structuredClone(decision.setting) as Rules[string];
+        const previous = rules[decision.target];
+        if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(setting)) {
+            throw new TypeError(`Conflicting ownership for ${decision.target}. Split configuration groups.`);
+        }
+        rules[decision.target] = setting;
+    });
+    const language = options.language ?? 'javascript';
+    const languageFiles = language === 'typescript' ? '**/*.{ts,tsx,mts,cts}' : '**/*.{js,jsx,mjs,cjs}';
+    const otherLanguage = language === 'typescript' ? '**/*.{js,jsx,mjs,cjs}' : '**/*.{ts,tsx,mts,cts}';
+    const config = finalizeProviders({
+        categories: {
+            correctness: 'off',
+            suspicious: 'off',
+            pedantic: 'off',
+            perf: 'off',
+            style: 'off',
+            restriction: 'off',
+            nursery: 'off',
+        },
+        plugins: ['eslint', 'unicorn', 'typescript', 'import', 'react'],
+        ignorePatterns: structuredClone(options.ignorePatterns ?? []),
+        env: structuredClone(context.env ?? {}),
+        globals: Object.fromEntries(Object.entries(context.globals ?? {}).map(([name, value]) => [
+            name, value === true ? 'writable' : value === false ? 'readonly' : value,
+        ])),
+        settings: structuredClone(context.settings ?? {}),
+        rules: {},
+        ...(typeAware ? { options: { typeAware: true } } : {}),
+        overrides: [{
+            files: structuredClone(context.files ?? [languageFiles]),
+            excludeFiles: [...(context.excludedFiles ?? []), otherLanguage],
+            rules,
+        }],
+    });
+    return {
+        config,
+        ownership,
+        fallback: ownership.filter((decision) => ['unsupported', 'manual', 'compiler'].includes(decision.disposition)),
+    };
+}
 
 /**
  * Create an independent configuration with all plugin settings at its root.
@@ -93,20 +251,6 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
             .filter((mapping) => mapping.requiresTypeInfo && mapping.target)
             .forEach((mapping) => delete typescriptRules[mapping.target!]);
     }
-    const providers = {
-        ag: '@agcodeguidelines/oxlint-plugin',
-        'ag-ts': '@agcodeguidelines/oxlint-plugin/typescript',
-        'ag-compat': '@agcodeguidelines/oxlint-plugin/compat',
-        'ag-style': '@agcodeguidelines/oxlint-plugin/stylistic',
-        'ag-jsdoc': '@agcodeguidelines/oxlint-plugin/jsdoc',
-        'ag-react': '@agcodeguidelines/oxlint-plugin/react',
-        'ag-a11y': '@agcodeguidelines/oxlint-plugin/jsx-a11y',
-        'ag-import': '@agcodeguidelines/oxlint-plugin/import',
-        'ag-newlines': '@agcodeguidelines/oxlint-plugin/newlines',
-        'ag-boundaries': '@agcodeguidelines/oxlint-plugin/boundaries',
-        'ag-notice': '@agcodeguidelines/oxlint-plugin/notice',
-        'ag-logger': '@agcodeguidelines/oxlint-plugin/logger',
-    };
     // Oxlint's native React settings schema cannot represent version detection.
     settings.agReact = settings.react;
     delete settings.react;
@@ -125,7 +269,7 @@ export function createConfig(options: ConfigOptions | Language = {}): OxlintConf
             nursery: 'off',
         },
         plugins: ['eslint', 'unicorn', 'typescript', 'import', 'react'],
-        jsPlugins: Object.entries(providers).map(([name, specifier]) => ({ name, specifier })),
+        jsPlugins: Object.entries(PROVIDERS).map(([name, specifier]) => ({ name, specifier })),
         env: {
             ...catalog.env,
             builtin: true,

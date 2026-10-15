@@ -1,5 +1,29 @@
 # @agcodeguidelines/oxlint-config
 
+## Incremental Compatibility
+
+`createCompatibilityConfig({ rules, language, context, ignorePatterns })`
+translates one already resolved effective source configuration group. It returns
+`config`, `ownership` and `fallback`; it never activates the shared preset.
+Keep every fallback under the existing ESLint/compiler owner. Language defaults
+to JavaScript; supply TypeScript explicitly. `context.files`, `excludedFiles`,
+globals, parser assumptions and settings are retained in ownership decisions.
+Unsupported parser/settings contracts remain fallback rather than being dropped.
+
+Native candidates with recorded diagnostic differences require the explicit
+`acceptNativeDifferences: true` migration decision. Existing presets and
+`createConfig()` retain legacy targets and all-provider mutability.
+`finalizeProviders(config)` independently clones a finalized explicit config and
+selects required named providers from root/override rules. Re-finalize after
+adding rules. An unused provider's redundant off entries are omitted only from
+the runtime copy because Oxlint validates their identifiers even when off.
+
+Packed packages support Node >=22.12.0 with Oxlint 1.82.0. Syntax-only consumers
+need no TS7 upgrade or optional typed service. Public declarations are checked
+with TypeScript 5.9.3, including NodeNext resolution.
+
+## Presets
+
 AdGuard JavaScript/TypeScript configurations for Oxlint 1.82.0 on Node 22.12.0 or later. Development scripts in this repository still use Node 24; only packed-package installation and use are supported on Node 22. The default presets require neither an ESLint engine nor a typed lint service.
 
 ```sh
