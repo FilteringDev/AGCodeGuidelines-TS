@@ -1,6 +1,66 @@
 # Lint performance acceptance
 
-## Current evidence
+## Resource-aware pilot measurements
+
+An isolated Linux guest comparison on 2026-10-15 used Node22.12.0,
+pnpm10.33.4, Oxlint1.82.0 and the same exact
+`0.1.0-review.20261015.5` SDK tarballs in paired disposable installations.
+Every variant ran under the same8192MiB monitored process-tree envelope.
+Ten cold and ten warm samples per variant were interleaved, with three warmups
+and separate result caches. Cold disables ESLint's result cache; host page cache
+is uncontrolled. Builds and tests did not run concurrently with measurement.
+
+Times below are whole **code-lint** commands, including orchestration, discovery
+and engine startup, not native-only subsets. Type checking and Markdown owners
+passed separate full-lint gates, but are not included in these timings.
+The monorepo includes all14 original code chains (12 targets and two API
+examples), without adding builder lint. Its ESLint/current baselines explicitly
+use four-way concurrency; the optimized route selects seven at this budget.
+Four is a controlled comparison setting, **not Lerna's installed default**.
+These numbers do not establish a repeated-sample gain over default concurrency.
+
+| Consumer / Cache | Full ESLint Median | Current Hybrid Median | Optimized Median | Optimized P25-P75 | Change vs Current |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| VPN cold | 12,803ms | 13,036ms | 12,785ms | 12,717-12,886ms | -1.9% |
+| VPN warm | 1,135ms | 1,344ms | 1,075ms | 1,072-1,083ms | -20.0% |
+| Monorepo cold | 17,883ms | 18,473ms | 14,728ms | 14,491-14,926ms | -20.3% |
+| Monorepo warm | 5,354ms | 5,796ms | 4,814ms | 4,755-4,878ms | -16.9% |
+
+VPN cold is essentially equal to full ESLint, with overlapping distributions;
+it is not a substantial cold-start improvement. VPN warm improves5.2% over
+full ESLint in this run. Monorepo improvements over its four-way full ESLint
+baseline are17.6% cold and10.1% warm. The added resource controls and complete
+fallback work remain in the timed command.
+
+The monorepo trades memory for throughput. Maximum sampled tree RSS across
+the ten cold samples rises from5362MiB (current) to7161MiB (optimized);
+warm peaks rise from2817MiB to4043MiB. VPN cold peaks are2226/2168MiB and
+warm peaks469/415MiB, respectively. RSS summation can double-count shared
+pages and sampling can miss transients; these are not kernel memory peaks.
+
+Separate tracing runs cover1083 files across the same14 packages in both
+monorepo lanes. Effective groups remain16; native child launches fall from19
+to13. Summed discovery time is approximately7.0s/7.1s and fallback time40.4s
+in each lane: discovery was not eliminated. These overlapping package times
+must not be summed as exclusive wall time. Native initialization plus execution
+totals857ms/628ms; it is not an isolated measurement of rule cost.
+
+Startup controls on one valid fixture measured approximately9.8ms for Node,
+136.6ms for pnpm-exec plus Node,26.1ms for native Oxlint and127.8ms with the
+JS compatibility provider (cold medians). These are separate initialization
+controls, not full-coverage speedups inferred by subtracting medians.
+An additional actual-default monorepo cold smoke completed in45.4s (ESLint)
+and46.8s (current hybrid) under8192MiB. These are single supervised-task times,
+not a substitute for the repeated four-way comparison above.
+
+Raw manifests, all samples, min/max and P25/P75, full stdout/stderr and per-sample
+resource profiles are retained locally under
+`.cache/invocation-study/final/`. The earlier VPN run with shared caches was
+discarded from acceptance, not combined with these samples. Original consumer
+checkouts were not changed. Absolute local tarball overrides remain test-only
+and must not be committed or used as a release mechanism.
+
+## Historical evidence
 
 The initial consumer PR integrations transferred only `no-debugger`,
 `no-duplicate-case` and `no-sparse-arrays` through `ag-compat`. Their recorded
@@ -13,10 +73,9 @@ single warm samples were slower, not statistically reliable speed measurements:
 | tsurlfilter logger only | 937 ms | 1,832 ms |
 
 These are task-brief results for build `0.1.0-build.11600659`, not reruns of the
-new code. No complete representative-consumer performance result is claimed.
-The local reference checkouts have neither installed dependencies nor the PR
-hybrid integration. The benchmark harness unit test measures synthetic child
-processes only and is not adoption evidence.
+new code. The resource-aware measurements above are a separate experiment,
+not a reinterpretation of these samples. The benchmark harness unit test
+measures synthetic child processes only and is not adoption evidence.
 
 Native-only requested configurations now omit JavaScript providers; existing
 mutable presets intentionally keep their old registration behavior. This
@@ -24,7 +83,7 @@ removes one possible cost, not the second ESLint parse or config discovery.
 The three native candidates also have recorded diagnostic differences. Benefits
 are explicit ownership and bounded startup work; costs include migration,
 diagnostic differences and a remaining complete fallback pass. No speedup or
-production rollout is accepted on these changes alone.
+production rollout is accepted on these historical changes alone.
 
 ## Reproducible protocol
 

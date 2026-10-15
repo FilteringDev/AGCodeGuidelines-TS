@@ -24,6 +24,13 @@ pnpm run check
 
 `pnpm run check` is the acceptance gate. `pnpm run test` runs Vitest; `pnpm run test:coverage` also measures handwritten runtime code. Vendored implementations are checked by behavioral conformance tests and are excluded from the first-party coverage percentage.
 
+The lint execution wrapper accepts `pnpm run lint -- --max-mem 8192` in MiB.
+Without an override it budgets eighty percent of observable available memory
+for the supervised command, including container constraints. See
+[resource-aware execution](docs/lint-execution.md) for profiling, shared child
+admission, platform visibility and the distinction between monitoring and a
+kernel-enforced memory limit.
+
 ## Consumer configuration
 
 After installing the packages and the pinned Oxlint version with pnpm, create a complete configuration:

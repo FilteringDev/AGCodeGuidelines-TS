@@ -2,6 +2,24 @@
 
 ## Incremental Compatibility
 
+### Resource-aware execution
+
+The separate `ag-lint` executable accepts `--max-mem <MiB>` or
+`--max-mem=<MiB>`, plus optional `--profile report.json`. The default budget is
+eighty percent of observable available memory; explicit values replace that
+policy but cannot exceed a visible system/container hard limit. Use
+`pnpm run lint -- --max-mem 8192` when a project routes its lint script through
+this CLI. Wrapper arguments never reach the selected engine.
+
+The `./runner` subpath exports budget probing, argument parsing, literal argv
+batching, async task supervision and command-local shared admission. Nested
+packages share one root budget rather than independently claiming eighty
+percent. The default engine is the installed Oxlint; `--command executable`
+supervises an existing lint orchestration command without replacing its checks.
+Linux RSS control is monitored/best-effort, and other platforms explicitly
+report admission-only behavior. Neither V8 heap size nor this wrapper is a
+portable kernel hard cap; use an OS/container scope for strict enforcement.
+
 `createCompatibilityConfig({ rules, language, context, ignorePatterns })`
 translates one already resolved effective source configuration group. It returns
 `config`, `ownership` and `fallback`; it never activates the shared preset.
