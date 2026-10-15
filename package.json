@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsx scripts/build.ts",
     "typecheck": "tsc -b && tsc -p tsconfig.tools.json --noEmit",
-    "lint": "oxlint --config .oxlintrc.json --max-warnings 0",
+    "lint": "node packages/oxlint-config/dist/lint-cli.js --config .oxlintrc.json --max-warnings 0",
     "lint:fix": "oxlint --config .oxlintrc.json --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

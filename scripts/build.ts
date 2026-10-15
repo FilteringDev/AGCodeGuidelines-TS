@@ -18,7 +18,8 @@ for (const name of ['rule-catalog', 'oxlint-plugin', 'oxlint-config']) {
     const directory = `${ROOT}packages/${name}`;
     const entries = (await readdir(`${directory}/src`))
         .filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'))
-        .filter((file) => name === 'oxlint-plugin' || file === 'index.ts' || file === 'cli.ts');
+        .filter((file) => name === 'oxlint-plugin' || file === 'index.ts' || file === 'cli.ts'
+            || (name === 'oxlint-config' && (file.startsWith('lint-') || file === 'memory-budget.ts')));
     await rm(`${directory}/dist`, { recursive: true, force: true });
     await mkdir(`${directory}/dist`, { recursive: true });
     const result = await build({
