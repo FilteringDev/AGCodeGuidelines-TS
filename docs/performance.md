@@ -1,5 +1,68 @@
 # Lint performance acceptance
 
+## Equal-concurrency follow-up
+
+A subsequent 2026-10-15 experiment isolates concurrency from adapter changes.
+It uses the same Node22.12.0/pnpm10.33.4/SDK5 installations and8192MiB envelope,
+all14 code-lint chains, independent caches and no Nx replay. Eight cases are
+interleaved with ten cold and ten warm samples each and three warmups.
+All160 measured samples exit0. Results are whole-command medians; types and
+Markdown remain outside the timed code-lint scope.
+
+| Case | Concurrency | Cold Median | Warm Median | Maximum Cold RSS | Maximum Warm RSS |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Full ESLint | 4 | 16,985ms | 5,143ms | 4993MiB | 2178MiB |
+| Current hybrid | 4 | 17,467ms | 5,544ms | 5196MiB | 2625MiB |
+| Previous optimized adapter | 4 | 17,259ms | 5,604ms | 5889MiB | 2633MiB |
+| Measured reservations | 4 | 17,592ms | 5,609ms | 5945MiB | 2664MiB |
+| Full ESLint | 7 | 13,675ms | 4,238ms | 6197MiB | 3239MiB |
+| Current hybrid | 7 | 14,311ms | 4,666ms | 6492MiB | 3555MiB |
+| Previous optimized adapter | 7 | 13,926ms | 4,642ms | 7116MiB | 3896MiB |
+| Measured reservations | 7 | 15,145ms | 4,638ms | 6757MiB | 3539MiB |
+
+At4-way, the optimized adapter is1.2% faster cold but1.1% slower warm than
+current hybrid. At7-way it is2.7% faster cold and0.5% faster warm. The cold
+interquartile ranges overlap (7-way current14,030-14,414ms versus
+optimized13,695-14,113ms); warm ranges also overlap. These are not evidence
+of a substantial repeatable same-concurrency speedup. Full ESLint remains
+faster than either hybrid at equal concurrency. The earlier mixed4-to7-way
+gains below must not be attributed entirely to adapter code improvements or
+presented as default-branch speedups.
+
+Three follow-up decisions:
+
+1. **Keep reproducible measurement controls.** Each benchmark variant can set
+  isolated environment controls, including separate cache identities, without
+  mutating the parent. This is tooling, not a lint-runtime speedup.
+2. **Reject discovery probes.** Removing the second ignore check and reusing
+  the enumerator's extracted config both changed explicit hidden-path ignore
+  behavior in existing regression tests. The original installed-ESLint path
+  was restored and all five adapter tests passed. A config cache keyed by
+  file path offers no demonstrated benefit: the effective config is already
+  queried once per enumerated file and totals about24ms in the trace.
+3. **Do not adopt measured reservations as the default speed policy.** They
+  increase7-way cold time8.8% over the previous optimized adapter, while
+  warm time is essentially unchanged. Maximum cold RSS falls from7116MiB
+  to6757MiB and warm RSS from3896MiB to3539MiB, but that tradeoff does not
+  justify a default throughput claim.
+
+The reservation experiment uses existing shared admission, not a new scheduler.
+One complete cold calibration measures each package's sampled tree RSS;
+reservations are rounded up to128MiB from1.25 times that peak plus128MiB.
+These snapshot-specific estimates are not portable per-package limits or a
+persistent tuning service. In separate single cold stress attempts, fixed
+reservations exceed4GiB while measured reservations complete all14 chains at
+3848MiB. Both fail explicitly at1/2GiB and complete at8GiB; Lerna aggregates
+the measured2GiB resource failure to exit1. This capacity result is not a
+minimum-memory guarantee or a repeated speed measurement.
+
+No discovery or scheduling-runtime change is adopted by this follow-up.
+Consumer controls and calibrated weights remain rehearsal-only patches, not
+committed consumer configuration. Raw samples, all statuses, P25/P75/extrema,
+resource reports, calibration, source hashes and exact control manifests are
+retained under `.cache/invocation-study/followup/`. No new default-branch
+checkout comparison is claimed.
+
 ## Resource-aware pilot measurements
 
 An isolated Linux guest comparison on 2026-10-15 used Node22.12.0,
@@ -141,6 +204,16 @@ required setup/config discovery must be inside the timed command, not precompute
 only for the candidate. By default a nonzero exit aborts measurement. A dirty
 baseline may explicitly set `expectedExitCodes: [0, 1]`, but its diagnostics must
 be reviewed; allowing an exit code is not a successful correctness gate.
+
+A variant may provide `env`, an object of environment names and string values.
+These overrides apply only to that variant's child processes; the parent
+environment is not mutated. A `null` value removes an inherited variable.
+Use separate controls and cache locations for each concurrency or scheduling
+case rather than changing the parent environment between samples. Invalid names
+and NUL-containing values are rejected before commands run. The manifest is
+retained in the report, so **never put credentials or other secrets in `env`**.
+These trusted controls do not bypass a command's resource admission or make
+different file coverage equivalent.
 
 The harness interleaves variant order deterministically, runs at least ten
 measured repetitions per cache lane and three warmups per warm variant, and
