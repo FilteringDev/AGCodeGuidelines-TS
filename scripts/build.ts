@@ -29,7 +29,7 @@ for (const name of ['rule-catalog', 'oxlint-plugin', 'oxlint-config']) {
         external: ['@oxlint/plugins', 'oxlint', 'oxc-parser', 'oxc-resolver'],
         platform: 'node',
         format: 'esm',
-        target: 'node24',
+        target: 'node22',
         sourcemap: true,
         metafile: true,
         banner: {

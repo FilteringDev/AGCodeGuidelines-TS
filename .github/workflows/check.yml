@@ -9,6 +9,37 @@ permissions:
   contents: read
 
 jobs:
+  minimum-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COREPACK_HOME: ${{ runner.temp }}/consumer-corepack
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+      - uses: pnpm/setup@v3
+        with:
+          version: 12.3.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Stage unchanged package bytes and standalone runtime check
+        run: |
+          mkdir -p .cache/runtime-packages
+          for package in oxlint-plugin rule-catalog oxlint-config; do
+            pnpm --dir "packages/$package" pack --pack-destination "$PWD/.cache/runtime-packages"
+          done
+          pnpm exec esbuild scripts/packed-runtime.ts --bundle --platform=node --format=esm --target=node22 --outfile=.cache/packed-runtime.mjs
+          pnpm --package=corepack@0.34.0 dlx corepack pnpm@10.33.4 --version
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.12.0
+      - name: Test tarballs outside the development workspace
+        env:
+          AG_PNPM_CLI: ${{ runner.temp }}/consumer-corepack/v1/pnpm/10.33.4/bin/pnpm.cjs
+        run: node .cache/packed-runtime.mjs .cache/runtime-packages
+
   check:
     strategy:
       fail-fast: false

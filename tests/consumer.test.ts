@@ -78,7 +78,7 @@ beforeAll(async () => {
                 '@agcodeguidelines/oxlint-plugin': archive('oxlint-plugin'),
                 '@agcodeguidelines/rule-catalog': archive('rule-catalog'),
                 oxlint: '1.82.0',
-                typescript: '7.0.2',
+                typescript: '5.9.3',
                 tsx: '4.23.13',
             },
         }),
@@ -87,7 +87,8 @@ beforeAll(async () => {
         join(directory, 'pnpm-workspace.yaml'),
         JSON.stringify({
             autoInstallPeers: false,
-            strictPeerDependencies: false,
+            strictPeerDependencies: true,
+            engineStrict: true,
             minimumReleaseAge: 0,
             allowBuilds: { esbuild: false },
             overrides: { '@agcodeguidelines/oxlint-plugin': archive('oxlint-plugin') },
@@ -97,7 +98,6 @@ beforeAll(async () => {
         cwd: directory,
         encoding: 'utf8',
         maxBuffer: 8 * 1024 * 1024,
-        env: { ...process.env, npm_config_engineStrict: 'false' },
     });
     const requireConsumer = createRequire(join(directory, 'package.json'));
     oxlint = join(dirname(requireConsumer.resolve('oxlint/package.json')), 'bin/oxlint');
@@ -150,6 +150,27 @@ afterAll(async () => {
 });
 
 describe('installed package contract', () => {
+    it('runs requested native rules from packed APIs without registering JavaScript providers', async () => {
+        await writeFile(join(directory, 'compatibility.mjs'), [
+            "import { writeFileSync } from 'node:fs';",
+            "import { createCompatibilityConfig, finalizeProviders } from '@agcodeguidelines/oxlint-config';",
+            "import { resolveRuleDetailed, listRuleOwnership } from '@agcodeguidelines/rule-catalog';",
+            "const input = { rules: { 'no-debugger': 'warn', 'no-sparse-arrays': 'off' }, language: 'typescript',",
+            '    acceptNativeDifferences: true };',
+            'const { config, ownership, fallback } = createCompatibilityConfig(input);',
+            "if (config.jsPlugins || fallback.length || ownership.length !== 2) throw new Error('Unexpected ownership');",
+            "if (resolveRuleDetailed('no-debugger').disposition !== 'javascript') throw new Error('Default changed');",
+            "if (listRuleOwnership(input.rules).length !== 2) throw new Error('Extra rules');",
+            "if (finalizeProviders(config).jsPlugins) throw new Error('Unexpected providers');",
+            "writeFileSync('compatibility.json', JSON.stringify(config));",
+        ].join('\n'));
+        const configured = run(join(directory, 'compatibility.mjs'), []);
+        expect(configured.status, configured.output).toBe(0);
+        await writeFile(join(directory, 'compatibility.ts'), 'debugger; const values = [,];');
+        const result = run(oxlint, ['--config', 'compatibility.json', 'compatibility.ts', '--format', 'json']);
+        expect(JSON.parse(result.output).diagnostics).toMatchObject([{ code: 'eslint(no-debugger)', severity: 'warning' }]);
+    });
+
     it('installs without an ESLint engine', async () => {
         const installed = await readdir(join(directory, 'node_modules/.pnpm'));
         expect(installed.filter((name) => /^eslint@/u.test(name))).toEqual([]);
