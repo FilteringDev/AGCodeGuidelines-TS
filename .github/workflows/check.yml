@@ -12,8 +12,6 @@ jobs:
   minimum-runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      COREPACK_HOME: ${{ runner.temp }}/consumer-corepack
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -25,6 +23,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Stage unchanged package bytes and standalone runtime check
+        env:
+          COREPACK_HOME: ${{ runner.temp }}/consumer-corepack
         run: |
           mkdir -p .cache/runtime-packages
           for package in oxlint-plugin rule-catalog oxlint-config; do
