@@ -58,9 +58,12 @@ try {
         "import { dirname, join } from 'node:path';",
         "import { fileURLToPath } from 'node:url';",
         "import { createConfig, createCompatibilityConfig } from '@agcodeguidelines/oxlint-config';",
+        "import { parseLintArguments, batchLintFiles } from '@agcodeguidelines/oxlint-config/runner';",
         "import { catalog, resolveRuleDetailed } from '@agcodeguidelines/rule-catalog';",
         'assert.equal(createConfig().jsPlugins.length, 12);',
         'assert.ok(catalog.inventory.length > 0);',
+        "assert.equal(parseLintArguments(['--', '--max-mem', '512']).maxMemMiB, 512);",
+        "assert.deepEqual(batchLintFiles(['file.ts'], { environment: {} }), [['file.ts']]);",
         "assert.equal(resolveRuleDetailed('no-debugger').disposition, 'javascript');",
         'const { config, ownership, fallback } = createCompatibilityConfig({',
         "    language: 'typescript', acceptNativeDifferences: true, rules: { 'no-debugger': 'warn' },",
@@ -76,10 +79,13 @@ try {
         "writeFileSync('tools.json', JSON.stringify({",
         "    oxlint: join(dirname(fileURLToPath(import.meta.resolve('oxlint/package.json'))), 'bin/oxlint'),",
         "    tsc: join(dirname(fileURLToPath(import.meta.resolve('typescript/package.json'))), 'bin/tsc'),",
+        "    runner: join(dirname(fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-config/runner'))), 'lint-cli.js'),",
         '}));',
     ].join('\n'));
     execFileSync(process.execPath, ['check.mjs'], { cwd: directory, stdio: 'inherit' });
-    const tools = JSON.parse(await readFile(join(directory, 'tools.json'), 'utf8')) as { oxlint: string; tsc: string };
+    const tools = JSON.parse(await readFile(join(directory, 'tools.json'), 'utf8')) as {
+        oxlint: string; tsc: string; runner: string;
+    };
     await writeFile(join(directory, 'example.ts'), 'debugger;');
     const output = execFileSync(process.execPath, [
         tools.oxlint,
@@ -88,9 +94,16 @@ try {
     const { diagnostics } = JSON.parse(output);
     assert.equal(diagnostics.length, 1);
     assert.equal(diagnostics[0].severity, 'warning');
+    execFileSync(process.execPath, [tools.runner, '--max-mem', '512', '--profile', 'memory-report.json',
+        '--config', 'native.json', 'example.ts'], { cwd: directory, stdio: 'inherit' });
+    const memoryReport = JSON.parse(await readFile(join(directory, 'memory-report.json'), 'utf8'));
+    assert.equal(memoryReport.status, 0);
+    assert.equal(memoryReport.budget.maxMiB, 512);
     await writeFile(join(directory, 'api.ts'), [
         "import { createCompatibilityConfig } from '@agcodeguidelines/oxlint-config';",
         "import { resolveRuleDetailed } from '@agcodeguidelines/rule-catalog';",
+        "import { parseLintArguments, batchLintFiles } from '@agcodeguidelines/oxlint-config/runner';",
+        "parseLintArguments(['--max-mem=512']); batchLintFiles(['file.ts']);",
         "createCompatibilityConfig({ rules: { 'no-debugger': 'warn' } });",
         "resolveRuleDetailed('no-debugger');",
     ].join('\n'));

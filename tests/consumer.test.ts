@@ -125,6 +125,10 @@ beforeAll(async () => {
             "import { createConfig } from '@agcodeguidelines/oxlint-config';",
             "import plugin from '@agcodeguidelines/oxlint-plugin';",
             "import { catalog, resolveRule } from '@agcodeguidelines/rule-catalog';",
+            "import { parseLintArguments, resolveMemoryBudget, MIB } from '@agcodeguidelines/oxlint-config/runner';",
+            "parseLintArguments(['--max-mem', '1024']);",
+            'resolveMemoryBudget({ totalBytes: MIB * 2048, availableBytes: MIB * 1024,',
+            '    parallelism: 1, constraints: [], warnings: [] });',
             "const config = createConfig({ language: 'typescript', environment: 'both', typeAware: true });",
             "if (!config.rules || !plugin.rules || !catalog.clauses.length) throw new Error('Broken public API');",
             "const resolution = resolveRule('@typescript-eslint/return-await', { setting: ['warn', 'in-try-catch'] });",
@@ -150,6 +154,23 @@ afterAll(async () => {
 });
 
 describe('installed package contract', () => {
+    it('runs the packed resource CLI without a typed service or JavaScript provider', async () => {
+        const cli = join(directory, 'node_modules/@agcodeguidelines/oxlint-config/dist/lint-cli.js');
+        const help = run(cli, ['--help']);
+        expect(help.status, help.output).toBe(0);
+        expect(help.output).toContain('--max-mem MiB');
+        await writeFile(join(directory, 'runner.json'), JSON.stringify({
+            categories: { correctness: 'off' }, plugins: ['eslint'], rules: { 'eslint/no-debugger': 'error' },
+        }));
+        await writeFile(join(directory, "runner with 'quotes'.ts"), 'export const value = 1;');
+        const result = run(cli, ['--max-mem=1024', '--profile', 'runner-report.json',
+            '--config', 'runner.json', "runner with 'quotes'.ts"]);
+        expect(result.status, result.output).toBe(0);
+        const report = JSON.parse(await readFile(join(directory, 'runner-report.json'), 'utf8'));
+        expect(report).toMatchObject({ budget: { maxMiB: 1024 }, completed: 1, status: 0 });
+        expect(JSON.stringify(report)).not.toContain('token');
+    });
+
     it('runs requested native rules from packed APIs without registering JavaScript providers', async () => {
         await writeFile(join(directory, 'compatibility.mjs'), [
             "import { writeFileSync } from 'node:fs';",
