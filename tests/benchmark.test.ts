@@ -21,6 +21,34 @@ const MANIFEST: BenchmarkManifest = {
 };
 
 describe('benchmark protocol', () => {
+    it('isolates variant environment controls without mutating the parent', () => {
+        const before = process.env.AG_BENCHMARK_CASE;
+        const command = [process.execPath, '-e', 'process.stdout.write(process.env.AG_BENCHMARK_CASE ?? "unset")'];
+        const report = benchmark({
+            ...MANIFEST,
+            variants: {
+                controlled: {
+                    ...VARIANT, cold: command, warm: command, env: { AG_BENCHMARK_CASE: 'four' },
+                },
+                cleared: {
+                    ...VARIANT, cold: command, warm: command, env: { AG_BENCHMARK_CASE: null },
+                },
+            },
+        });
+        expect(report.samples.filter((sample) => sample.variant === 'controlled')
+            .every((sample) => sample.stdout === 'four')).toBe(true);
+        expect(report.samples.filter((sample) => sample.variant === 'cleared')
+            .every((sample) => sample.stdout === 'unset')).toBe(true);
+        expect(process.env.AG_BENCHMARK_CASE).toBe(before);
+        const invalidEnvironments: Record<string, string | null>[] = [
+            { 'bad=name': 'value' }, { '': 'value' }, { key: '\0' },
+        ];
+        for (const env of invalidEnvironments) {
+            expect(() => benchmark({ ...MANIFEST, variants: { ...MANIFEST.variants, invalid: { ...VARIANT, env } } }))
+                .toThrow('Variant environment');
+        }
+    });
+
     it('streams complete outputs and accepts separate current/optimized startup controls', () => {
         const directory = mkdtempSync(join(tmpdir(), 'ag-benchmark-artifacts-'));
         try {

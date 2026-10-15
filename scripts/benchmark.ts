@@ -22,6 +22,7 @@ export interface BenchmarkVariant {
     coverage: string;
     expectedExitCodes?: number[];
     resourceProfile?: string;
+    env?: Record<string, string | null>;
 }
 
 export interface BenchmarkManifest {
@@ -77,7 +78,7 @@ export function summarize(samples: number[]): Record<string, number> {
 
 /**
  * Measure trusted command arrays without a shell or hidden setup outside the timed process.
- * @param manifest - Exactly three coverage-labelled variants and explicit cache definitions.
+ * @param manifest - Coverage-labelled variants and explicit cache definitions.
  * @returns Raw outputs, timings, summaries and execution environment.
  */
 export function benchmark(manifest: BenchmarkManifest) {
@@ -94,6 +95,11 @@ export function benchmark(manifest: BenchmarkManifest) {
         if (!variant.coverage || [variant.cold, variant.warm].some((command) => !Array.isArray(command)
             || command.length === 0 || command.some((argument) => typeof argument !== 'string'))) {
             throw new TypeError('Each variant needs literal command arrays and an honest coverage description.');
+        }
+        if (variant.env !== undefined && (variant.env === null || typeof variant.env !== 'object'
+            || Array.isArray(variant.env) || Object.entries(variant.env).some(([key, value]) => !key
+                || /[=\0]/u.test(key) || (value !== null && (typeof value !== 'string' || value.includes('\0')))))) {
+            throw new TypeError('Variant environment needs valid names and string or null values.');
         }
     }
     const cwd = resolve(manifest.cwd);
@@ -116,11 +122,20 @@ export function benchmark(manifest: BenchmarkManifest) {
                 const stderrFile = artifacts ? join(artifacts, `${phase}-${name}-${iteration}.stderr`) : undefined;
                 const descriptors = stdoutFile && stderrFile
                     ? [openSync(stdoutFile, 'w'), openSync(stderrFile, 'w')] : undefined;
+                const environment = { ...process.env };
+                for (const [key, value] of Object.entries(variant.env ?? {})) {
+                    if (value === null) {
+                        delete environment[key];
+                    } else {
+                        environment[key] = value;
+                    }
+                }
                 const before = performance.now();
                 let result: SpawnSyncReturns<string>;
                 try {
                     result = spawnSync(command!, args, {
                         cwd,
+                        env: environment,
                         encoding: 'utf8',
                         maxBuffer: 64 * 1024 * 1024,
                         ...(descriptors ? { stdio: ['ignore', descriptors[0]!, descriptors[1]!] } : {}),
