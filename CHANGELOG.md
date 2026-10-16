@@ -22,6 +22,8 @@
 - JavaScript-provider rules share one per-file compatibility layer instead of
   rebuilding it for every rule, reducing full-preset lint time by about 27% on
   the measured consumers with identical diagnostics.
+- Import rules reuse export-map cache-key serializations per file, removing a
+  further 11-16% of full-preset lint time on the measured consumers.
 
 ### Fixed
 

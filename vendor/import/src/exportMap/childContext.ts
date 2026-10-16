@@ -21,6 +21,30 @@ function stringifyReplacerFn(_: string, value: unknown) {
     return value;
 }
 
+// Rule contexts are immutable per file; reuse each object's serialization across lookups.
+const serializedSettings = new WeakMap<object, string>();
+const serializedOptions = new WeakMap<object, string>();
+
+/**
+ * Serialize an object once.
+ * @param cache Serializations keyed by object identity.
+ * @param value The object to serialize.
+ * @param replacer Optional JSON replacer.
+ * @returns The JSON text.
+ */
+function serialize(
+    cache: WeakMap<object, string>,
+    value: object,
+    replacer?: (key: string, value: unknown) => unknown,
+): string {
+    let text = cache.get(value);
+    if (text === undefined) {
+        text = JSON.stringify(value, replacer);
+        cache.set(value, text);
+    }
+    return text;
+}
+
 /**
  * don't hold full context object in memory, just grab what we need.
  * also calculate a cacheKey, where parts of the cacheKey hash are memoized
@@ -33,18 +57,20 @@ export default function childContext(path: string, context: ParserContext) {
         settings, parserOptions, parserPath, languageOptions,
     } = context;
 
-    if (JSON.stringify(settings) !== prevSettings) {
+    const settingsText = serialize(serializedSettings, settings);
+    if (settingsText !== prevSettings) {
         settingsHash = hashObject({ settings }).digest('hex');
-        prevSettings = JSON.stringify(settings);
+        prevSettings = settingsText;
     }
 
     // We'll use either a combination of `parserOptions` and `parserPath` or `languageOptions`
     // to construct the cache key, depending on whether this is using a flat config or not.
     let optionsToken;
     if (!parserPath && languageOptions) {
-        if (JSON.stringify(languageOptions, stringifyReplacerFn) !== prevOptions) {
+        const optionsText = serialize(serializedOptions, languageOptions, stringifyReplacerFn);
+        if (optionsText !== prevOptions) {
             optionsHash = hashObject({ languageOptions }).digest('hex');
-            prevOptions = JSON.stringify(languageOptions, stringifyReplacerFn);
+            prevOptions = optionsText;
         }
         // For languageOptions, we're just using the hashed options as the options token
         optionsToken = optionsHash;

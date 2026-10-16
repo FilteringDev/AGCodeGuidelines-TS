@@ -14,6 +14,8 @@ interface FileAdapter {
     sourceType: string | undefined;
     version: number;
     parserOptions: Record<string, unknown>;
+    /** Merged language options per provider override object. */
+    languageOverrides: WeakMap<object, object>;
     /** Node of the most recent visitor call; every adapted visitor sets it before running. */
     state: { current: ESTree.Node };
 }
@@ -133,6 +135,7 @@ function fileAdapter(context: RuleContext, root: object): FileAdapter {
         sourceType,
         version,
         parserOptions,
+        languageOverrides: new WeakMap(),
         state,
     };
     adapters.set(ast, adapter);
@@ -190,14 +193,18 @@ export function legacyContext(original: Rule, nativeContext: RuleContext): Retur
     const { own } = layers;
     own.report = { value: legacyReport(nativeContext, file.source) };
     if (Object.hasOwn(own, 'languageOptions')) {
-        own.languageOptions = {
-            value: {
-                ...nativeContext.languageOptions,
+        const override = nativeContext.languageOptions as object;
+        let merged = file.languageOverrides.get(override);
+        if (!merged) {
+            merged = {
+                ...override,
                 ...(file.sourceType ? { sourceType: file.sourceType } : {}),
                 ecmaVersion: file.version,
                 parserOptions: file.parserOptions,
-            },
-        };
+            };
+            file.languageOverrides.set(override, merged);
+        }
+        own.languageOptions = { value: merged };
     }
     const adapted = Object.create(file.shared, own) as RuleContext;
     const visitors = (original as CreateRule).create(adapted);
