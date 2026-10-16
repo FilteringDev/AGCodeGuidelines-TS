@@ -25,6 +25,10 @@
       "types": "./dist/stylistic.d.ts",
       "default": "./dist/stylistic.js"
     },
+    "./typescript-stylistic": {
+      "types": "./dist/typescript-stylistic.d.ts",
+      "default": "./dist/typescript-stylistic.js"
+    },
     "./jsdoc": {
       "types": "./dist/jsdoc.d.ts",
       "default": "./dist/jsdoc.js"

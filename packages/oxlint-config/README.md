@@ -28,6 +28,18 @@ to JavaScript; supply TypeScript explicitly. `context.files`, `excludedFiles`,
 globals, parser assumptions and settings are retained in ownership decisions.
 Unsupported parser/settings contracts remain fallback rather than being dropped.
 
+Generated aliases use the exact schemas of frozen core and existing provider
+implementations. TypeScript extension rules use `ag-ts-style` when their source
+settings must coexist with base rules under `ag-style`. Aliases do not enable a
+rule in a preset; request and scope each rule explicitly.
+
+`createCompatibilityConfigGroups([...])` packages several already-resolved
+source contexts independently. Each group requires a unique `id` and explicit
+nonempty `context.files`; execute returned configs separately because settings
+remain root-scoped in Oxlint 1.82.0. This API does not load ESLint, enumerate
+files, resolve nested ESLint configuration, or determine whether globs overlap.
+The consumer owns those decisions and their parity tests.
+
 Native candidates with recorded diagnostic differences require the explicit
 `acceptNativeDifferences: true` migration decision. Existing presets and
 `createConfig()` retain legacy targets and all-provider mutability.

@@ -50,6 +50,16 @@ export interface CompatibilityConfigResult {
     fallback: DetailedRuleResolution[];
 }
 
+/** One explicitly scoped effective source configuration for a consumer. */
+export interface CompatibilityConfigGroupOptions extends CompatibilityConfigOptions {
+    id: string;
+}
+
+/** An independent Oxlint configuration and ownership result for one source scope. */
+export interface CompatibilityConfigGroupResult extends CompatibilityConfigResult {
+    id: string;
+}
+
 const PROVIDERS = {
     ag: '@agcodeguidelines/oxlint-plugin',
     'ag-ts': '@agcodeguidelines/oxlint-plugin/typescript',
@@ -63,6 +73,10 @@ const PROVIDERS = {
     'ag-boundaries': '@agcodeguidelines/oxlint-plugin/boundaries',
     'ag-notice': '@agcodeguidelines/oxlint-plugin/notice',
     'ag-logger': '@agcodeguidelines/oxlint-plugin/logger',
+};
+
+const PROVIDER_ALIASES = {
+    'ag-ts-style': '@agcodeguidelines/oxlint-plugin/typescript-stylistic',
 };
 
 /**
@@ -90,6 +104,7 @@ export function finalizeProviders(config: OxlintConfig): OxlintConfig {
     const registered = result.jsPlugins ?? [];
     const removable = new Set([
         ...Object.keys(PROVIDERS),
+        ...Object.keys(PROVIDER_ALIASES),
         ...registered.flatMap((provider) => (typeof provider === 'string' ? [] : [provider.name])),
     ].filter((name) => !active.has(name)));
     [result.rules, ...(result.overrides ?? []).map((override) => override.rules)].forEach((rules) => {
@@ -101,6 +116,11 @@ export function finalizeProviders(config: OxlintConfig): OxlintConfig {
     });
     const providers = registered.filter((provider) => typeof provider === 'string' || active.has(provider.name));
     Object.entries(PROVIDERS).forEach(([name, specifier]) => {
+        if (active.has(name) && !providers.some((provider) => typeof provider !== 'string' && provider.name === name)) {
+            providers.push({ name, specifier });
+        }
+    });
+    Object.entries(PROVIDER_ALIASES).forEach(([name, specifier]) => {
         if (active.has(name) && !providers.some((provider) => typeof provider !== 'string' && provider.name === name)) {
             providers.push({ name, specifier });
         }
@@ -191,6 +211,28 @@ export function createCompatibilityConfig(options: CompatibilityConfigOptions): 
         ownership,
         fallback: ownership.filter((decision) => ['unsupported', 'manual', 'compiler'].includes(decision.disposition)),
     };
+}
+
+/**
+ * Resolve multiple disjoint effective source contexts without leaking root settings between them.
+ * @param groups Explicit consumer-owned file groups and their already resolved source rules.
+ * @returns Independent configurations; execute each with its own root settings and ignore patterns.
+ */
+export function createCompatibilityConfigGroups(
+    groups: readonly CompatibilityConfigGroupOptions[],
+): CompatibilityConfigGroupResult[] {
+    const identifiers = new Set<string>();
+    return groups.map(({ id, ...options }) => {
+        if (!id || identifiers.has(id)) {
+            throw new TypeError(`Compatibility configuration group IDs must be unique and nonempty: ${id}.`);
+        }
+        identifiers.add(id);
+        const files = options.context?.files;
+        if (!files?.length || files.some((pattern) => !pattern.trim())) {
+            throw new TypeError(`Compatibility configuration group ${id} requires explicit file scopes.`);
+        }
+        return { id, ...createCompatibilityConfig(options) };
+    });
 }
 
 /**

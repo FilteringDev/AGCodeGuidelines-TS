@@ -123,10 +123,12 @@ beforeAll(async () => {
         join(directory, 'api.ts'),
         [
             "import { createConfig } from '@agcodeguidelines/oxlint-config';",
+            "import { createCompatibilityConfigGroups } from '@agcodeguidelines/oxlint-config';",
             "import plugin from '@agcodeguidelines/oxlint-plugin';",
             "import { catalog, resolveRule } from '@agcodeguidelines/rule-catalog';",
             "import { parseLintArguments, resolveMemoryBudget, MIB } from '@agcodeguidelines/oxlint-config/runner';",
             "parseLintArguments(['--max-mem', '1024']);",
+            "createCompatibilityConfigGroups([{ id: 'source', rules: { 'no-debugger': 'warn' }, context: { files: ['src/**'] } }]);",
             'resolveMemoryBudget({ totalBytes: MIB * 2048, availableBytes: MIB * 1024,',
             '    parallelism: 1, constraints: [], warnings: [] });',
             "const config = createConfig({ language: 'typescript', environment: 'both', typeAware: true });",
@@ -190,6 +192,56 @@ describe('installed package contract', () => {
         await writeFile(join(directory, 'compatibility.ts'), 'debugger; const values = [,];');
         const result = run(oxlint, ['--config', 'compatibility.json', 'compatibility.ts', '--format', 'json']);
         expect(JSON.parse(result.output).diagnostics).toMatchObject([{ code: 'eslint(no-debugger)', severity: 'warning' }]);
+    });
+
+    it('runs packed core and stylistic aliases with their original source options', async () => {
+        await writeFile(join(directory, 'source-context.mjs'), [
+            "import { writeFileSync } from 'node:fs';",
+            "import { createCompatibilityConfig } from '@agcodeguidelines/oxlint-config';",
+            'const { config, fallback } = createCompatibilityConfig({ rules: {',
+            "    'brace-style': ['error', 'stroustrup', { allowSingleLine: false }],",
+            "    '@typescript-eslint/brace-style': ['warn', '1tbs', { allowSingleLine: true }],",
+            "    '@stylistic/quotes': ['warn', 'single'],",
+            "    'no-restricted-syntax': ['error', { selector: 'ExportAllDeclaration', message: 'Avoid wildcard exports.' }],",
+            "    'notice/notice': ['error', { mustMatch: 'COPYRIGHT', onNonMatchingHeader: 'replace',",
+            "        messages: { whenFailedToMatch: 'Header must be restored.' }, template: '/* COPYRIGHT 2015-<%= YEAR %> */\\n' }],",
+            '} });',
+            'if (fallback.length) throw new Error(JSON.stringify(fallback));',
+            "writeFileSync('source-context.json', JSON.stringify(config));",
+        ].join('\n'));
+        const configured = run(join(directory, 'source-context.mjs'), []);
+        expect(configured.status, configured.output).toBe(0);
+        await writeFile(join(directory, 'source-context.js'), [
+            '/* COPYRIGHT 2015-2026 */',
+            "export * from './module.js';",
+            'const value = "double quotes";',
+            'function getValue()',
+            '{',
+            '    return 1;',
+            '}',
+        ].join('\n'));
+        await writeFile(join(directory, 'missing-notice.js'), 'const value = 1;');
+        const result = run(oxlint, [
+            '--config', 'source-context.json', 'source-context.js', 'missing-notice.js', '--format', 'json',
+        ]);
+        expect(result.status).toBe(1);
+        expect(JSON.parse(result.output).diagnostics).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                code: 'ag-compat(no-restricted-syntax)', severity: 'error', message: 'Avoid wildcard exports.',
+            }),
+            expect.objectContaining({ code: 'ag-compat(brace-style)', severity: 'error' }),
+            expect.objectContaining({ code: 'ag-ts-style(brace-style)', severity: 'warning' }),
+            expect.objectContaining({ code: 'ag-style(quotes)', severity: 'warning' }),
+            expect.objectContaining({
+                code: 'ag-notice(notice)', severity: 'error', message: 'Header must be restored.',
+            }),
+        ]));
+        const fixed = run(oxlint, [
+            '--config', 'source-context.json', 'missing-notice.js', '--fix', '--format', 'json',
+        ]);
+        expect(fixed.status, fixed.output).toBe(0);
+        expect(await readFile(join(directory, 'missing-notice.js'), 'utf8'))
+            .toContain(`/* COPYRIGHT 2015-${new Date().getFullYear()} */`);
     });
 
     it('installs without an ESLint engine', async () => {
@@ -316,10 +368,11 @@ describe('installed package contract', () => {
             compilerOptions: {
                 strict: true, module: 'ESNext', moduleResolution: 'Bundler', types: [], noEmit: true,
             },
-            files: ['typed-export.ts', 'typed-dependency.ts'],
+            files: ['typed-export.ts', 'typed-dependency.ts', 'typed-source.ts'],
         }));
         await writeFile(join(directory, 'typed-dependency.ts'), 'export interface Value { text: string }');
         await writeFile(join(directory, 'typed-export.ts'), 'export { Value } from "./typed-dependency";');
+        await writeFile(join(directory, 'typed-source.ts'), 'export {};');
         const args = ['--config', 'typed.json', 'typed-export.ts', '--format', 'json'];
         const invalid = run(oxlint, args);
         expect(invalid.status, invalid.output).toBe(1);
@@ -329,5 +382,40 @@ describe('installed package contract', () => {
         const valid = run(oxlint, args);
         expect(valid.status, valid.output).toBe(0);
         expect(JSON.parse(valid.output).diagnostics).toEqual([]);
+
+        await writeFile(join(directory, 'typed-source-config.mjs'), [
+            "import { writeFileSync } from 'node:fs';",
+            "import { createCompatibilityConfigGroups } from '@agcodeguidelines/oxlint-config';",
+            'const [group] = createCompatibilityConfigGroups([{',
+            "    id: 'typed-source',",
+            "    language: 'typescript',",
+            '    typeAware: true,',
+            '    context: { files: ["typed-source.ts"] },',
+            '    rules: {',
+            "        '@typescript-eslint/no-implied-eval': 'error',",
+            "        '@typescript-eslint/no-throw-literal': 'error',",
+            "        '@typescript-eslint/return-await': ['error', 'in-try-catch'],",
+            '    },',
+            '}]);',
+            'if (!group || group.fallback.length) throw new Error(JSON.stringify(group?.fallback));',
+            "writeFileSync('typed-source.json', JSON.stringify(group.config));",
+        ].join('\n'));
+        const typedSourceConfig = run(join(directory, 'typed-source-config.mjs'), []);
+        expect(typedSourceConfig.status, typedSourceConfig.output).toBe(0);
+        await writeFile(join(directory, 'typed-source.ts'), [
+            'setTimeout("work()", 1);',
+            'throw "failure";',
+            'async function work() { try { return Promise.resolve(1); } catch (error) { throw error; } }',
+        ].join('\n'));
+        const typedSource = run(oxlint, [
+            '--config', 'typed-source.json', 'typed-source.ts', '--format', 'json',
+        ]);
+        expect(typedSource.status, typedSource.output).toBe(1);
+        const typedDiagnostics = JSON.parse(typedSource.output).diagnostics as { code: string }[];
+        expect(typedDiagnostics.map(({ code }) => code)).toEqual(expect.arrayContaining([
+            'typescript(no-implied-eval)',
+            'typescript(only-throw-error)',
+            'typescript(return-await)',
+        ]));
     }, 180000);
 });

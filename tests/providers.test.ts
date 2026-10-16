@@ -3,13 +3,83 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { createCompatibilityConfig, createConfig, finalizeProviders } from '../packages/oxlint-config/src/index';
+import {
+    createCompatibilityConfig,
+    createCompatibilityConfigGroups,
+    createConfig,
+    finalizeProviders,
+} from '../packages/oxlint-config/src/index';
+import typescriptStylistic from '../packages/oxlint-plugin/src/typescript-stylistic';
 import { lintBatch } from './cli';
 
 const COMPAT = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/compat'));
+const NOTICE = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/notice'));
 const STYLE = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/stylistic'));
+const TS_STYLE = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/typescript-stylistic'));
 
 describe('effective compatibility configuration', () => {
+    it('exports the TypeScript style rules under their separate provider identity', () => {
+        expect(typescriptStylistic.meta?.name).toBe('ag-ts-style');
+        expect(typescriptStylistic.rules['brace-style']).toBeDefined();
+        expect('quotes' in typescriptStylistic.rules).toBe(true);
+    });
+
+    it('keeps file selection and root settings isolated across effective contexts', async () => {
+        const groups = createCompatibilityConfigGroups([
+            {
+                id: 'application',
+                rules: { 'no-debugger': 'warn' },
+                context: {
+                    files: ['src/**'],
+                    env: { browser: true },
+                    globals: { applicationGlobal: 'readonly' },
+                    settings: { react: { version: '18.2.0' } },
+                },
+            },
+            {
+                id: 'tooling',
+                rules: { 'no-sparse-arrays': 'error' },
+                context: {
+                    files: ['tools/**'],
+                    env: { node: true },
+                    globals: { toolingGlobal: 'writable' },
+                    settings: { resolver: { mode: 'tooling' } },
+                },
+                ignorePatterns: ['private/**'],
+            },
+        ]);
+        expect(groups.map(({ id }) => id)).toEqual(['application', 'tooling']);
+        expect(groups[0]!.config.env).toEqual({ browser: true });
+        expect(groups[0]!.config.globals).toEqual({ applicationGlobal: 'readonly' });
+        expect(groups[0]!.config.settings).toEqual({ react: { version: '18.2.0' } });
+        expect(groups[1]!.config.env).toEqual({ node: true });
+        expect(groups[1]!.config.globals).toEqual({ toolingGlobal: 'writable' });
+        expect(groups[1]!.config.settings).toEqual({ resolver: { mode: 'tooling' } });
+
+        const application = await lintBatch(groups[0]!.config, {
+            'src/main.js': 'debugger;',
+            'tools/main.js': 'debugger;',
+        });
+        expect(application.get('src/main.js')).toMatchObject([{ code: 'ag-compat(no-debugger)', severity: 'warning' }]);
+        expect(application.get('tools/main.js')).toEqual([]);
+        const tooling = await lintBatch(groups[1]!.config, {
+            'src/main.js': 'const values = [,];',
+            'tools/main.js': 'const values = [,];',
+        });
+        expect(tooling.get('tools/main.js')).toMatchObject([{ code: 'ag-compat(no-sparse-arrays)', severity: 'error' }]);
+        expect(tooling.get('src/main.js')).toEqual([]);
+    });
+
+    it('rejects ambiguous group identities and implicit file scopes', () => {
+        expect(() => createCompatibilityConfigGroups([
+            { id: 'same', rules: {}, context: { files: ['src/**'] } },
+            { id: 'same', rules: {}, context: { files: ['tools/**'] } },
+        ])).toThrow('unique and nonempty');
+        expect(() => createCompatibilityConfigGroups([
+            { id: 'implicit', rules: {} },
+        ])).toThrow('explicit file scopes');
+    });
+
     it('preserves source environments and boolean global semantics', async () => {
         const result = createCompatibilityConfig({
             rules: { 'no-undef': 'error' },
@@ -73,19 +143,146 @@ describe('effective compatibility configuration', () => {
         const result = createCompatibilityConfig({
             rules: { '@typescript-eslint/quotes': ['warn', 'single', { avoidEscape: true }] }, language: 'typescript',
         });
-        expect(result.config.jsPlugins).toEqual([{ name: 'ag-style', specifier: '@agcodeguidelines/oxlint-plugin/stylistic' }]);
-        result.config.jsPlugins = [{ name: 'ag-style', specifier: STYLE }];
+        expect(result.config.jsPlugins).toEqual([{ name: 'ag-ts-style', specifier: '@agcodeguidelines/oxlint-plugin/typescript-stylistic' }]);
+        result.config.jsPlugins = [{ name: 'ag-ts-style', specifier: TS_STYLE }];
         const diagnostics = await lintBatch(result.config, { 'valid.ts': "type Mode = 'light';", 'invalid.ts': 'type Mode = "light";' });
         expect(diagnostics.get('valid.ts')).toEqual([]);
         expect(diagnostics.get('invalid.ts')).toMatchObject([{ severity: 'warning' }]);
     });
 
-    it('keeps empty configurations empty and detects conflicting aliases', () => {
+    it('reuses the pinned stylistic provider for its matching source namespace and validates options', async () => {
+        const result = createCompatibilityConfig({
+            rules: { '@stylistic/quotes': ['warn', 'single'] },
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.ownership).toMatchObject([{
+            source: '@stylistic/quotes', target: 'ag-style/quotes', disposition: 'javascript',
+        }]);
+        result.config.jsPlugins = [{ name: 'ag-style', specifier: STYLE }];
+        const diagnostics = await lintBatch(result.config, {
+            'single.js': "const value = 'single';",
+            'double.js': 'const value = "double";',
+        });
+        expect(diagnostics.get('single.js')).toEqual([]);
+        expect(diagnostics.get('double.js')).toMatchObject([{ code: 'ag-style(quotes)', severity: 'warning' }]);
+        expect(createCompatibilityConfig({
+            rules: { '@stylistic/quotes': ['error', 'single', { unsupportedOption: true }] },
+        }).fallback).toMatchObject([{ disposition: 'unsupported' }]);
+    });
+
+    it('reuses the stylistic extension implementation for TypeScript ESLint source rules in both languages', async () => {
+        const setting = ['error', '1tbs', { allowSingleLine: true }] as const;
+        const typescript = createCompatibilityConfig({
+            language: 'typescript', rules: { '@typescript-eslint/brace-style': setting },
+        });
+        const javascript = createCompatibilityConfig({
+            language: 'javascript', rules: { '@typescript-eslint/brace-style': setting },
+        });
+        expect(typescript.fallback).toEqual([]);
+        expect(javascript.fallback).toEqual([]);
+        expect(typescript.ownership).toMatchObject([{ target: 'ag-ts-style/brace-style', disposition: 'javascript' }]);
+        typescript.config.jsPlugins = [{ name: 'ag-ts-style', specifier: TS_STYLE }];
+        const diagnostics = await lintBatch(typescript.config, {
+            'src/value.ts': 'function getValue()\n{\n    return 1;\n}',
+        });
+        expect(diagnostics.get('src/value.ts')).toMatchObject([{ code: 'ag-ts-style(brace-style)', severity: 'error' }]);
+
+        const parallel = createCompatibilityConfig({
+            language: 'typescript',
+            rules: {
+                'brace-style': ['error', 'stroustrup', { allowSingleLine: false }],
+                '@typescript-eslint/brace-style': ['warn', '1tbs', { allowSingleLine: true }],
+            },
+        });
+        expect(parallel.fallback).toEqual([]);
+        parallel.config.jsPlugins = [
+            { name: 'ag-style', specifier: STYLE },
+            { name: 'ag-ts-style', specifier: TS_STYLE },
+        ];
+        const contextual = await lintBatch(parallel.config, {
+            'src/parallel.ts': 'if (ready) {\n    work();\n}\nelse {\n    wait();\n}',
+        });
+        expect(contextual.get('src/parallel.ts')).toEqual(expect.arrayContaining([
+            expect.objectContaining({ code: 'ag-ts-style(brace-style)', severity: 'warning' }),
+        ]));
+    });
+
+    it('reuses the frozen core rule implementation with its original option schema', async () => {
+        const result = createCompatibilityConfig({
+            rules: {
+                'no-restricted-syntax': ['error', {
+                    selector: 'ExportAllDeclaration', message: 'Avoid wildcard exports.',
+                }],
+            },
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.ownership).toMatchObject([{
+            source: 'no-restricted-syntax', target: 'ag-compat/no-restricted-syntax', disposition: 'javascript',
+        }]);
+        result.config.jsPlugins = [{ name: 'ag-compat', specifier: COMPAT }];
+        const diagnostics = await lintBatch(result.config, {
+            'wildcard.js': "export * from './module.js';",
+            'named.js': "export { value } from './module.js';",
+        });
+        expect(diagnostics.get('wildcard.js')).toMatchObject([{
+            code: 'ag-compat(no-restricted-syntax)', message: 'Avoid wildcard exports.',
+        }]);
+        expect(diagnostics.get('named.js')).toEqual([]);
+        expect(createCompatibilityConfig({
+            rules: { 'no-restricted-syntax': ['error', { selector: 'ExportAllDeclaration', unknown: true }] },
+        }).fallback).toMatchObject([{ disposition: 'unsupported' }]);
+    });
+
+    it('passes schema-disabled notice templates and messages to the existing provider', async () => {
+        const result = createCompatibilityConfig({
+            rules: {
+                'notice/notice': ['error', {
+                    mustMatch: '^COPYRIGHT',
+                    onNonMatchingHeader: 'replace',
+                    messages: { whenFailedToMatch: 'Header must be restored.' },
+                    template: '/* COPYRIGHT 2015-<%= YEAR %> */\n',
+                }],
+            },
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.ownership).toMatchObject([{
+            source: 'notice/notice', target: 'ag-notice/notice', disposition: 'javascript',
+        }]);
+        result.config.jsPlugins = [{ name: 'ag-notice', specifier: NOTICE }];
+        const diagnostics = await lintBatch(result.config, { 'missing.js': 'const value = 1;' });
+        expect(diagnostics.get('missing.js')).toMatchObject([{
+            code: 'ag-notice(notice)', message: 'Header must be restored.', severity: 'error',
+        }]);
+    });
+
+    it('validates the VPN import-extension tuple while preserving its TS effective setting', () => {
+        const sourceSetting = ['error', 'ignorePackages', {
+            js: 'never', jsx: 'never', ts: 'never', tsx: 'never',
+        }] as const;
+        const result = createCompatibilityConfig({
+            language: 'typescript',
+            rules: { 'import/extensions': sourceSetting },
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.ownership).toMatchObject([{
+            source: 'import/extensions',
+            target: 'ag-import/extensions',
+            setting: sourceSetting,
+            disposition: 'javascript',
+        }]);
+    });
+
+    it('keeps empty configurations empty and isolates parallel core and TypeScript source rules', () => {
         expect(createCompatibilityConfig({ rules: {} }).ownership).toEqual([]);
-        expect(() => createCompatibilityConfig({
+        const result = createCompatibilityConfig({
             language: 'typescript',
             rules: { 'member-delimiter-style': 'error', '@typescript-eslint/member-delimiter-style': 'warn' },
-        })).toThrow('Conflicting ownership');
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.ownership).toMatchObject([
+            { source: 'member-delimiter-style', target: 'ag-style/member-delimiter-style', setting: 'error' },
+            { source: '@typescript-eslint/member-delimiter-style', target: 'ag-ts-style/member-delimiter-style', setting: 'warn' },
+        ]);
     });
 });
 
