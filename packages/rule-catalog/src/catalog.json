@@ -22717,6 +22717,20 @@
       },
       "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
     },
+    "@typescript-eslint/no-shadow": {
+      "canonicalSource": "no-shadow",
+      "target": "eslint/no-shadow",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
+    },
     "@typescript-eslint/no-useless-constructor": {
       "canonicalSource": "no-useless-constructor",
       "target": "eslint/no-useless-constructor",
@@ -51708,6 +51722,19 @@
       "setting": "error",
       "implementation": "native",
       "nativeCandidate": "eslint/no-array-constructor",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-shadow",
+      "target": "eslint/no-shadow",
+      "scope": "alias",
+      "language": "javascript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "eslint/no-shadow",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
       "verification": "candidate-only",

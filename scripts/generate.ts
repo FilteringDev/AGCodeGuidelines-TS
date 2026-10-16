@@ -1004,6 +1004,7 @@ Object.entries(projectTypeScriptAdditions).forEach(([name, setting]) => {
 const zeroOptionTypeScriptExtensions = [
     'default-param-last',
     'no-array-constructor',
+    'no-shadow',
     'no-useless-constructor',
 ];
 for (const name of zeroOptionTypeScriptExtensions) {
@@ -1014,7 +1015,7 @@ for (const name of zeroOptionTypeScriptExtensions) {
     registerCompatibility(
         `@typescript-eslint/${name}`,
         equivalent.target,
-        builtinRules.get(name)?.meta?.schema ?? [],
+        name === 'no-shadow' ? [] : builtinRules.get(name)?.meta?.schema ?? [],
         'typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension',
         null,
     );

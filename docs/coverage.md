@@ -875,6 +875,7 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | @typescript-eslint/naming-convention | ag-ts/naming-convention | no | ag-ts; formats from typescript-eslint@8.70.0 |
 | @typescript-eslint/default-param-last | eslint/default-param-last | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-array-constructor | eslint/no-array-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
+| @typescript-eslint/no-shadow | eslint/no-shadow | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-useless-constructor | eslint/no-useless-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | accessor-pairs | ag-compat/accessor-pairs | no | eslint@8.57.1 |
 | array-bracket-newline | ag-compat/array-bracket-newline | no | eslint@8.57.1 |

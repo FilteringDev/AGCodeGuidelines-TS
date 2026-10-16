@@ -64,6 +64,19 @@ const legacyCases: {
         invalid: 'class Shape extends Base { constructor(value) { super(value); } }',
     },
     {
+        source: '@typescript-eslint/no-shadow',
+        setting: 'error',
+        valid: 'const outer = 1; function read(inner) { return inner + outer; }',
+        invalid: 'const value = 1; function read() { const value = 2; return value; }',
+        language: 'javascript',
+    },
+    {
+        source: '@typescript-eslint/no-shadow',
+        setting: 'error',
+        valid: 'const T = 1; function identity<T>(value: T): T { return value; }',
+        invalid: 'const value: number = 1; function read(): number { const value: number = 2; return value; }',
+    },
+    {
         source: '@typescript-eslint/default-param-last',
         setting: 'error',
         valid: 'function create(value, fallback = null) { return value ?? fallback; }',
