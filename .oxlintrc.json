@@ -223,11 +223,25 @@
       "exact",
       "Object.freeze"
     ],
+    "boundaries/elements": [
+      {
+        "type": "src-index",
+        "pattern": "src/index.ts",
+        "mode": "file"
+      },
+      {
+        "type": "test-folder",
+        "pattern": "test",
+        "mode": "folder"
+      }
+    ],
     "agReact": {
       "pragma": "React",
       "version": "detect"
     },
     "agSourceType": "module",
-    "agTypeScript": true
+    "agTypeScript": true,
+    "agPolicy": "compatibility",
+    "agProfile": "adguard-projects"
   }
 }

@@ -89,6 +89,11 @@ copy so the provider can be absent. It never enables them, and the original
 config and source ownership decisions retain their off settings. If an override
 enables that provider, the root off mask is retained.
 
+Oxlint 1.82 does not inherit `settings` through `extends`; JavaScript providers then
+silently fall back to default resolver and React behavior. A configuration that
+extends a shipped preset must repeat the preset's `settings` at its root, as the
+repository's own `.oxlintrc.json` does under a drift test.
+
 ## Engine-independent source aliases
 
 The catalog can translate an explicit source-rule/options tuple to the exact
