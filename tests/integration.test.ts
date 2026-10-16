@@ -10,7 +10,7 @@ import {
     it,
 } from 'vitest';
 
-import { createConfig, node } from '../packages/oxlint-config/src/index';
+import { createCompatibilityConfig, createConfig, node } from '../packages/oxlint-config/src/index';
 import { catalog, resolveRule, severity } from '../packages/rule-catalog/src/index';
 import { lintBatch } from './cli';
 
@@ -38,7 +38,52 @@ const examples = [
 const modes = ['baseline', 'warning', 'disabled'] as const;
 const outcomes = new Map<string, Diagnostic[]>();
 
-const legacyCases: { source: string; setting: RuleSetting; valid: string; invalid: string }[] = [
+const legacyCases: {
+    source: string;
+    setting: RuleSetting;
+    valid: string;
+    invalid: string;
+    language?: 'javascript' | 'typescript';
+}[] = [
+    {
+        source: '@typescript-eslint/default-param-last',
+        setting: 'error',
+        valid: 'function create(value, fallback = null) { return value ?? fallback; }',
+        invalid: 'function create(fallback = null, value) { return value ?? fallback; }',
+    },
+    {
+        source: '@typescript-eslint/no-array-constructor',
+        setting: 'error',
+        valid: 'const values = new Array<number>(1, 2);',
+        invalid: 'const values = new Array(1, 2);',
+    },
+    {
+        source: '@typescript-eslint/no-useless-constructor',
+        setting: 'error',
+        valid: 'class Shape { constructor(public area: number) {} }',
+        invalid: 'class Shape extends Base { constructor(value) { super(value); } }',
+    },
+    {
+        source: '@typescript-eslint/default-param-last',
+        setting: 'error',
+        valid: 'function create(value, fallback = null) { return value ?? fallback; }',
+        invalid: 'function create(fallback = null, value) { return value ?? fallback; }',
+        language: 'javascript',
+    },
+    {
+        source: '@typescript-eslint/no-array-constructor',
+        setting: 'error',
+        valid: 'const values = [1, 2];',
+        invalid: 'const values = new Array(1, 2);',
+        language: 'javascript',
+    },
+    {
+        source: '@typescript-eslint/no-useless-constructor',
+        setting: 'error',
+        valid: 'class Shape { constructor() { this.area = 1; } }',
+        invalid: 'class Shape extends Base { constructor(value) { super(value); } }',
+        language: 'javascript',
+    },
     {
         source: '@typescript-eslint/naming-convention',
         setting: ['error',
@@ -86,6 +131,20 @@ const legacyCases: { source: string; setting: RuleSetting; valid: string; invali
         invalid: 'for (var index = 0; index < 3; index++) { callbacks.push(() => index); }',
     },
     {
+        source: '@typescript-eslint/no-loss-of-precision',
+        setting: 'error',
+        valid: 'const value = 123;',
+        invalid: 'const value = 9007199254740993;',
+        language: 'javascript',
+    },
+    {
+        source: '@typescript-eslint/no-loop-func',
+        setting: 'error',
+        valid: 'for (let index = 0; index < 3; index++) { callbacks.push(() => index); }',
+        invalid: 'for (var index = 0; index < 3; index++) { callbacks.push(() => index); }',
+        language: 'javascript',
+    },
+    {
         source: '@typescript-eslint/no-unused-expressions',
         setting: ['error', { allowShortCircuit: true }],
         valid: 'ready && work();',
@@ -125,39 +184,49 @@ const legacyCases: { source: string; setting: RuleSetting; valid: string; invali
 
 describe('legacy compatibility through the real CLI', () => {
     it.each(legacyCases)('$source preserves options and reports its target', async (example) => {
-        const resolved = resolveRule(example.source, { language: 'typescript', setting: example.setting });
+        const language = example.language ?? 'typescript';
+        const extension = language === 'typescript' ? 'ts' : 'js';
+        const validFilename = `valid.${extension}`;
+        const invalidFilename = `invalid.${extension}`;
+        const resolved = resolveRule(example.source, { language, setting: example.setting });
         expect(resolved.status).toBe('resolved');
         if (resolved.status !== 'resolved' || !resolved.target) {
             throw new Error(JSON.stringify(resolved));
         }
-        const base = createConfig({ language: 'typescript', typeAware: resolved.requiresTypeInfo });
-        const config = {
-            ...base,
-            overrides: [],
-            jsPlugins: (base.jsPlugins as { name: string; specifier: string }[])
-                .filter((provider) => provider.name === resolved.provider)
-                .map((provider) => ({ ...provider, specifier: REQUIRE.resolve(provider.specifier) })),
-            rules: { [resolved.target]: resolved.setting },
-        };
+        const compatibility = createCompatibilityConfig({
+            language,
+            typeAware: resolved.requiresTypeInfo,
+            rules: { [example.source]: example.setting },
+        });
+        expect(compatibility.fallback).toEqual([]);
+        const { config } = compatibility;
+        config.jsPlugins = (config.jsPlugins ?? []).map((provider) => (typeof provider === 'string'
+            ? provider : { ...provider, specifier: REQUIRE.resolve(provider.specifier) }));
         const results = await lintBatch(config, {
             'tsconfig.json': JSON.stringify({ compilerOptions: { strict: true, target: 'esnext' }, include: ['*.ts'] }),
-            'valid.ts': example.valid,
-            'invalid.ts': example.invalid,
+            [validFilename]: example.valid,
+            [invalidFilename]: example.invalid,
         });
-        expect(results.get('valid.ts')).toEqual([]);
-        const diagnostics = results.get('invalid.ts')!;
+        expect(results.get(validFilename)).toEqual([]);
+        const diagnostics = results.get(invalidFilename)!;
         expect(diagnostics.some((diagnostic) => diagnostic.code?.replace(/^([^()]+)\(([^)]+)\)$/u, '$1/$2')
             .replace(/^react-hooks\//u, 'react/')
             === resolved.target), JSON.stringify(diagnostics)).toBe(true);
         expect(diagnostics.every((diagnostic) => diagnostic.severity === (severity(example.setting) === 1 ? 'warning' : 'error')))
             .toBe(true);
-        const disabled = await lintBatch({ ...config, rules: { [resolved.target]: 'off' } }, { 'invalid.ts': example.invalid });
-        expect(disabled.get('invalid.ts')).toEqual([]);
+        const disabled = await lintBatch({
+            ...config,
+            overrides: config.overrides?.map((group) => ({
+                ...group,
+                rules: { ...group.rules, [resolved.target!]: 'off' },
+            })),
+        }, { [invalidFilename]: example.invalid });
+        expect(disabled.get(invalidFilename)).toEqual([]);
         if (resolved.target === 'ag-ts/naming-convention') {
             const suppressed = await lintBatch(config, {
-                'suppressed.ts': `/* eslint-disable ${resolved.target} */\n${example.invalid}`,
+                [`suppressed.${extension}`]: `/* eslint-disable ${resolved.target} */\n${example.invalid}`,
             });
-            expect(suppressed.get('suppressed.ts')).toEqual([]);
+            expect(suppressed.get(`suppressed.${extension}`)).toEqual([]);
         }
     });
 });

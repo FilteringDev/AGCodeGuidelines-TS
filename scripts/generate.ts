@@ -71,13 +71,25 @@ const native = new Set(nativeList.map(({ scope, value }) => `${scope.replaceAll(
 const typedNative = new Set(nativeList.filter((rule) => rule.type_aware)
     .map(({ scope, value }) => `${scope.replaceAll('_', '-')}/${value}`));
 const legacyCompatibility: Record<string, CompatibilityRule> = {};
-const optionSchema = (schema: unknown): object => (Array.isArray(schema)
-    ? {
-        type: 'array', items: schema, minItems: 0, maxItems: schema.length,
-    }
-    : schema as object);
-const registerCompatibility = (source: string, target: string, schema: unknown, origin: string): void => {
-    if (!native.has(target) && !target.startsWith('ag-style/') && !target.startsWith('ag-ts/')) {
+const optionSchema = (schema: unknown): object => (typeof schema === 'boolean'
+    ? { type: 'array', items: {} }
+    : Array.isArray(schema)
+        ? {
+            type: 'array', items: schema, minItems: 0, maxItems: schema.length,
+        }
+        : schema as object);
+const registerCompatibility = (
+    source: string,
+    target: string,
+    schema: unknown,
+    origin: string,
+    sourceLanguage?: 'typescript' | null,
+): void => {
+    const providerPrefixes = [
+        'ag-compat/', 'ag-style/', 'ag-ts-style/', 'ag-ts/', 'ag-jsdoc/', 'ag-react/', 'ag-a11y/',
+        'ag-import/', 'ag-newlines/', 'ag-boundaries/', 'ag-notice/', 'ag-logger/',
+    ];
+    if (!native.has(target) && !providerPrefixes.some((prefix) => target.startsWith(prefix))) {
         throw new Error(`Missing compatibility implementation ${target}`);
     }
     legacyCompatibility[source] = {
@@ -85,11 +97,20 @@ const registerCompatibility = (source: string, target: string, schema: unknown, 
         target,
         implementation: native.has(target) ? 'native' : 'javascript',
         requiresTypeInfo: typedNative.has(target),
-        ...(source.startsWith('@typescript-eslint/') ? { language: 'typescript' as const } : {}),
+        ...(source.startsWith('@typescript-eslint/') ? { preserveTypeScriptTarget: true } : {}),
+        ...(sourceLanguage === null ? {} : sourceLanguage ? { language: sourceLanguage }
+            : source.startsWith('@typescript-eslint/') ? { language: 'typescript' as const } : {}),
         schema: optionSchema(schema),
         origin,
     };
 };
+Object.entries(style.rules).forEach(([name, rule]) => {
+    const metadata = rule as { meta?: { schema?: unknown } };
+    if (metadata.meta?.schema === undefined) {
+        throw new Error(`Missing option schema for stylistic rule ${name}.`);
+    }
+    registerCompatibility(`@stylistic/${name}`, `ag-style/${name}`, metadata.meta.schema, 'stylistic@5.10.0');
+});
 for (const [name, target] of Object.entries({
     'member-delimiter-style': 'member-delimiter-style',
     'func-call-spacing': 'function-call-spacing',
@@ -97,16 +118,61 @@ for (const [name, target] of Object.entries({
     quotes: 'quotes',
 })) {
     const rule = style.rules[target] as { meta: { schema: unknown } };
-    registerCompatibility(`@typescript-eslint/${name}`, `ag-style/${target}`, rule.meta.schema, 'stylistic@5.10.0');
+    const sourceLanguage = name === 'member-delimiter-style' ? undefined : null;
+    const source = `@typescript-eslint/${name}`;
+    const targetName = `ag-ts-style/${target}`;
+    registerCompatibility(source, targetName, rule.meta.schema, 'stylistic@5.10.0', sourceLanguage);
 }
-for (const name of ['no-loss-of-precision', 'no-loop-func', 'no-unused-expressions']) {
+const typescriptStylisticAliases = [
+    'block-spacing',
+    'brace-style',
+    'comma-dangle',
+    'comma-spacing',
+    'indent',
+    'key-spacing',
+    'keyword-spacing',
+    'lines-around-comment',
+    'lines-between-class-members',
+    'no-extra-parens',
+    'object-curly-spacing',
+    'padding-line-between-statements',
+    'semi',
+    'space-before-blocks',
+    'space-before-function-paren',
+    'space-infix-ops',
+];
+for (const name of typescriptStylisticAliases) {
+    const source = `@typescript-eslint/${name}`;
+    if (Object.hasOwn(legacyCompatibility, source)) {
+        continue;
+    }
+    const rule = style.rules[name] as { meta?: { schema?: unknown } } | undefined;
+    if (!rule?.meta || rule.meta.schema === undefined) {
+        throw new Error(`Missing pinned Stylistic implementation or schema for ${source}.`);
+    }
+    registerCompatibility(
+        source,
+        `ag-ts-style/${name}`,
+        rule.meta.schema,
+        'typescript-eslint@5.62.0/7.18.0 stylistic extension via eslint-stylistic@5.10.0',
+        null,
+    );
+}
+for (const name of ['no-loss-of-precision', 'no-loop-func']) {
     registerCompatibility(
         `@typescript-eslint/${name}`,
         `eslint/${name}`,
         builtinRules.get(name)!.meta!.schema,
         'oxlint@1.82.0',
+        null,
     );
 }
+registerCompatibility(
+    '@typescript-eslint/no-unused-expressions',
+    'eslint/no-unused-expressions',
+    builtinRules.get('no-unused-expressions')!.meta!.schema,
+    'oxlint@1.82.0',
+);
 registerCompatibility('@typescript-eslint/no-implied-eval', 'typescript/no-implied-eval', [], 'oxlint@1.82.0');
 registerCompatibility('@typescript-eslint/no-throw-literal', 'typescript/only-throw-error', [], 'oxlint@1.82.0');
 registerCompatibility('@typescript-eslint/return-await', 'typescript/return-await', [
@@ -934,6 +1000,55 @@ Object.entries(projectAdditions).forEach(([name, setting]) => {
 Object.entries(projectTypeScriptAdditions).forEach(([name, setting]) => {
     mapRule(name, setting, 'adguard-projects', 'adguard-projects', 'typescript');
 });
+
+const zeroOptionTypeScriptExtensions = [
+    'default-param-last',
+    'no-array-constructor',
+    'no-useless-constructor',
+];
+for (const name of zeroOptionTypeScriptExtensions) {
+    const equivalent = TYPESCRIPT_EQUIVALENTS[name];
+    if (!equivalent?.target) {
+        throw new Error(`Missing reviewed TypeScript equivalent for @typescript-eslint/${name}.`);
+    }
+    registerCompatibility(
+        `@typescript-eslint/${name}`,
+        equivalent.target,
+        builtinRules.get(name)?.meta?.schema ?? [],
+        'typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension',
+        null,
+    );
+}
+
+for (const [name, rule] of builtinRules) {
+    if (Object.hasOwn(legacyCompatibility, name)) {
+        continue;
+    }
+    registerCompatibility(name, `ag-compat/${name}`, rule.meta!.schema!, 'eslint@8.57.1');
+}
+const compatibilityProviders: [string, Provider, string, string][] = [
+    ['jsdoc/', jsdoc, 'ag-jsdoc/', 'eslint-plugin-jsdoc@64.3.6'],
+    ['react/', react, 'ag-react/', 'eslint-plugin-react@7.37.5'],
+    ['jsx-a11y/', accessibility, 'ag-a11y/', 'eslint-plugin-jsx-a11y@6.10.2'],
+    ['import/', imports, 'ag-import/', 'eslint-plugin-import@2.32.0'],
+    ['import-newlines/', newlines, 'ag-newlines/', 'eslint-plugin-import-newlines@1.4.0'],
+    ['boundaries/', boundaries, 'ag-boundaries/', 'eslint-plugin-boundaries@5.0.1'],
+    ['notice/', notice, 'ag-notice/', 'eslint-plugin-notice@1.0.0'],
+    ['@adguard/logger-context/', logger, 'ag-logger/', 'adguard-eslint-plugin-logger-context@1.0.1'],
+];
+for (const [sourcePrefix, provider, targetPrefix, origin] of compatibilityProviders) {
+    for (const [name, rule] of Object.entries(provider.rules)) {
+        const source = `${sourcePrefix}${name}`;
+        if (Object.hasOwn(legacyCompatibility, source)) {
+            continue;
+        }
+        const metadata = rule as { meta?: { schema?: unknown } };
+        if (!metadata.meta) {
+            throw new Error(`Missing metadata for compatibility provider rule ${source}.`);
+        }
+        registerCompatibility(source, `${targetPrefix}${name}`, metadata.meta.schema ?? [], origin);
+    }
+}
 Object.keys(TYPESCRIPT_EQUIVALENTS).forEach((source) => {
     if (!mappings.some((mapping) => mapping.source === source)) {
         throw new Error(`TypeScript equivalent for unmapped rule ${source}`);

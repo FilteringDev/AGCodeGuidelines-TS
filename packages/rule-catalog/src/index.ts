@@ -91,6 +91,8 @@ export interface CompatibilityRule {
     target: string;
     implementation: Implementation;
     requiresTypeInfo: boolean;
+    /** Preserve an explicitly registered source alias instead of selecting a base TypeScript replacement. */
+    preserveTypeScriptTarget?: boolean;
     language?: 'typescript';
     schema: object;
     origin: string;
@@ -225,12 +227,23 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
     if ((compatibility?.language ?? selected?.language) === 'typescript' && language !== 'typescript') {
         return { status: 'unsupported', source, reason: `${source} requires TypeScript source files.` };
     }
-    const equivalent = !compatibility && language === 'typescript' ? selected?.typescript : undefined;
-    const target = compatibility?.target ?? (equivalent ? equivalent.target : selected!.target);
-    const setting = options.setting ?? (equivalent ? equivalent.setting : selected?.setting) ?? 'error';
+    const equivalent = !compatibility?.preserveTypeScriptTarget && compatibility?.language !== 'typescript'
+        && language === 'typescript'
+        ? selected?.typescript : undefined;
+    const useTypeScriptEquivalent = Boolean(equivalent);
+    const target = useTypeScriptEquivalent ? equivalent!.target : compatibility?.target ?? selected!.target;
+    const setting = options.setting ?? (useTypeScriptEquivalent ? equivalent!.setting : selected?.setting) ?? 'error';
     const level = Array.isArray(setting) ? setting[0] : setting;
     if (![0, 1, 2, 'off', 'warn', 'error'].includes(level)) {
         return { status: 'unsupported', source, reason: `Invalid severity for ${source}.` };
+    }
+    let implementation: Implementation;
+    if (severity(setting) === 0) {
+        implementation = 'disabled';
+    } else if (useTypeScriptEquivalent) {
+        implementation = equivalent!.implementation;
+    } else {
+        implementation = compatibility?.implementation ?? selected!.implementation;
     }
     if ((options.setting !== undefined || compatibility) && severity(setting) > 0) {
         const schema = compatibility?.schema;
@@ -249,17 +262,17 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         }
     }
     return {
-        status: equivalent?.target === null && severity(selected!.setting) > 0 && options.setting === undefined
+        status: useTypeScriptEquivalent && equivalent!.target === null
+            && severity(selected!.setting) > 0
             ? 'compiler' : severity(setting) === 0 ? 'disabled' : 'resolved',
         source,
         canonicalSource,
         target,
         setting: structuredClone(setting),
-        implementation: severity(setting) === 0 ? 'disabled'
-            : compatibility?.implementation ?? (equivalent ? equivalent.implementation : selected!.implementation),
+        implementation,
         requiresTypeInfo: compatibility?.requiresTypeInfo ?? selected?.requiresTypeInfo ?? false,
         provider: target?.split('/')[0] ?? null,
-        ...(equivalent ? { reason: equivalent.reason } : {}),
+        ...(useTypeScriptEquivalent ? { reason: equivalent!.reason } : {}),
     };
 }
 

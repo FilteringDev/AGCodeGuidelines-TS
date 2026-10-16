@@ -47,7 +47,7 @@ describe('explicit ownership decisions', () => {
 
     it('distinguishes aliases, typed rules, compiler checks, manual clauses and unsupported options', () => {
         expect(resolveRuleDetailed('@typescript-eslint/quotes', { setting: ['warn', 'single'] }))
-            .toMatchObject({ disposition: 'javascript', alias: true, provider: 'ag-style' });
+            .toMatchObject({ disposition: 'javascript', alias: true, provider: 'ag-ts-style' });
         expect(resolveRuleDetailed('@typescript-eslint/return-await', { setting: ['error', 'in-try-catch'] }))
             .toMatchObject({ disposition: 'type-aware', requiresTypeInfo: true });
         expect(resolveRuleDetailed('no-undef', { language: 'typescript' })).toMatchObject({ disposition: 'compiler' });
@@ -74,7 +74,8 @@ describe('explicit ownership decisions', () => {
         expect(resolveRuleDetailed('no-debugger', { acceptNativeDifferences: 'yes' as unknown as boolean }))
             .toMatchObject({ disposition: 'unsupported' });
         expect(resolveRuleDetailed('no-debugger', { setting: 'invalid' })).toMatchObject({ disposition: 'unsupported' });
-        const disabled = catalog.mappings.find((mapping) => !mapping.scope && mapping.implementation === 'disabled')!;
+        const disabled = catalog.mappings.find((mapping) => !mapping.scope && mapping.implementation === 'disabled'
+            && !Object.hasOwn(catalog.compatibility, mapping.source))!;
         expect(resolveRuleDetailed(disabled.source, { setting: 'error' })).toMatchObject({ disposition: 'unsupported' });
         expect(resolveRuleDetailed('no-undef', { language: 'typescript', setting: 'warn' }))
             .toMatchObject({ disposition: 'compiler', sourceSetting: 'warn' });
@@ -85,10 +86,14 @@ describe('legacy rule resolution', () => {
     it('resolves the delimiter alias without changing preset activation', () => {
         const before = structuredClone(catalog);
         const options = { language: 'typescript', profile: 'adguard-projects' } as const;
-        const canonical = resolveRule('member-delimiter-style', options);
         const alias = resolveRule('@typescript-eslint/member-delimiter-style', options);
-        expect(alias).toEqual({ ...canonical, source: '@typescript-eslint/member-delimiter-style' });
-        expect(alias).toMatchObject({ status: 'resolved', target: 'ag-style/member-delimiter-style' });
+        expect(alias).toMatchObject({
+            status: 'resolved',
+            source: '@typescript-eslint/member-delimiter-style',
+            canonicalSource: 'member-delimiter-style',
+            setting: 'error',
+            target: 'ag-ts-style/member-delimiter-style',
+        });
         expect(catalog).toEqual(before);
     });
 
@@ -99,8 +104,12 @@ describe('legacy rule resolution', () => {
         expect(resolveRule('no-undef', { language: 'typescript' })).toMatchObject({
             status: 'compiler', target: null,
         });
-        const disabled = catalog.mappings.find((mapping) => !mapping.scope && severity(mapping.setting) === 0)!;
-        expect(resolveRule(disabled.source)).toMatchObject({ status: 'disabled', target: null });
+        const disabled = catalog.mappings.find((mapping) => !mapping.scope && severity(mapping.setting) === 0
+            && Object.hasOwn(catalog.compatibility, mapping.source))!;
+        expect(resolveRule(disabled.source)).toMatchObject({ status: 'disabled', setting: 'off' });
+        expect(resolveRule(disabled.source, { setting: 'error' })).toMatchObject({
+            status: 'resolved', target: catalog.compatibility[disabled.source]!.target,
+        });
     });
 
     it('reports unknown names and returns independent settings', () => {
@@ -114,7 +123,7 @@ describe('legacy rule resolution', () => {
 
     it('preserves caller options and explicitly rejects unsupported options', () => {
         expect(resolveRule('@typescript-eslint/quotes', { setting: ['warn', 'double', { avoidEscape: true }] }))
-            .toMatchObject({ status: 'resolved', target: 'ag-style/quotes', setting: ['warn', 'double', { avoidEscape: true }] });
+            .toMatchObject({ status: 'resolved', target: 'ag-ts-style/quotes', setting: ['warn', 'double', { avoidEscape: true }] });
         expect(resolveRule('@typescript-eslint/member-delimiter-style', { setting: ['error', { unknownOption: true }] }))
             .toMatchObject({ status: 'unsupported' });
         expect(resolveRule('@typescript-eslint/return-await', { setting: ['error', 'in-try-catch'] }))
