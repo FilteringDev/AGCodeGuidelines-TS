@@ -174,6 +174,11 @@ describe('effective compatibility configuration', () => {
     });
 
     it('needs no owner for disabled rules without an implementation or for the other language', () => {
+        const typed = { '@typescript-eslint/no-throw-literal': 'error' };
+        expect(createCompatibilityConfig({ rules: typed }).fallback)
+            .toMatchObject([{ reason: expect.stringContaining('Type information') }]);
+        expect(createCompatibilityConfig({ rules: typed, typeAware: true }).config.overrides![0]!.rules)
+            .toEqual({ 'typescript/only-throw-error': 'error' });
         const rules = {
             '@typescript-eslint/no-magic-numbers': ['off', { ignoreArrayIndexes: true }],
             '@typescript-eslint/require-await': 'off',

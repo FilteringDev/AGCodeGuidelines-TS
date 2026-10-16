@@ -22566,7 +22566,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "oxlint@1.82.0"
+      "origin": "oxlint@1.82.0",
+      "javascript": "same"
     },
     "@typescript-eslint/no-throw-literal": {
       "canonicalSource": "no-throw-literal",
@@ -22581,7 +22582,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "oxlint@1.82.0"
+      "origin": "oxlint@1.82.0",
+      "javascript": "same"
     },
     "@typescript-eslint/return-await": {
       "canonicalSource": "return-await",
@@ -22605,7 +22607,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "oxlint@1.82.0"
+      "origin": "oxlint@1.82.0",
+      "javascript": "same"
     },
     "react-hooks/rules-of-hooks": {
       "canonicalSource": "react-hooks/rules-of-hooks",

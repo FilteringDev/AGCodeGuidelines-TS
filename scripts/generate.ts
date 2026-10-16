@@ -1107,6 +1107,10 @@ for (const name of [...zeroOptionTypeScriptExtensions, ...Object.keys(baseOption
 legacyCompatibility['@typescript-eslint/dot-notation']!.typescriptOnlyOptions = [
     'allowPrivateClassPropertyAccess', 'allowProtectedClassPropertyAccess', 'allowIndexSignaturePropertyAccess',
 ];
+// tsgolint checks JavaScript files that the project includes with allowJs.
+for (const name of ['no-implied-eval', 'no-throw-literal', 'return-await']) {
+    legacyCompatibility[`@typescript-eslint/${name}`]!.javascript = 'same';
+}
 
 for (const [name, rule] of builtinRules) {
     if (Object.hasOwn(legacyCompatibility, name)) {

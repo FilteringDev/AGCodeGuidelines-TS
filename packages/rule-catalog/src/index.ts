@@ -98,9 +98,10 @@ export interface CompatibilityRule {
     /** Source-version defaults the target would otherwise choose differently; explicit options win. */
     optionDefaults?: Record<string, unknown>;
     /**
-     * JavaScript files: `base` runs the extended core rule, `inert` means only TypeScript syntax can be reported.
+     * JavaScript files: `base` runs the extended core rule, `inert` means only TypeScript syntax can be reported,
+     * and `same` keeps the target, whose typed service also checks JavaScript in the program.
      */
-    javascript?: 'base' | 'inert';
+    javascript?: 'base' | 'inert' | 'same';
     /** Options with no JavaScript meaning, removed before the core rule validates them. */
     typescriptOnlyOptions?: string[];
     origin: string;
@@ -246,7 +247,8 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
     if (!selected && !compatibility) {
         return unowned(`No implementation for rule ${source}.`);
     }
-    if ((compatibility?.language ?? selected?.language) === 'typescript' && language !== 'typescript') {
+    if ((compatibility?.language ?? selected?.language) === 'typescript' && language !== 'typescript'
+        && compatibility?.javascript !== 'same') {
         if (compatibility?.javascript === 'inert' && options.setting !== undefined) {
             return {
                 status: 'disabled',
