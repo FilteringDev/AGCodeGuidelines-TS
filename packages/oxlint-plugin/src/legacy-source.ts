@@ -16,7 +16,8 @@ type LegacyVariable = Variable & {
     eslintExplicitGlobalComments?: ESTree.Comment[];
 };
 const VariableConstructor = Variable as unknown as new (variableName: string, owner: Scope) => LegacyVariable;
-const cache = new WeakMap<Source, Map<string, Source>>();
+// Keyed by the per-file AST: Oxlint reuses one sourceCode object for every file.
+const cache = new WeakMap<object, Map<string, Source>>();
 
 /**
  * Preserve TypeScript scope information while applying explicit global directives.
@@ -106,7 +107,7 @@ export function legacySource(context: Context, version: number, parserOptions: R
         context.languageOptions.sourceType,
         Object.hasOwn(context.settings, 'agEcmaVersion'),
     ]);
-    const cached = cache.get(source)?.get(key);
+    const cached = cache.get(source.ast)?.get(key);
     if (cached) {
         return cached;
     }
@@ -237,10 +238,10 @@ export function legacySource(context: Context, version: number, parserOptions: R
             },
         },
     }) as Source;
-    let entries = cache.get(source);
+    let entries = cache.get(source.ast);
     if (!entries) {
         entries = new Map();
-        cache.set(source, entries);
+        cache.set(source.ast, entries);
     }
     entries.set(key, adapted);
     return adapted;

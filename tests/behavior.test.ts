@@ -11,11 +11,14 @@ import {
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
 import { createConfig } from '../packages/oxlint-config/src/index';
-import { lintBatch, runOxlint } from './cli';
+import { lintBatch, OXLINT, runOxlint } from './cli';
+
+import type { Diagnostic } from './cli';
 
 const REQUIRE = createRequire(import.meta.url);
 const TSC = join(dirname(REQUIRE.resolve('typescript/package.json')), 'bin/tsc');
@@ -130,6 +133,36 @@ it.each(['jsx-uses-react', 'jsx-uses-vars'])('%s cooperates with unused binding 
     );
     expect(enabled.get('main.jsx')).toEqual([]);
     expect(disabled.get('main.jsx')).toHaveLength(1);
+});
+
+it('keeps per-file scope caches when providers load before Oxlint', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'ag-preload-'));
+    const compat = REQUIRE.resolve('@agcodeguidelines/oxlint-plugin/compat');
+    try {
+        await writeFile(join(directory, '.oxlintrc.json'), JSON.stringify({
+            categories: { correctness: 'off' },
+            jsPlugins: [{ name: 'ag-compat', specifier: compat }],
+            rules: { 'ag-compat/no-undef': 'error', 'ag-compat/no-setter-return': 'error' },
+        }));
+        await writeFile(join(directory, 'a.js'), '/* global shared */\nshared();\n');
+        await writeFile(join(directory, 'b.js'), 'shared();\nconst value = { set x(next) { return next; } };\nvalue.x = 1;\n');
+        let stdout = '';
+        try {
+            stdout = execFileSync(
+                process.execPath,
+                ['--import', pathToFileURL(compat).href, OXLINT, '--format', 'json', 'a.js', 'b.js'],
+                { cwd: directory, encoding: 'utf8' },
+            );
+        } catch (error: unknown) {
+            stdout = (error as { stdout: string }).stdout;
+        }
+        const codes = (JSON.parse(stdout) as { diagnostics: Diagnostic[] }).diagnostics
+            .map(({ filename, code }) => `${filename}:${code ?? 'crash'}`)
+            .sort();
+        expect(codes).toEqual(['b.js:ag-compat(no-setter-return)', 'b.js:ag-compat(no-undef)']);
+    } finally {
+        await rm(directory, { recursive: true, force: true });
+    }
 });
 
 it('safe formatting fixes preserve comments and converge after repeated CLI passes', async () => {
