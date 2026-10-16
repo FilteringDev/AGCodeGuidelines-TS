@@ -80,6 +80,132 @@ const PROVIDER_ALIASES = {
     'ag-ts-style': '@agcodeguidelines/oxlint-plugin/typescript-stylistic',
 };
 
+// Read by the pinned provider sources exactly as by the original ESLint plugins.
+const PASSTHROUGH_SETTINGS = new Set([
+    'import/extensions',
+    'import/external-module-folders',
+    'import/core-modules',
+    'import/ignore',
+    'import/internal-regex',
+    'import/cache',
+    'import/docstyle',
+    'propWrapperFunctions',
+    'componentWrapperFunctions',
+    'formComponents',
+    'linkComponents',
+    'jsdoc',
+]);
+const RESOLVER_OPTIONS: Record<string, readonly string[]> = {
+    node: ['extensions', 'moduleDirectory'],
+    typescript: ['alwaysTryTypes', 'project', 'conditionNames', 'extensions', 'mainFields'],
+};
+
+/**
+ * Map consumer settings onto the provider settings that reproduce them.
+ * @param settings - Effective source settings.
+ * @returns Oxlint settings and the keys whose behavior is not verified.
+ */
+function translateSettings(
+    settings: Record<string, unknown>,
+): { settings: Record<string, unknown>; unverified: string[] } {
+    const result: Record<string, unknown> = {};
+    const unverified: string[] = [];
+    for (const [key, value] of Object.entries(settings)) {
+        if (key === 'react') {
+            // Oxlint's native React schema rejects version detection; providers read agReact.
+            result.agReact = structuredClone(value);
+            const version = (value as { version?: unknown } | null)?.version;
+            if (version === undefined || (typeof version === 'string' && /^\d/u.test(version))) {
+                result.react = structuredClone(value);
+            }
+        } else if (key === 'import/parsers') {
+            // Oxc parses TypeScript and JSX dependencies; consumer parser packages must not load.
+            continue;
+        } else if (key === 'import/resolver') {
+            const resolvers = value && typeof value === 'object' && !Array.isArray(value)
+                ? Object.entries(value as Record<string, unknown>) : [];
+            const supported = resolvers.length > 0 && resolvers.every(([name, options]) => (
+                Object.hasOwn(RESOLVER_OPTIONS, name)
+                && (options === true || (options !== null && typeof options === 'object' && !Array.isArray(options)
+                    && Object.keys(options).every((option) => RESOLVER_OPTIONS[name]!.includes(option))))
+            ));
+            if (!supported) {
+                unverified.push(key);
+            }
+            result[key] = structuredClone(value);
+        } else if (PASSTHROUGH_SETTINGS.has(key) || /^ag[A-Z]/u.test(key)) {
+            result[key] = structuredClone(value);
+        } else {
+            unverified.push(key);
+            result[key] = structuredClone(value);
+        }
+    }
+    return { settings: result, unverified };
+}
+
+// Only typed services read these; typed rules stay behind the separate typeAware decision.
+const TYPED_PARSER_OPTIONS = new Set([
+    'project',
+    'tsconfigRootDir',
+    'projectService',
+    'extraFileExtensions',
+    'warnOnUnsupportedTypeScriptVersion',
+    'createDefaultProgram',
+]);
+// Accepted by parsers for legacy compatibility without changing the parsed program.
+const INERT_FEATURES = new Set(['jsx', 'generators', 'objectLiteralDuplicateProperties', 'experimentalObjectRestSpread']);
+
+/**
+ * Map parser options onto provider settings without changing configured globals.
+ * @param parserOptions - Effective source parser options.
+ * @param sourceType - Explicit module semantics from the source context.
+ * @returns Provider settings and the options whose behavior is not verified.
+ */
+function translateParserOptions(
+    parserOptions: Record<string, unknown>,
+    sourceType: string | undefined,
+): { settings: Record<string, unknown>; unverified: string[] } {
+    const settings: Record<string, unknown> = {};
+    const unverified: string[] = [];
+    const features: Record<string, unknown> = {};
+    const type = sourceType ?? parserOptions.sourceType;
+    if (type !== undefined) {
+        if (type === 'module' || type === 'script') {
+            settings.agSourceType = type;
+        } else {
+            unverified.push('sourceType');
+        }
+    }
+    for (const [key, value] of Object.entries(parserOptions)) {
+        if (key === 'sourceType' || TYPED_PARSER_OPTIONS.has(key)) {
+            continue;
+        }
+        if (key === 'ecmaVersion') {
+            const year = typeof value === 'number' && value > 5 && value < 2015 ? value + 2009 : value;
+            if (typeof year === 'number' && year >= 2015) {
+                settings.agRuleEcmaVersion = year;
+            } else if (year !== 'latest') {
+                unverified.push(key);
+            }
+        } else if (key === 'ecmaFeatures' && value && typeof value === 'object') {
+            for (const [feature, enabled] of Object.entries(value)) {
+                if (INERT_FEATURES.has(feature) || ((feature === 'globalReturn' || feature === 'impliedStrict')
+                    && typeof enabled === 'boolean')) {
+                    features[feature] = enabled;
+                } else {
+                    unverified.push(`ecmaFeatures.${feature}`);
+                }
+            }
+        } else {
+            unverified.push(key);
+        }
+    }
+    if (features.globalReturn || features.impliedStrict) {
+        settings.agParserOptions = { ecmaFeatures: features };
+    }
+    return { settings, unverified };
+}
+
 /**
  * Select providers after finalizing explicit rules, including every override.
  * @param config - An explicit configuration without inherited configurations.
@@ -144,18 +270,20 @@ export function createCompatibilityConfig(options: CompatibilityConfigOptions): 
     if (typeof typeAware !== 'boolean') {
         throw new TypeError('typeAware must be a boolean.');
     }
+    const translated = translateSettings(context.settings ?? {});
+    const parser = translateParserOptions(context.parserOptions ?? {}, context.sourceType);
     const ownership = listRuleOwnership(options.rules, { ...options, language: options.language ?? 'javascript' })
         .map((decision): DetailedRuleResolution => {
             if (decision.status === 'unsupported') {
                 return decision;
             }
             let reason: string | undefined;
-            if (context.sourceType !== undefined || Object.keys(context.parserOptions ?? {}).length) {
-                reason = 'Parser and sourceType assumptions need independent verification; retain the source owner.';
+            if (parser.unverified.length) {
+                reason = `Parser options ${parser.unverified.join(', ')} need independent verification; retain the source owner.`;
             } else if (decision.requiresTypeInfo && !typeAware) {
                 reason = 'Type information is required; retain the typed owner or explicitly enable its service.';
-            } else if (Object.keys(context.settings ?? {}).length && !decision.nativeCandidate) {
-                reason = 'Consumer-specific settings have not been verified for this implementation.';
+            } else if (translated.unverified.length && !decision.nativeCandidate) {
+                reason = `Consumer settings ${translated.unverified.join(', ')} have not been verified for this implementation.`;
             }
             if (reason && decision.disposition !== 'disabled') {
                 return {
@@ -205,7 +333,7 @@ export function createCompatibilityConfig(options: CompatibilityConfigOptions): 
         globals: Object.fromEntries(Object.entries(context.globals ?? {}).map(([name, value]) => [
             name, value === true ? 'writable' : value === false ? 'readonly' : value,
         ])),
-        settings: structuredClone(context.settings ?? {}),
+        settings: { ...translated.settings, ...parser.settings },
         rules: {},
         ...(typeAware ? { options: { typeAware: true } } : {}),
         overrides: [{

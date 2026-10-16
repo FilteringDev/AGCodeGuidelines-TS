@@ -70,11 +70,26 @@ options and consumer settings fail closed. Exact recorded preset-option tuples
 and the existing bounded compatibility schemas can be resolved; schema acceptance
 alone does not establish consumer-specific behavioral parity.
 
-Parser options and explicit sourceType assumptions currently remain fallback
-obligations, not silently translated guarantees. Consumer-specific settings
-remain fallback unless the selected no-options candidate is independent of them.
-Typed rules remain fallback unless their separate service is explicitly enabled.
-This API is not evidence that a complete consumer config is transferable.
+Parser options are translated only where their effect is known. `sourceType`
+`module`/`script` becomes `settings.agSourceType`; `ecmaVersion` 2015 or later is
+reported to JavaScript-provider rules through `settings.agRuleEcmaVersion` while
+globals still follow the configured environment, as in ESLint 8 eslintrc; `latest`
+keeps the provider default. Typed-service options (`project`, `tsconfigRootDir`,
+`projectService`, `extraFileExtensions` and related flags) are ignored by syntax
+rules, and legacy `ecmaFeatures` flags are accepted, with `globalReturn` and
+`impliedStrict` forwarded. Other parser options remain fallback obligations.
+
+Settings read by the pinned providers exactly as by their ESLint plugins pass
+through (`import/extensions`, `import/core-modules`, `import/ignore`, React
+component lists, `jsdoc` and similar). `react` is copied to `agReact`, and kept as
+`react` only for a concrete version Oxlint's native schema accepts.
+`import/parsers` is dropped because Oxc parses TypeScript and JSX dependencies and
+consumer parser packages must not load. `import/resolver` is accepted for the
+`node` and `typescript` resolvers with their supported options. Any other key keeps
+non-native rules as fallback. Typed rules remain fallback unless their separate
+service is explicitly enabled. `scripts/consumer-diff.ts` compares a consumer's
+ESLint results with this translation rule by rule; this API alone is not evidence
+that a complete consumer config is transferable.
 
 `finalizeProviders(config)` clones an explicit finalized configuration, scans
 root and override rules, and selects needed named providers. It rejects unresolved

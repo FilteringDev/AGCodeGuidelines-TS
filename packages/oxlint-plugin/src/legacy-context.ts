@@ -99,10 +99,13 @@ function fileAdapter(context: RuleContext, root: object): FileAdapter {
     if (version > 5 && version < 2015) {
         version += 2009;
     }
+    // Translated consumer parsers report their ecmaVersion to rules; globals still follow the environment.
+    const ruleVersion = typeof context.settings.agRuleEcmaVersion === 'number'
+        ? context.settings.agRuleEcmaVersion : version;
     const parserOptions = {
         ...context.languageOptions.parserOptions,
         ...(context.settings.agParserOptions as object),
-        ecmaVersion: version,
+        ecmaVersion: ruleVersion,
     };
     let source = legacySource(languageContext, version, parserOptions);
     source = Object.create(source, {
@@ -118,7 +121,7 @@ function fileAdapter(context: RuleContext, root: object): FileAdapter {
         markVariableAsUsed: { value: (name: string) => source.markVariableAsUsed(name, state.current) },
         parserOptions: { value: parserOptions },
         languageOptions: {
-            value: { ...languageContext.languageOptions, ecmaVersion: version, parserOptions },
+            value: { ...languageContext.languageOptions, ecmaVersion: ruleVersion, parserOptions },
         },
         parserServices: { value: {} },
     };
@@ -133,7 +136,7 @@ function fileAdapter(context: RuleContext, root: object): FileAdapter {
         shared: Object.create(root, properties) as object,
         source,
         sourceType,
-        version,
+        version: ruleVersion,
         parserOptions,
         languageOverrides: new WeakMap(),
         state,

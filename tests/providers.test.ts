@@ -51,7 +51,10 @@ describe('effective compatibility configuration', () => {
         expect(groups.map(({ id }) => id)).toEqual(['application', 'tooling']);
         expect(groups[0]!.config.env).toEqual({ browser: true });
         expect(groups[0]!.config.globals).toEqual({ applicationGlobal: 'readonly' });
-        expect(groups[0]!.config.settings).toEqual({ react: { version: '18.2.0' } });
+        expect(groups[0]!.config.settings).toEqual({
+            react: { version: '18.2.0' },
+            agReact: { version: '18.2.0' },
+        });
         expect(groups[1]!.config.env).toEqual({ node: true });
         expect(groups[1]!.config.globals).toEqual({ toolingGlobal: 'writable' });
         expect(groups[1]!.config.settings).toEqual({ resolver: { mode: 'tooling' } });
@@ -129,14 +132,63 @@ describe('effective compatibility configuration', () => {
         expect(createCompatibilityConfig({ rules }).fallback).toMatchObject([{ disposition: 'unsupported' }]);
         expect(createCompatibilityConfig({ rules, language: 'typescript', typeAware: true }).ownership)
             .toMatchObject([{ disposition: 'type-aware' }]);
-        for (const context of [{ parserOptions: { ecmaVersion: 2020 } }, { sourceType: 'script' as const }]) {
+        for (const context of [
+            { parserOptions: { ecmaVersion: 5 } },
+            { parserOptions: { lib: ['es2020'] } },
+            { parserOptions: { ecmaFeatures: { unknownFeature: true } } },
+            { sourceType: 'commonjs' as const },
+        ]) {
             expect(createCompatibilityConfig({ rules: { 'no-debugger': 'error' }, context }).fallback).toHaveLength(1);
         }
         expect(createCompatibilityConfig({
             rules: { quotes: ['warn', 'single', { avoidEscape: true }] }, context: { settings: { custom: true } },
         }).fallback).toHaveLength(1);
+        expect(createCompatibilityConfig({
+            rules: { 'import/no-unresolved': 'error' }, context: { settings: { 'import/resolver': { webpack: {} } } },
+        }).fallback).toMatchObject([{ reason: expect.stringContaining('import/resolver') }]);
         expect(() => createCompatibilityConfig({ rules: {}, typeAware: 'yes' as unknown as boolean }))
             .toThrow('typeAware');
+    });
+
+    it('translates verified consumer parser options and settings', () => {
+        const result = createCompatibilityConfig({
+            rules: { 'no-debugger': 'error', 'import/no-unresolved': 'error' },
+            context: {
+                parserOptions: {
+                    project: ['tsconfig.eslint.json'],
+                    ecmaFeatures: { jsx: true, generators: false, objectLiteralDuplicateProperties: false },
+                    ecmaVersion: 2018,
+                    sourceType: 'module',
+                },
+                settings: {
+                    react: { pragma: 'React', version: 'detect' },
+                    'import/resolver': { typescript: { alwaysTryTypes: true, project: 'tsconfig.json' }, node: { extensions: ['.ts'] } },
+                    'import/parsers': { '@typescript-eslint/parser': ['.ts'] },
+                    'import/extensions': ['.ts'],
+                    propWrapperFunctions: ['exact'],
+                },
+            },
+        });
+        expect(result.fallback).toEqual([]);
+        expect(result.config.settings).toEqual({
+            agReact: { pragma: 'React', version: 'detect' },
+            'import/resolver': { typescript: { alwaysTryTypes: true, project: 'tsconfig.json' }, node: { extensions: ['.ts'] } },
+            'import/extensions': ['.ts'],
+            propWrapperFunctions: ['exact'],
+            agSourceType: 'module',
+            agRuleEcmaVersion: 2018,
+        });
+    });
+
+    it.each([[2015, 0], [2018, 1]])('reports the translated ecmaVersion %i to rules', async (ecmaVersion, count) => {
+        const result = createCompatibilityConfig({
+            rules: { 'comma-dangle': ['error', 'always-multiline'] },
+            context: { parserOptions: { ecmaVersion } },
+        });
+        expect(result.fallback).toEqual([]);
+        result.config.jsPlugins = [{ name: 'ag-compat', specifier: COMPAT }];
+        const diagnostics = await lintBatch(result.config, { 'main.js': 'call(\n    1\n);\n' });
+        expect(diagnostics.get('main.js')).toHaveLength(count);
     });
 
     it('keeps the enabled owner when a disabled alias shares its target', () => {
