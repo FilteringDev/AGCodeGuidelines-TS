@@ -139,6 +139,16 @@ describe('effective compatibility configuration', () => {
             .toThrow('typeAware');
     });
 
+    it('keeps the enabled owner when a disabled alias shares its target', () => {
+        const rules = { 'default-param-last': 'off', '@typescript-eslint/default-param-last': 'error' };
+        const reversed = { '@typescript-eslint/default-param-last': 'error', 'default-param-last': 'off' };
+        const [first, second] = [rules, reversed].map((source) => createCompatibilityConfig({
+            rules: source, language: 'typescript',
+        }).config.overrides![0]!.rules);
+        expect(first).toEqual(second);
+        expect(Object.values(first!)).toEqual(['error']);
+    });
+
     it('runs a JavaScript alias without changing options or loading other providers', async () => {
         const result = createCompatibilityConfig({
             rules: { '@typescript-eslint/quotes': ['warn', 'single', { avoidEscape: true }] }, language: 'typescript',

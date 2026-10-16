@@ -1,5 +1,5 @@
 /** @file Complete, portable Oxlint configurations derived from the pinned guide. */
-import { catalog, listRuleOwnership } from '@agcodeguidelines/rule-catalog';
+import { catalog, listRuleOwnership, severity } from '@agcodeguidelines/rule-catalog';
 
 import type {
     DetailedResolutionOptions,
@@ -9,6 +9,7 @@ import type {
     Policy,
     Profile,
     RuleMap,
+    RuleSetting,
 } from '@agcodeguidelines/rule-catalog';
 import type { OxlintConfig } from 'oxlint';
 import { checkTsconfig, parseJsonc } from './compiler.js';
@@ -174,7 +175,13 @@ export function createCompatibilityConfig(options: CompatibilityConfigOptions): 
         const setting = structuredClone(decision.setting) as Rules[string];
         const previous = rules[decision.target];
         if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(setting)) {
-            throw new TypeError(`Conflicting ownership for ${decision.target}. Split configuration groups.`);
+            // A disabled base rule beside its enabled TypeScript extension leaves one active owner.
+            if (severity(setting as RuleSetting) === 0) {
+                return;
+            }
+            if (severity(previous as RuleSetting) !== 0) {
+                throw new TypeError(`Conflicting ownership for ${decision.target}. Split configuration groups.`);
+            }
         }
         rules[decision.target] = setting;
     });
