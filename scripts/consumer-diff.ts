@@ -1,14 +1,17 @@
 /**
  * @file Compare a consumer's ESLint results with its Oxlint compatibility translation, rule by rule.
  *
- * Usage: pnpm exec tsx scripts/consumer-diff.ts <consumer> <report.json> [--ext .js,.ts] [targets...]
+ * Usage: pnpm exec tsx scripts/consumer-diff.ts <consumer> <report.json> [--ext .js,.ts]
+ *        [--rewrite-suppressions] [targets...]
  * The consumer's own ESLint runs in a child process from its directory; no ESLint is loaded here.
+ * --rewrite-suppressions migrates eslint-disable/enable comments in place to the translated rule names.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { parseSync } from 'oxc-parser';
 import { createCompatibilityConfigGroups } from '../packages/oxlint-config/src/index';
 
 import type { RuleMap } from '../packages/rule-catalog/src/index';
@@ -54,15 +57,49 @@ process.stdout.write(JSON.stringify(files));
 `;
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const LINT_CLI = join(ROOT, 'packages/oxlint-config/dist/lint-cli.js');
+const DIRECTIVE = /^(\s*eslint-(?:disable|enable|disable-line|disable-next-line))(\s+)(.*?)(\s+--[\s\S]*|\s*)$/su;
+
+/**
+ * Rename the rules listed in eslint-disable/enable comments to their Oxlint owners.
+ * @param filename - File whose comments are rewritten in place.
+ * @param targets - Translated target for each source rule of this file's configuration.
+ * @returns Number of changed comments.
+ */
+function rewriteSuppressions(filename: string, targets: ReadonlyMap<string, string>): number {
+    const text = readFileSync(filename, 'utf8');
+    let output = '';
+    let last = 0;
+    let changed = 0;
+    for (const comment of parseSync(filename, text).comments) {
+        const match = DIRECTIVE.exec(comment.value);
+        if (!match?.[3]) {
+            continue;
+        }
+        const rules = match[3].split(',').map((rule) => rule.trim()).map((rule) => targets.get(rule) ?? rule).join(', ');
+        if (rules === match[3]) {
+            continue;
+        }
+        const start = comment.start + 2;
+        output += `${text.slice(last, start)}${match[1]}${match[2]}${rules}${match[4]}`;
+        last = start + comment.value.length;
+        changed += 1;
+    }
+    if (changed) {
+        writeFileSync(filename, output + text.slice(last));
+    }
+    return changed;
+}
 
 const [consumerArgument, reportArgument, ...rest] = process.argv.slice(2);
 if (!consumerArgument || !reportArgument) {
     throw new Error('Usage: consumer-diff.ts <consumer> <report.json> [--ext .js,.ts] [targets...]');
 }
 const consumer = resolve(consumerArgument);
-const extIndex = rest.indexOf('--ext');
-const extensions = extIndex === -1 ? ['.js', '.jsx', '.ts', '.tsx'] : rest[extIndex + 1]!.split(',');
-const targets = rest.filter((_, index) => extIndex === -1 || (index !== extIndex && index !== extIndex + 1));
+const rewrite = rest.includes('--rewrite-suppressions');
+const options = rest.filter((argument) => argument !== '--rewrite-suppressions');
+const extIndex = options.indexOf('--ext');
+const extensions = extIndex === -1 ? ['.js', '.jsx', '.ts', '.tsx'] : options[extIndex + 1]!.split(',');
+const targets = options.filter((_, index) => extIndex === -1 || (index !== extIndex && index !== extIndex + 1));
 const collected = spawnSync(
     process.execPath,
     ['--input-type=module', '-e', COLLECT, JSON.stringify([extensions, ...(targets.length ? targets : ['.'])])],
@@ -87,6 +124,7 @@ mkdirSync(directory, { recursive: true });
 const fallback: Record<string, { reason: string; files: number }> = {};
 const targetsBySource = new Map<string, string>();
 const oxlint: OxlintDiagnostic[] = [];
+let rewritten = 0;
 [...groups.values()].forEach((group, index) => {
     const [result] = createCompatibilityConfigGroups([{
         id: `group-${index}`,
@@ -105,10 +143,18 @@ const oxlint: OxlintDiagnostic[] = [];
         entry.files += group.files.length;
         fallback[decision.source] = entry;
     }
+    const groupTargets = new Map<string, string>();
     for (const decision of result!.ownership) {
-        if (decision.target) {
+        if (decision.status !== 'unsupported' && decision.target) {
             targetsBySource.set(decision.source, decision.target);
+            groupTargets.set(decision.source, decision.target);
         }
+    }
+    if (rewrite) {
+        rewritten += group.files.reduce(
+            (sum, file) => sum + rewriteSuppressions(join(consumer, file), groupTargets),
+            0,
+        );
     }
     const config = {
         ...result!.config,
@@ -165,7 +211,7 @@ writeFileSync(resolve(reportArgument), `${JSON.stringify({
     files: files.length, groups: groups.size, fallback, rules,
 }, null, 2)}\n`);
 process.stdout.write(`${files.length} files, ${groups.size} groups, ${Object.keys(fallback).length} fallback rules, `
-    + `${differing.length} rules with differences\n`);
+    + `${differing.length} rules with differences${rewrite ? `, ${rewritten} suppression comments rewritten` : ''}\n`);
 for (const [rule, value] of differing.sort(([, left], [, right]) => (right.eslintOnly.length + right.oxlintOnly.length)
     - (left.eslintOnly.length + left.oxlintOnly.length))) {
     process.stdout.write(`${value.matched}\t${value.eslintOnly.length}\t${value.oxlintOnly.length}\t${rule}\n`);
