@@ -13,6 +13,9 @@
   evidence and preserved consumer settings and file scopes.
 - Requested-rule compatibility configurations and opt-in provider selection,
   without changing the existing mutable presets or legacy rule identifiers.
+- Scoped compatibility groups and validated aliases to existing frozen core
+  and JavaScript provider implementations, including separate TypeScript style
+  aliases when both source rules are active.
 
 ### Fixed
 

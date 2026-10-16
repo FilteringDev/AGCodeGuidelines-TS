@@ -44,6 +44,16 @@ const result = createCompatibilityConfig({
 });
 ```
 
+`createCompatibilityConfigGroups()` accepts multiple **already resolved** source
+contexts and returns an independent result/config for each one. Supply a unique
+`id` and explicit nonempty `context.files` for every group. Execute each
+returned config separately so root settings do not leak between groups.
+Oxlint's override supports per-scope files, exclusions, environment and globals;
+plugin settings remain root-level in the pinned schema. This API does not
+discover files, evaluate ESLint configuration hierarchies, or prove that glob
+groups are disjoint. Consumers must construct and test those contexts against
+their source configuration.
+
 This translates **one already resolved effective configuration group**, not an
 ESLint config hierarchy. Use the consumer's installed ESLint version to resolve
 its files, ignores, settings, inherited options, nested resets and flat/legacy
@@ -78,6 +88,31 @@ provider is unused, finalization omits its redundant off entries from the runtim
 copy so the provider can be absent. It never enables them, and the original
 config and source ownership decisions retain their off settings. If an override
 enables that provider, the root off mask is retained.
+
+## Engine-independent source aliases
+
+The catalog can translate an explicit source-rule/options tuple to the exact
+frozen ESLint core or bundled JavaScript-provider implementation when that
+implementation and its option schema are present. Unknown options fail closed.
+The packed consumer suite exercises core selector rules, stylistic options and
+a notice rule with a source-provided template, custom message and dynamic-year
+auto-fix. Upstream `schema: false` means notice options are not schema-validated;
+the adapter preserves and passes them to that same rule implementation.
+
+Base and TypeScript extension rules can use separate `ag-style` and `ag-ts-style`
+identities when their settings differ. Both wrap the same pinned Stylistic rule
+functions; neither starts an ESLint engine. TypeScript-specific replacements
+and compiler-owned rules keep their existing targets. This avoids collapsing
+simultaneously active source rules onto one setting, but it is not a claim of
+parity for every consumer tuple.
+
+`createCompatibilityConfigGroups()` accepts multiple already-resolved, explicit
+source contexts and returns independent Oxlint configs. It is not a file walker
+or an ESLint hierarchy resolver. Consumers must still migrate ignore, nested
+override, staged-file and parser semantics with differential tests before
+removing their current adapter or ESLint dependency. Typed rules require the
+separately tested type service; unsupported catalog results remain blockers,
+not dropped checks.
 
 ## Native evidence and suppressions
 
