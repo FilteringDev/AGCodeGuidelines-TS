@@ -8,13 +8,21 @@ describe('lint invocation arguments', () => {
         expect(parseLintArguments(['--config', 'lint.json', '--', '--max-mem', '8192', '--max-warnings=0'])).toEqual({
             args: ['--config', 'lint.json', '--max-warnings=0'],
             help: false,
+            cache: false,
             maxMemMiB: 8192,
         });
         expect(parseLintArguments(['--max-mem=512', '--profile', 'trace.json', '.'])).toEqual({
             args: ['.'],
             help: false,
+            cache: false,
             maxMemMiB: 512,
             profile: 'trace.json',
+        });
+        expect(parseLintArguments(['--cache', '--cache-location=.cache/lint.json', '--format=unix'])).toEqual({
+            args: ['--format=unix'],
+            help: false,
+            cache: true,
+            cacheLocation: '.cache/lint.json',
         });
     });
 
@@ -26,11 +34,13 @@ describe('lint invocation arguments', () => {
             args: ['exec', 'lerna', 'run', 'lint'],
             maxMemMiB: 2048,
             help: false,
+            cache: false,
         });
         expect(parseLintArguments(['--', '--max-mem', '1024', '--', '--max-mem', "file with 'quotes'.ts"])).toEqual({
             maxMemMiB: 1024,
             args: ['--', '--max-mem', "file with 'quotes'.ts"],
             help: false,
+            cache: false,
         });
         expect(parseLintArguments(['--', 'literal.ts']).args).toEqual(['--', 'literal.ts']);
         expect(parseLintArguments(['--max-mem=1024', '--', '--max-mem']).args).toEqual(['--', '--max-mem']);
@@ -47,13 +57,16 @@ describe('lint invocation arguments', () => {
         ['--command='],
         ['--help=yes'],
         ['--help', '--help'],
+        ['--cache=yes'],
+        ['--cache', '--cache'],
+        ['--cache-location'],
     ])('rejects invalid or duplicate execution settings %j', (...args) => {
         expect(() => parseLintArguments(args)).toThrow(TypeError);
     });
 
     it('does not resolve or enable any lint rule while parsing', () => {
-        expect(parseLintArguments([])).toEqual({ args: [], help: false });
-        expect(parseLintArguments(['--help'])).toEqual({ args: [], help: true });
+        expect(parseLintArguments([])).toEqual({ args: [], help: false, cache: false });
+        expect(parseLintArguments(['--help'])).toEqual({ args: [], help: true, cache: false });
         expect(parseLintArguments(['--unknown-backend-option']).args).toEqual(['--unknown-backend-option']);
     });
 });

@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 /** @file Start a lint command after validating one process-tree memory budget. */
 import { spawnSync } from 'node:child_process';
-import { existsSync, realpathSync, statSync } from 'node:fs';
+import {
+    existsSync,
+    readFileSync,
+    realpathSync,
+    statSync,
+} from 'node:fs';
 import {
     mkdtemp,
     readFile,
@@ -13,13 +18,15 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseLintArguments } from './lint-arguments.js';
 import { batchLintFiles } from './lint-batch.js';
+import { digest, readLintCache, writeLintCache } from './lint-cache.js';
 import { MIB, probeMemory, resolveMemoryBudget } from './memory-budget.js';
 import { processTreeMiB, runLintTasks } from './lint-runner.js';
 import { acquireLintLease, readLintSession, startLintSession } from './lint-session.js';
 import { assignShards, planSharding, renderShards } from './lint-shard.js';
 
+import type { LintCache } from './lint-cache.js';
 import type { LintTask } from './lint-runner.js';
-import type { ShardOutput, ShardPlan } from './lint-shard.js';
+import type { ShardDiagnostic, ShardOutput, ShardPlan } from './lint-shard.js';
 
 const THREAD_MEMORY_MIB = 1024;
 const COMMAND_MEMORY_MIB = 512;
@@ -27,8 +34,10 @@ const MINIMUM_WORKER_MIB = 128;
 const RESERVATION_MARGIN_MIB = 32;
 // Below this many files per process, extra plugin startup outweighs the parallel JavaScript thread.
 const FILES_PER_SHARD = 128;
+const DEFAULT_CACHE_LOCATION = 'node_modules/.cache/ag-lint/results.json';
 
-export const lintUsage = `Usage: ag-lint [--max-mem MiB] [--profile report.json] [Oxlint arguments]
+export const lintUsage = `Usage: ag-lint [--max-mem MiB] [--profile report.json] [--cache [--cache-location path]]
+       [Oxlint arguments]
        ag-lint [--max-mem MiB] --command executable [command arguments]
 
 Default: eighty percent of observable available memory for the entire command.
@@ -36,6 +45,8 @@ Explicit budgets replace that policy but cannot exceed an observable hard limit.
 Limits are monitored process-tree RSS, not a portable kernel-enforced hard cap.
 Host limits outside the visible namespace cannot be inferred.
 With --format json or unix, large file sets are split across Oxlint processes.
+--cache reuses diagnostics of files whose content, root configuration and tools
+are unchanged; like ESLint's cache it does not track other files a rule reads.
 `;
 
 /**
@@ -54,6 +65,25 @@ function discoverFiles(oxlint: string, plan: ShardPlan, cwd: string): string[] {
         },
     );
     return result.status === 0 ? result.stdout.split('\n').filter(Boolean) : [];
+}
+
+/**
+ * Identify cached results by the resolved root configuration, shared options and tool versions.
+ * @param oxlint - Oxlint Node entry point.
+ * @param plan - Shareable options.
+ * @param cwd - Consumer working directory.
+ * @returns A digest, or undefined when the configuration cannot be printed.
+ */
+function cacheKey(oxlint: string, plan: ShardPlan, cwd: string): string | undefined {
+    const printed = spawnSync(process.execPath, [oxlint, ...plan.options, '--print-config'], {
+        cwd, encoding: 'utf8', maxBuffer: 64 * MIB, stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    if (printed.status !== 0) {
+        return undefined;
+    }
+    const versions = [join(dirname(oxlint), '../package.json'), fileURLToPath(new URL('../package.json', import.meta.url))]
+        .map((path) => (JSON.parse(readFileSync(path, 'utf8')) as { version?: string }).version);
+    return digest(JSON.stringify([printed.stdout, versions, plan.options]));
 }
 
 /**
@@ -119,12 +149,29 @@ export async function runLintCli(
             ...parsed.args,
         ];
     const plan = parsed.command || inherited ? undefined : planSharding(parsed.args);
+    if (parsed.cache && !plan) {
+        process.stderr.write('ag-lint: --cache requires --format json or unix in a top-level run; linting uncached.\n');
+    }
     let shards: string[][] | undefined;
+    let cache: { path: string; data: LintCache; hashes: Map<string, string>; files: string[] } | undefined;
     if (plan) {
         const files = discoverFiles(oxlint, plan, cwd);
-        const count = Math.min(threads, Math.floor(files.length / FILES_PER_SHARD));
+        let pending = files;
+        const key = parsed.cache && files.length ? cacheKey(oxlint, plan, cwd) : undefined;
+        if (key) {
+            const path = resolve(cwd, parsed.cacheLocation ?? DEFAULT_CACHE_LOCATION);
+            const data = readLintCache(path, key);
+            const hashes = new Map(files.map((file) => [file, digest(readFileSync(resolve(cwd, file)))]));
+            pending = files.filter((file) => data.files[file]?.hash !== hashes.get(file));
+            cache = {
+                path, data, hashes, files,
+            };
+        }
+        const count = Math.min(threads, Math.floor(pending.length / FILES_PER_SHARD));
         if (count >= 2) {
-            shards = assignShards(files, files.map((file) => statSync(resolve(cwd, file)).size), count);
+            shards = assignShards(pending, pending.map((file) => statSync(resolve(cwd, file)).size), count);
+        } else if (cache) {
+            shards = pending.length ? [pending] : [];
         }
     }
     const resolvedAt = performance.now();
@@ -187,6 +234,28 @@ export async function runLintCli(
             const outputs = await Promise.all(tasks.map(async (task) => JSON.parse(
                 await readFile(task.stdout!, 'utf8'),
             ) as ShardOutput));
+            if (cache) {
+                const linted = new Map<string, ShardDiagnostic[]>(shards.flat().map((file) => [file, []]));
+                outputs.flatMap((output) => output.diagnostics)
+                    .forEach((diagnostic) => linted.get(diagnostic.filename ?? '')?.push(diagnostic));
+                const cached = cache.files.filter((file) => !linted.has(file));
+                if (cached.length) {
+                    outputs.push({
+                        diagnostics: cached.flatMap((file) => cache!.data.files[file]!.diagnostics),
+                        number_of_files: cached.length,
+                        number_of_rules: cache.data.rules,
+                    });
+                }
+                const files = Object.fromEntries(cache.files.map((file) => [file, {
+                    hash: cache!.hashes.get(file)!,
+                    diagnostics: linted.get(file) ?? cache!.data.files[file]!.diagnostics,
+                }]));
+                writeLintCache(cache.path, {
+                    key: cache.data.key,
+                    rules: Math.max(0, ...outputs.map((output) => output.number_of_rules)),
+                    files,
+                });
+            }
             const rendered = renderShards(plan!, outputs, (performance.now() - resolvedAt) / 1000);
             if (options.stdio !== 'ignore') {
                 process.stdout.write(rendered.text);
@@ -215,6 +284,7 @@ export async function runLintCli(
                     inheritedSession: Boolean(inherited),
                     coordination,
                     shards: shards ? { count: shards.length, files: shards.flat().length } : undefined,
+                    cache: cache ? { files: cache.files.length, linted: shards!.flat().length } : undefined,
                     phases: {
                         argumentsAndBudgetMs: observedAt - startedAt,
                         engineResolutionMs: resolvedAt - observedAt,

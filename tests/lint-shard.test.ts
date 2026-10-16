@@ -132,4 +132,40 @@ describe('shard reports', () => {
             await rm(directory, { recursive: true, force: true });
         }
     });
+
+    it('reuses cached diagnostics until file content, configuration or tools change', async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'ag-cache-'));
+        const output = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
+        const run = async () => {
+            output.mockClear();
+            const status = await runLintCli(
+                ['--cache', '--cache-location', 'cache.json', '--profile', 'profile.json', '--format', 'unix', '.'],
+                { cwd: directory },
+            );
+            const profile = JSON.parse(await readFile(join(directory, 'profile.json'), 'utf8')) as {
+                cache: { files: number; linted: number };
+            };
+            const text = output.mock.calls.map(([chunk]) => String(chunk)).join('');
+            return { status, linted: profile.cache.linted, lines: text.split('\n').filter(Boolean).sort() };
+        };
+        try {
+            await writeFile(join(directory, '.oxlintrc.json'), JSON.stringify(CONFIG));
+            await writeFile(join(directory, 'a.js'), 'debugger;\n');
+            await writeFile(join(directory, 'b.js'), 'var value = 1;\nexport { value };\n');
+            const cold = await run();
+            expect(cold.linted).toBe(2);
+            expect(cold.status).toBe(1);
+            expect(await run()).toEqual({ ...cold, linted: 0 });
+            await writeFile(join(directory, 'a.js'), 'export const value = 1;\n');
+            const edited = await run();
+            expect(edited).toMatchObject({ linted: 1, status: 0 });
+            expect(edited.lines.some((line) => line.startsWith('b.js:1:1:'))).toBe(true);
+            expect(edited.lines.some((line) => line.startsWith('a.js'))).toBe(false);
+            await writeFile(join(directory, '.oxlintrc.json'), JSON.stringify({ ...CONFIG, rules: { 'no-var': 'off' } }));
+            expect(await run()).toMatchObject({ linted: 2, status: 0, lines: [] });
+        } finally {
+            output.mockRestore();
+            await rm(directory, { recursive: true, force: true });
+        }
+    });
 });

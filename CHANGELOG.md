@@ -26,6 +26,8 @@
   further 11-16% of full-preset lint time on the measured consumers.
 - `ag-lint` splits large `--format json`/`unix` runs across Oxlint processes, each
   with its own JavaScript-plugin thread, and merges one identical report.
+- `ag-lint --cache` reuses diagnostics of unchanged files with ESLint cache
+  semantics, keyed by the resolved root configuration and tool versions.
 
 ### Fixed
 

@@ -5,9 +5,13 @@ export interface LintArguments {
     maxMemMiB?: number;
     profile?: string;
     command?: string;
+    cache: boolean;
+    cacheLocation?: string;
     args: string[];
     help: boolean;
 }
+
+const WRAPPER_OPTIONS = ['--max-mem', '--profile', '--command', '--help', '--cache', '--cache-location'];
 
 /**
  * Preserve engine arguments while consuming only known wrapper options.
@@ -15,7 +19,7 @@ export interface LintArguments {
  * @returns Wrapper settings and literal backend argv.
  */
 export function parseLintArguments(argumentsList: readonly string[]): LintArguments {
-    const result: LintArguments = { args: [], help: false };
+    const result: LintArguments = { args: [], help: false, cache: false };
     const seen = new Set<string>();
     let forwardingSeparator = false;
     for (let index = 0; index < argumentsList.length; index += 1) {
@@ -23,8 +27,7 @@ export function parseLintArguments(argumentsList: readonly string[]): LintArgume
         if (argument === '--') {
             const next = argumentsList[index + 1] ?? '';
             const nextName = next.split('=')[0]!;
-            if (!forwardingSeparator && !seen.has(nextName)
-                && /^(?:--max-mem|--profile|--command|--help)(?:=|$)/u.test(next)) {
+            if (!forwardingSeparator && !seen.has(nextName) && WRAPPER_OPTIONS.includes(nextName)) {
                 forwardingSeparator = true;
                 continue;
             }
@@ -33,7 +36,7 @@ export function parseLintArguments(argumentsList: readonly string[]): LintArgume
         }
         const equals = argument.indexOf('=');
         const name = equals === -1 ? argument : argument.slice(0, equals);
-        if (!['--max-mem', '--profile', '--command', '--help'].includes(name)) {
+        if (!WRAPPER_OPTIONS.includes(name)) {
             result.args.push(argument);
             continue;
         }
@@ -41,11 +44,12 @@ export function parseLintArguments(argumentsList: readonly string[]): LintArgume
             throw new TypeError(`Duplicate execution option: ${name}`);
         }
         seen.add(name);
-        if (name === '--help') {
+        if (name === '--help' || name === '--cache') {
             if (equals !== -1) {
-                throw new TypeError('--help does not take a value.');
+                throw new TypeError(`${name} does not take a value.`);
             }
-            result.help = true;
+            result.help ||= name === '--help';
+            result.cache ||= name === '--cache';
             continue;
         }
         if (equals === -1) {
@@ -59,6 +63,8 @@ export function parseLintArguments(argumentsList: readonly string[]): LintArgume
             result.maxMemMiB = parseMaxMemory(value);
         } else if (name === '--profile') {
             result.profile = value;
+        } else if (name === '--cache-location') {
+            result.cacheLocation = value;
         } else {
             result.command = value;
         }

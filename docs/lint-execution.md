@@ -97,6 +97,21 @@ On the measured consumers the full adguard-projects preset dropped from 11.8s to
 (VPN, 5 shards) and from 16.5s to 5.7s (browser, 7 shards); sampled tree peaks were
 3.1 and 5.4 GiB within an automatic budget.
 
+## Result cache
+
+`--cache` (optionally `--cache-location path`, default
+`node_modules/.cache/ag-lint/results.json`) stores each discovered file's diagnostics
+under the SHA-256 of its content. The whole cache is keyed by Oxlint's `--print-config`
+output for the shared options, the Oxlint and configuration package versions, and those
+options. Only changed files are linted, through the same sharded JSON pipeline, and the
+cached and fresh diagnostics form one report. It needs `--format json` or `unix` in a
+top-level run; otherwise a warning is printed and the run is uncached.
+
+Like ESLint's cache, an entry does not depend on other files that a rule reads
+(import resolution, cycles, exports) or on nested configuration files and plugin code
+outside the printed root configuration. Clear the cache after such changes. Warm runs
+with no changed files took 0.73s on both measured consumers.
+
 ## Profiling
 
 `--profile path.json` records the selected budget and sources, visibility
