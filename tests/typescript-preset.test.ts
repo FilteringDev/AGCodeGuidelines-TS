@@ -108,7 +108,9 @@ it('records a TypeScript implementation for every rule it replaces', () => {
 
 it('repeats the preset settings in the repository configuration', () => {
     // Oxlint does not inherit `settings` through `extends`.
-    const root = REQUIRE('../.oxlintrc.json') as { settings: Record<string, unknown> };
+    const root = JSON.parse(readFileSync(new URL('../.oxlintrc.json', import.meta.url), 'utf8')) as {
+        settings: Record<string, unknown>;
+    };
     const preset = createConfig({ language: 'typescript', profile: 'adguard-projects' });
     expect(root.settings).toEqual(preset.settings);
 });
