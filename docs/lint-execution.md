@@ -81,6 +81,22 @@ terminates known owned process groups/descendants with escalation; Linux PID
 start identities protect against killing a reused PID. This is not a sandbox
 for adversarial programs that deliberately escape process ownership.
 
+## Process sharding
+
+Oxlint runs JavaScript plugins on one thread per process, so a full JavaScript-provider
+configuration is bound by that thread. With `--format json` or `--format unix`, `ag-lint`
+lists the files with Oxlint's own `--debug=files`, balances them by size across processes
+(at least 128 files each, at most the resource-aware thread count), runs each with
+`--threads=1 --format=json`, and renders one merged report. Diagnostics, `--quiet`,
+`--silent`, `--deny-warnings`, `--max-warnings` and exit status match a single process;
+only diagnostic order is normalized to filename and offset. Each shard is a supervised
+task with a 1024 MiB reservation under the same budget. Other formats, fixes, typed
+linting, unknown options and nested invocations keep one process.
+
+On the measured consumers the full adguard-projects preset dropped from 11.8s to 4.8s
+(VPN, 5 shards) and from 16.5s to 5.7s (browser, 7 shards); sampled tree peaks were
+3.1 and 5.4 GiB within an automatic budget.
+
 ## Profiling
 
 `--profile path.json` records the selected budget and sources, visibility

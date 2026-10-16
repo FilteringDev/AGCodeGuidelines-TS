@@ -1,6 +1,11 @@
 /** @file Execute bounded lint tasks with one command-scoped memory and CPU pool. */
 import { spawn } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import {
+    closeSync,
+    openSync,
+    readdirSync,
+    readFileSync,
+} from 'node:fs';
 import { constants } from 'node:os';
 import { parseLintArguments } from './lint-arguments.js';
 import { batchLintFiles } from './lint-batch.js';
@@ -35,9 +40,15 @@ export interface LintTask {
     env?: Record<string, string | undefined>;
     memoryMiB: number;
     threads?: number;
+    /** File receiving the task's standard output instead of the inherited stream. */
+    stdout?: string;
+    /** Exit statuses that complete this task without stopping its siblings. */
+    tolerated?: number[];
 }
 
 export interface LintTaskResult {
+    /** Position of the task in the submitted list. */
+    index: number;
     status: number;
     signal: string | null;
     durationMs: number;
@@ -293,15 +304,24 @@ export async function runLintTasks(
                         break;
                     }
                     blockedAt = undefined;
+                    const index = next;
                     next += 1;
                     const startedAt = performance.now();
-                    const child = spawn(task.command, task.args, {
-                        cwd: task.cwd,
-                        env: task.env ?? process.env,
-                        stdio,
-                        detached: process.platform !== 'win32',
-                        windowsHide: true,
-                    });
+                    const output = task.stdout === undefined ? undefined : openSync(task.stdout, 'w');
+                    let child: ReturnType<typeof spawn>;
+                    try {
+                        child = spawn(task.command, task.args, {
+                            cwd: task.cwd,
+                            env: task.env ?? process.env,
+                            stdio: output === undefined ? stdio : [stdio, output, stdio],
+                            detached: process.platform !== 'win32',
+                            windowsHide: true,
+                        });
+                    } finally {
+                        if (output !== undefined) {
+                            closeSync(output);
+                        }
+                    }
                     active.set(child, { memory: task.memoryMiB, threads });
                     state.reservedMiB += task.memoryMiB;
                     state.reservedThreads += threads;
@@ -319,9 +339,11 @@ export async function runLintTasks(
                         const matchedSignal = Object.entries(constants.signals).find(([name]) => name === termination);
                         const signalNumber = matchedSignal?.[1] ?? 15;
                         const status = spawnError ? 2 : code ?? (128 + signalNumber);
-                        report.tasks.push({ status, signal: termination, durationMs: performance.now() - startedAt });
+                        report.tasks.push({
+                            index, status, signal: termination, durationMs: performance.now() - startedAt,
+                        });
                         report.completed += 1;
-                        if (status !== 0 && !state.stopping) {
+                        if (status !== 0 && !task.tolerated?.includes(status) && !state.stopping) {
                             stop(status);
                         }
                         admit();

@@ -24,6 +24,8 @@
   the measured consumers with identical diagnostics.
 - Import rules reuse export-map cache-key serializations per file, removing a
   further 11-16% of full-preset lint time on the measured consumers.
+- `ag-lint` splits large `--format json`/`unix` runs across Oxlint processes, each
+  with its own JavaScript-plugin thread, and merges one identical report.
 
 ### Fixed
 

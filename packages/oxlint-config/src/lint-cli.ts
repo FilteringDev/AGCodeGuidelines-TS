@@ -1,18 +1,32 @@
 #!/usr/bin/env node
 /** @file Start a lint command after validating one process-tree memory budget. */
-import { existsSync, realpathSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { existsSync, realpathSync, statSync } from 'node:fs';
+import {
+    mkdtemp,
+    readFile,
+    rm,
+    writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseLintArguments } from './lint-arguments.js';
+import { batchLintFiles } from './lint-batch.js';
 import { MIB, probeMemory, resolveMemoryBudget } from './memory-budget.js';
 import { processTreeMiB, runLintTasks } from './lint-runner.js';
 import { acquireLintLease, readLintSession, startLintSession } from './lint-session.js';
+import { assignShards, planSharding, renderShards } from './lint-shard.js';
+
+import type { LintTask } from './lint-runner.js';
+import type { ShardOutput, ShardPlan } from './lint-shard.js';
 
 const THREAD_MEMORY_MIB = 1024;
 const COMMAND_MEMORY_MIB = 512;
 const MINIMUM_WORKER_MIB = 128;
 const RESERVATION_MARGIN_MIB = 32;
+// Below this many files per process, extra plugin startup outweighs the parallel JavaScript thread.
+const FILES_PER_SHARD = 128;
 
 export const lintUsage = `Usage: ag-lint [--max-mem MiB] [--profile report.json] [Oxlint arguments]
        ag-lint [--max-mem MiB] --command executable [command arguments]
@@ -21,7 +35,26 @@ Default: eighty percent of observable available memory for the entire command.
 Explicit budgets replace that policy but cannot exceed an observable hard limit.
 Limits are monitored process-tree RSS, not a portable kernel-enforced hard cap.
 Host limits outside the visible namespace cannot be inferred.
+With --format json or unix, large file sets are split across Oxlint processes.
 `;
+
+/**
+ * List the files Oxlint would lint, using its own ignore and extension handling.
+ * @param oxlint - Oxlint Node entry point.
+ * @param plan - Shareable options and targets.
+ * @param cwd - Consumer working directory.
+ * @returns Relative filenames, or none when discovery is not reproducible.
+ */
+function discoverFiles(oxlint: string, plan: ShardPlan, cwd: string): string[] {
+    const result = spawnSync(
+        process.execPath,
+        [oxlint, ...plan.options, '--debug=files', ...(plan.targets.length ? ['--', ...plan.targets] : [])],
+        {
+            cwd, encoding: 'utf8', maxBuffer: 256 * MIB, stdio: ['ignore', 'pipe', 'ignore'],
+        },
+    );
+    return result.status === 0 ? result.stdout.split('\n').filter(Boolean) : [];
+}
 
 /**
  * Run the selected engine without forwarding wrapper flags to it.
@@ -77,13 +110,23 @@ export async function runLintCli(
         throw new RangeError(`Thread request exceeds the resource-aware limit of ${automaticThreads}.`);
     }
     const command = parsed.command ?? process.execPath;
+    const oxlint = join(dirname(fileURLToPath(import.meta.resolve('oxlint/package.json'))), 'bin/oxlint');
     const engineArgs = parsed.command
         ? parsed.args
         : [
-            join(dirname(fileURLToPath(import.meta.resolve('oxlint/package.json'))), 'bin/oxlint'),
+            oxlint,
             ...(requestedThreads === undefined ? [`--threads=${threads}`] : []),
             ...parsed.args,
         ];
+    const plan = parsed.command || inherited ? undefined : planSharding(parsed.args);
+    let shards: string[][] | undefined;
+    if (plan) {
+        const files = discoverFiles(oxlint, plan, cwd);
+        const count = Math.min(threads, Math.floor(files.length / FILES_PER_SHARD));
+        if (count >= 2) {
+            shards = assignShards(files, files.map((file) => statSync(resolve(cwd, file)).size), count);
+        }
+    }
     const resolvedAt = performance.now();
     const session = inherited ? undefined : await startLintSession(budget, { usage: () => processTreeMiB() });
     const descriptor = inherited ?? session!.descriptor;
@@ -95,9 +138,38 @@ export async function runLintCli(
     }
     const connection = new AbortController();
     const signal = options.signal ? AbortSignal.any([options.signal, connection.signal]) : connection.signal;
+    const env = {
+        ...process.env,
+        AG_LINT_SESSION: JSON.stringify(descriptor),
+        AG_LINT_LEASE_MIB: String(inherited ? parentLease || reservation : 0),
+        AG_LINT_LEASE_THREADS: String(inherited ? 1 : snapshot.parallelism),
+    };
+    const outputDirectory = shards ? await mkdtemp(join(tmpdir(), 'ag-lint-')) : undefined;
+    const tasks: LintTask[] = shards
+        ? shards.flatMap((files) => {
+            const fixed = [oxlint, '--threads=1', '--format=json', ...plan!.options, '--'];
+            return batchLintFiles(files, { fixedArgs: fixed, environment: env }).map((batch) => ({
+                command,
+                args: [...fixed, ...batch],
+                cwd,
+                env,
+                memoryMiB: Math.min(THREAD_MEMORY_MIB, Math.floor(available - RESERVATION_MARGIN_MIB)),
+                threads: 1,
+                tolerated: [1],
+            }));
+        }).map((task, index) => ({ ...task, stdout: join(outputDirectory!, `${index}.json`) }))
+        : [{
+            command,
+            args: engineArgs,
+            cwd,
+            env,
+            memoryMiB: reservation,
+            threads: parsed.command ? 1 : threads,
+        }];
     let release: (() => void) | undefined;
     let report: Awaited<ReturnType<typeof runLintTasks>>;
     let coordination: ReturnType<NonNullable<typeof session>['metrics']> | undefined;
+    let status: number;
     try {
         if (inherited && parentLease === 0) {
             release = await acquireLintLease(
@@ -108,25 +180,27 @@ export async function runLintCli(
                 () => connection.abort(),
             );
         }
-        report = await runLintTasks([{
-            command,
-            args: engineArgs,
-            cwd,
-            env: {
-                ...process.env,
-                AG_LINT_SESSION: JSON.stringify(descriptor),
-                AG_LINT_LEASE_MIB: String(inherited ? parentLease || reservation : 0),
-                AG_LINT_LEASE_THREADS: String(inherited ? 1 : snapshot.parallelism),
-            },
-            memoryMiB: reservation,
-            threads: parsed.command ? 1 : threads,
-        }], { budget, signal, stdio: options.stdio });
+        report = await runLintTasks(tasks, { budget, signal, stdio: options.stdio });
         coordination = session?.metrics();
+        status = report.status;
+        if (shards && status === 0) {
+            const outputs = await Promise.all(tasks.map(async (task) => JSON.parse(
+                await readFile(task.stdout!, 'utf8'),
+            ) as ShardOutput));
+            const rendered = renderShards(plan!, outputs, (performance.now() - resolvedAt) / 1000);
+            if (options.stdio !== 'ignore') {
+                process.stdout.write(rendered.text);
+            }
+            ({ status } = rendered);
+        }
     } finally {
         release?.();
         await session?.close();
+        if (outputDirectory) {
+            await rm(outputDirectory, { recursive: true, force: true });
+        }
     }
-    if (report.status === 3) {
+    if (status === 3) {
         process.stderr.write(
             `ag-lint: resource budget ${budget.maxMiB} MiB could not complete the command (observed peak ${Math.ceil(report.peakTreeMiB)} MiB).\n`,
         );
@@ -137,8 +211,10 @@ export async function runLintCli(
             `${JSON.stringify(
                 {
                     ...report,
+                    status,
                     inheritedSession: Boolean(inherited),
                     coordination,
+                    shards: shards ? { count: shards.length, files: shards.flat().length } : undefined,
                     phases: {
                         argumentsAndBudgetMs: observedAt - startedAt,
                         engineResolutionMs: resolvedAt - observedAt,
@@ -153,7 +229,7 @@ export async function runLintCli(
             )}\n`,
         );
     }
-    return report.status;
+    return status;
 }
 
 if (process.argv[1] && existsSync(process.argv[1])
