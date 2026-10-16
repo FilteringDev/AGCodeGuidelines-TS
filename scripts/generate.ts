@@ -84,6 +84,7 @@ const registerCompatibility = (
     schema: unknown,
     origin: string,
     sourceLanguage?: 'typescript' | null,
+    optionDefaults?: Record<string, unknown>,
 ): void => {
     const providerPrefixes = [
         'ag-compat/', 'ag-style/', 'ag-ts-style/', 'ag-ts/', 'ag-jsdoc/', 'ag-react/', 'ag-a11y/',
@@ -101,6 +102,7 @@ const registerCompatibility = (
         ...(sourceLanguage === null ? {} : sourceLanguage ? { language: sourceLanguage }
             : source.startsWith('@typescript-eslint/') ? { language: 'typescript' as const } : {}),
         schema: optionSchema(schema),
+        ...(optionDefaults ? { optionDefaults } : {}),
         origin,
     };
 };
@@ -1018,6 +1020,29 @@ for (const name of zeroOptionTypeScriptExtensions) {
         name === 'no-shadow' ? [] : builtinRules.get(name)?.meta?.schema ?? [],
         'typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension',
         null,
+    );
+}
+// Extensions accepting the base options; type-only syntax is what their TypeScript targets add.
+const baseOptionTypeScriptExtensions: Record<string, Record<string, unknown> | undefined> = {
+    'no-dupe-class-members': undefined,
+    'no-empty-function': undefined,
+    'no-redeclare': undefined,
+    'no-use-before-define': undefined,
+    // typescript-eslint 5-7 inherit ESLint 8's default; the native rule follows ESLint 9.
+    'no-unused-vars': { caughtErrors: 'none' },
+};
+for (const [name, defaults] of Object.entries(baseOptionTypeScriptExtensions)) {
+    const equivalent = TYPESCRIPT_EQUIVALENTS[name];
+    if (!equivalent?.target) {
+        throw new Error(`Missing reviewed TypeScript equivalent for @typescript-eslint/${name}.`);
+    }
+    registerCompatibility(
+        `@typescript-eslint/${name}`,
+        equivalent.target,
+        builtinRules.get(name)!.meta!.schema,
+        'typescript-eslint@5.62.0/7.18.0 base-option extension',
+        undefined,
+        defaults,
     );
 }
 

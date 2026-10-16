@@ -150,6 +150,19 @@ describe('effective compatibility configuration', () => {
             .toThrow('typeAware');
     });
 
+    it('needs no owner for disabled rules without an implementation or for the other language', () => {
+        const rules = {
+            '@typescript-eslint/no-magic-numbers': ['off', { ignoreArrayIndexes: true }],
+            '@typescript-eslint/require-await': 'off',
+            'unknown/rule': 0,
+        };
+        expect(createCompatibilityConfig({ rules, language: 'typescript' }).fallback).toEqual([]);
+        expect(createCompatibilityConfig({
+            rules: { '@typescript-eslint/explicit-function-return-type': 'off' },
+        }).fallback).toEqual([]);
+        expect(createCompatibilityConfig({ rules: { 'unknown/rule': 'warn' } }).fallback).toHaveLength(1);
+    });
+
     it('translates verified consumer parser options and settings', () => {
         const result = createCompatibilityConfig({
             rules: { 'no-debugger': 'error', 'import/no-unresolved': 'error' },

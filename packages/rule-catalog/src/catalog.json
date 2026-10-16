@@ -22745,6 +22745,199 @@
       },
       "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
     },
+    "@typescript-eslint/no-dupe-class-members": {
+      "canonicalSource": "no-dupe-class-members",
+      "target": "eslint/no-dupe-class-members",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+    },
+    "@typescript-eslint/no-empty-function": {
+      "canonicalSource": "no-empty-function",
+      "target": "eslint/no-empty-function",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "allow": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "functions",
+                    "arrowFunctions",
+                    "generatorFunctions",
+                    "methods",
+                    "generatorMethods",
+                    "getters",
+                    "setters",
+                    "constructors",
+                    "asyncFunctions",
+                    "asyncMethods"
+                  ]
+                },
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+    },
+    "@typescript-eslint/no-redeclare": {
+      "canonicalSource": "no-redeclare",
+      "target": "ag-ts/no-redeclare",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "builtinGlobals": {
+                "type": "boolean",
+                "default": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+    },
+    "@typescript-eslint/no-use-before-define": {
+      "canonicalSource": "no-use-before-define",
+      "target": "eslint/no-use-before-define",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "oneOf": [
+              {
+                "enum": [
+                  "nofunc"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "functions": {
+                    "type": "boolean"
+                  },
+                  "classes": {
+                    "type": "boolean"
+                  },
+                  "variables": {
+                    "type": "boolean"
+                  },
+                  "allowNamedExports": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "canonicalSource": "no-unused-vars",
+      "target": "eslint/no-unused-vars",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "oneOf": [
+              {
+                "enum": [
+                  "all",
+                  "local"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "vars": {
+                    "enum": [
+                      "all",
+                      "local"
+                    ]
+                  },
+                  "varsIgnorePattern": {
+                    "type": "string"
+                  },
+                  "args": {
+                    "enum": [
+                      "all",
+                      "after-used",
+                      "none"
+                    ]
+                  },
+                  "ignoreRestSiblings": {
+                    "type": "boolean"
+                  },
+                  "argsIgnorePattern": {
+                    "type": "string"
+                  },
+                  "caughtErrors": {
+                    "enum": [
+                      "all",
+                      "none"
+                    ]
+                  },
+                  "caughtErrorsIgnorePattern": {
+                    "type": "string"
+                  },
+                  "destructuredArrayIgnorePattern": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "optionDefaults": {
+        "caughtErrors": "none"
+      },
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+    },
     "accessor-pairs": {
       "canonicalSource": "accessor-pairs",
       "target": "ag-compat/accessor-pairs",
@@ -51748,6 +51941,71 @@
       "setting": "error",
       "implementation": "native",
       "nativeCandidate": "eslint/no-useless-constructor",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-dupe-class-members",
+      "target": "eslint/no-dupe-class-members",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "eslint/no-dupe-class-members",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-empty-function",
+      "target": "eslint/no-empty-function",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "eslint/no-empty-function",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-redeclare",
+      "target": "ag-ts/no-redeclare",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "javascript",
+      "nativeCandidate": null,
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "no-native-candidate",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-use-before-define",
+      "target": "eslint/no-use-before-define",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "eslint/no-use-before-define",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-unused-vars",
+      "target": "eslint/no-unused-vars",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "eslint/no-unused-vars",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
       "verification": "candidate-only",

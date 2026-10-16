@@ -95,6 +95,8 @@ export interface CompatibilityRule {
     preserveTypeScriptTarget?: boolean;
     language?: 'typescript';
     schema: object;
+    /** Source-version defaults the target would otherwise choose differently; explicit options win. */
+    optionDefaults?: Record<string, unknown>;
     origin: string;
 }
 
@@ -221,11 +223,25 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         (!mapping.language || mapping.language === language)
         && (!mapping.scope || mapping.scope === policy || mapping.scope === profile)
     )).at(-1) ?? candidates.at(-1);
+    const unowned = (reason: string): RuleResolution => (
+        options.setting !== undefined && severity(options.setting) === 0
+            ? {
+                status: 'disabled',
+                source,
+                canonicalSource,
+                target: null,
+                setting: structuredClone(options.setting),
+                implementation: 'disabled',
+                requiresTypeInfo: false,
+                provider: null,
+                reason: `Disabled ${source} needs no implementation.`,
+            }
+            : { status: 'unsupported', source, reason });
     if (!selected && !compatibility) {
-        return { status: 'unsupported', source, reason: `No implementation for rule ${source}.` };
+        return unowned(`No implementation for rule ${source}.`);
     }
     if ((compatibility?.language ?? selected?.language) === 'typescript' && language !== 'typescript') {
-        return { status: 'unsupported', source, reason: `${source} requires TypeScript source files.` };
+        return unowned(`${source} requires TypeScript source files.`);
     }
     const equivalent = !compatibility?.preserveTypeScriptTarget && compatibility?.language !== 'typescript'
         && language === 'typescript'
@@ -261,6 +277,13 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
             }
         }
     }
+    const defaults = compatibility?.optionDefaults;
+    const effective = defaults && severity(setting) > 0
+        ? [Array.isArray(setting) ? setting[0] : setting, {
+            ...defaults,
+            ...(Array.isArray(setting) ? setting[1] as object : {}),
+        }, ...(Array.isArray(setting) ? setting.slice(2) : [])]
+        : setting;
     return {
         status: useTypeScriptEquivalent && equivalent!.target === null
             && severity(selected!.setting) > 0
@@ -268,7 +291,7 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         source,
         canonicalSource,
         target,
-        setting: structuredClone(setting),
+        setting: structuredClone(effective),
         implementation,
         requiresTypeInfo: compatibility?.requiresTypeInfo ?? selected?.requiresTypeInfo ?? false,
         provider: target?.split('/')[0] ?? null,

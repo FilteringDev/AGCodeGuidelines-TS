@@ -877,6 +877,11 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | @typescript-eslint/no-array-constructor | eslint/no-array-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-shadow | eslint/no-shadow | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-useless-constructor | eslint/no-useless-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
+| @typescript-eslint/no-dupe-class-members | eslint/no-dupe-class-members | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
+| @typescript-eslint/no-empty-function | eslint/no-empty-function | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
+| @typescript-eslint/no-redeclare | ag-ts/no-redeclare | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
+| @typescript-eslint/no-use-before-define | eslint/no-use-before-define | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
+| @typescript-eslint/no-unused-vars | eslint/no-unused-vars | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
 | accessor-pairs | ag-compat/accessor-pairs | no | eslint@8.57.1 |
 | array-bracket-newline | ag-compat/array-bracket-newline | no | eslint@8.57.1 |
 | array-bracket-spacing | ag-compat/array-bracket-spacing | no | eslint@8.57.1 |

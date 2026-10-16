@@ -52,6 +52,31 @@ const legacyCases: {
         invalid: 'function create(fallback = null, value) { return value ?? fallback; }',
     },
     {
+        source: '@typescript-eslint/no-unused-vars',
+        setting: ['error', { vars: 'all', args: 'after-used', ignoreRestSiblings: true }],
+        valid: 'type Shape = { area: number };\ntry { JSON.parse(\'{}\'); } catch (error) {}\nexport const read = (shape: Shape) => shape.area;',
+        invalid: 'const unused: number = 1;\nexport {};',
+    },
+    {
+        source: '@typescript-eslint/no-redeclare',
+        setting: 'error',
+        valid: 'function read(value: string): string;\nfunction read(value: number): number;\nfunction read(value: unknown) { return value; }\nexport { read };',
+        invalid: 'var value = 1;\nvar value = 2;\nexport { value };',
+    },
+    {
+        source: '@typescript-eslint/no-use-before-define',
+        setting: ['error', { functions: true, classes: true, variables: true }],
+        valid: 'type Later = typeof value;\nconst value = 1;\nexport type { Later };\nexport { value };',
+        invalid: 'export const first = second;\nconst second = 1;',
+    },
+    {
+        source: '@typescript-eslint/no-empty-function',
+        setting: ['error', { allow: ['arrowFunctions', 'functions', 'methods'] }],
+        valid: 'export class Shape {\n    constructor(private readonly area: number) {}\n}',
+        invalid: 'export const shape = { get area() {} };',
+    },
+    {
+
         source: '@typescript-eslint/no-array-constructor',
         setting: 'error',
         valid: 'const values = new Array<number>(1, 2);',
@@ -196,6 +221,19 @@ const legacyCases: {
 ];
 
 describe('legacy compatibility through the real CLI', () => {
+    it('maps @typescript-eslint/no-dupe-class-members and accepts overloads', async () => {
+        const { config, fallback } = createCompatibilityConfig({
+            language: 'typescript',
+            rules: { '@typescript-eslint/no-dupe-class-members': 'error' },
+        });
+        expect(fallback).toEqual([]);
+        expect(config.overrides![0]!.rules).toEqual({ 'eslint/no-dupe-class-members': 'error' });
+        // Oxc rejects duplicate TypeScript members before rules run; overloads must stay valid.
+        const results = await lintBatch(config, {
+            'valid.ts': 'export class Shape {\n    read(value: string): string;\n    read(value: unknown) { return value; }\n}',
+        });
+        expect(results.get('valid.ts')).toEqual([]);
+    });
     it.each(legacyCases)('$source preserves options and reports its target', async (example) => {
         const language = example.language ?? 'typescript';
         const extension = language === 'typescript' ? 'ts' : 'js';
