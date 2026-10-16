@@ -2,13 +2,18 @@
  * @file Compare a consumer's ESLint results with its Oxlint compatibility translation, rule by rule.
  *
  * Usage: pnpm exec tsx scripts/consumer-diff.ts <consumer> <report.json> [--ext .js,.ts]
- *        [--rewrite-suppressions] [targets...]
+ *        [--rewrite-suppressions] [--type-aware] [targets...]
  * The consumer's own ESLint runs in a child process from its directory; no ESLint is loaded here.
  * --rewrite-suppressions migrates eslint-disable/enable comments in place to the translated rule names.
  */
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import {
+    dirname,
+    join,
+    relative,
+    resolve,
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseSync } from 'oxc-parser';
@@ -57,6 +62,8 @@ process.stdout.write(JSON.stringify(files));
 `;
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const LINT_CLI = join(ROOT, 'packages/oxlint-config/dist/lint-cli.js');
+// Consumers being evaluated need not have installed the typed service yet.
+const TSGOLINT = join(dirname(fileURLToPath(import.meta.resolve('oxlint-tsgolint/package.json'))), 'bin/tsgolint.js');
 const DIRECTIVE = /^(\s*eslint-(?:disable|enable|disable-line|disable-next-line))(\s+)(.*?)(\s+--[\s\S]*|\s*)$/su;
 
 /**
@@ -96,7 +103,8 @@ if (!consumerArgument || !reportArgument) {
 }
 const consumer = resolve(consumerArgument);
 const rewrite = rest.includes('--rewrite-suppressions');
-const options = rest.filter((argument) => argument !== '--rewrite-suppressions');
+const typeAware = rest.includes('--type-aware');
+const options = rest.filter((argument) => !['--rewrite-suppressions', '--type-aware'].includes(argument));
 const extIndex = options.indexOf('--ext');
 const extensions = extIndex === -1 ? ['.js', '.jsx', '.ts', '.tsx'] : options[extIndex + 1]!.split(',');
 const targets = options.filter((_, index) => extIndex === -1 || (index !== extIndex && index !== extIndex + 1));
@@ -122,6 +130,7 @@ for (const file of files) {
 const directory = join(consumer, '.cache/consumer-diff');
 mkdirSync(directory, { recursive: true });
 const fallback: Record<string, { reason: string; files: number }> = {};
+const compiler: Record<string, { reason: string; files: number }> = {};
 const targetsBySource = new Map<string, string>();
 const oxlint: OxlintDiagnostic[] = [];
 let rewritten = 0;
@@ -129,6 +138,7 @@ let rewritten = 0;
     const [result] = createCompatibilityConfigGroups([{
         id: `group-${index}`,
         language: group.language,
+        typeAware,
         rules: group.config.rules,
         context: {
             files: group.files,
@@ -139,9 +149,10 @@ let rewritten = 0;
         },
     }]);
     for (const decision of result!.fallback) {
-        const entry = fallback[decision.source] ?? { reason: decision.reason ?? decision.disposition, files: 0 };
+        const owners = decision.disposition === 'compiler' ? compiler : fallback;
+        const entry = owners[decision.source] ?? { reason: decision.reason ?? decision.disposition, files: 0 };
         entry.files += group.files.length;
-        fallback[decision.source] = entry;
+        owners[decision.source] = entry;
     }
     const groupTargets = new Map<string, string>();
     for (const decision of result!.ownership) {
@@ -165,7 +176,10 @@ let rewritten = 0;
     const configPath = join(directory, `group-${index}.json`);
     writeFileSync(configPath, JSON.stringify(config));
     const run = spawnSync(process.execPath, [LINT_CLI, '-c', configPath, '--format', 'json', '--', ...group.files], {
-        cwd: consumer, encoding: 'utf8', maxBuffer: 1024 ** 3,
+        cwd: consumer,
+        encoding: 'utf8',
+        maxBuffer: 1024 ** 3,
+        env: { ...process.env, OXLINT_TSGOLINT_PATH: process.env.OXLINT_TSGOLINT_PATH ?? TSGOLINT },
     });
     if (!run.stdout.trimStart().startsWith('{')) {
         throw new Error(`Oxlint failed for group ${index}: ${run.stdout.slice(0, 2000)}${run.stderr.slice(0, 2000)}`);
@@ -188,7 +202,7 @@ const entry = (rule: string) => {
 for (const file of files) {
     for (const message of file.messages) {
         const source = message.ruleId ?? 'parse';
-        if (Object.hasOwn(fallback, source)) {
+        if (Object.hasOwn(fallback, source) || Object.hasOwn(compiler, source)) {
             continue;
         }
         const location = `${relative(consumer, file.filePath)}:${message.line}:${message.column}`;
@@ -208,9 +222,10 @@ for (const [target, locations] of pending) {
 }
 const differing = Object.entries(rules).filter(([, value]) => value.eslintOnly.length || value.oxlintOnly.length);
 writeFileSync(resolve(reportArgument), `${JSON.stringify({
-    files: files.length, groups: groups.size, fallback, rules,
+    files: files.length, groups: groups.size, fallback, compiler, rules,
 }, null, 2)}\n`);
 process.stdout.write(`${files.length} files, ${groups.size} groups, ${Object.keys(fallback).length} fallback rules, `
+    + `${Object.keys(compiler).length} compiler-owned rules, `
     + `${differing.length} rules with differences${rewrite ? `, ${rewritten} suppression comments rewritten` : ''}\n`);
 for (const [rule, value] of differing.sort(([, left], [, right]) => (right.eslintOnly.length + right.oxlintOnly.length)
     - (left.eslintOnly.length + left.oxlintOnly.length))) {
