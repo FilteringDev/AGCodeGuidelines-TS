@@ -1045,6 +1045,68 @@ for (const [name, defaults] of Object.entries(baseOptionTypeScriptExtensions)) {
         defaults,
     );
 }
+const accessibilityLevel = { enum: ['explicit', 'no-public', 'off'] };
+const typescriptOnlyRules: [string, string, unknown][] = [
+    ['explicit-function-return-type', 'typescript/explicit-function-return-type', [{
+        type: 'object',
+        properties: Object.fromEntries(['allowExpressions', 'allowTypedFunctionExpressions', 'allowHigherOrderFunctions']
+            .map((option) => [option, { type: 'boolean' }])),
+        additionalProperties: false,
+    }]],
+    ['explicit-member-accessibility', 'typescript/explicit-member-accessibility', [{
+        type: 'object',
+        properties: {
+            accessibility: accessibilityLevel,
+            overrides: {
+                type: 'object',
+                properties: Object.fromEntries(['accessors', 'constructors', 'methods', 'properties', 'parameterProperties']
+                    .map((member) => [member, accessibilityLevel])),
+                additionalProperties: false,
+            },
+            ignoredMethodNames: { type: 'array', items: { type: 'string' } },
+        },
+        additionalProperties: false,
+    }]],
+    ['consistent-type-imports', 'typescript/consistent-type-imports', [{
+        type: 'object',
+        properties: {
+            prefer: { enum: ['type-imports', 'no-type-imports'] },
+            fixStyle: { enum: ['separate-type-imports', 'inline-type-imports'] },
+            disallowTypeAnnotations: { type: 'boolean' },
+        },
+        additionalProperties: false,
+    }]],
+    ['no-explicit-any', 'typescript/no-explicit-any', [{
+        type: 'object',
+        properties: { fixToUnknown: { type: 'boolean' }, ignoreRestArgs: { type: 'boolean' } },
+        additionalProperties: false,
+    }]],
+    ['no-non-null-assertion', 'typescript/no-non-null-assertion', []],
+    ['dot-notation', 'typescript/dot-notation', [{
+        type: 'object',
+        properties: {
+            ...Object.fromEntries(['allowKeywords', 'allowPrivateClassPropertyAccess', 'allowProtectedClassPropertyAccess',
+                'allowIndexSignaturePropertyAccess'].map((option) => [option, { type: 'boolean' }])),
+            allowPattern: { type: 'string' },
+        },
+        additionalProperties: false,
+    }]],
+];
+for (const [name, target, schema] of typescriptOnlyRules) {
+    registerCompatibility(`@typescript-eslint/${name}`, target, schema, 'oxlint@1.82.0');
+}
+// Rules that can only report TypeScript syntax, so JavaScript files need no owner.
+for (const name of ['consistent-type-imports', 'no-explicit-any', 'no-non-null-assertion', 'member-delimiter-style']) {
+    legacyCompatibility[`@typescript-eslint/${name}`]!.javascript = 'inert';
+}
+// typescript-eslint extension rules delegate JavaScript syntax to the ESLint core rule they extend.
+for (const name of [...zeroOptionTypeScriptExtensions, ...Object.keys(baseOptionTypeScriptExtensions),
+    'no-unused-expressions', 'dot-notation']) {
+    legacyCompatibility[`@typescript-eslint/${name}`]!.javascript = 'base';
+}
+legacyCompatibility['@typescript-eslint/dot-notation']!.typescriptOnlyOptions = [
+    'allowPrivateClassPropertyAccess', 'allowProtectedClassPropertyAccess', 'allowIndexSignaturePropertyAccess',
+];
 
 for (const [name, rule] of builtinRules) {
     if (Object.hasOwn(legacyCompatibility, name)) {

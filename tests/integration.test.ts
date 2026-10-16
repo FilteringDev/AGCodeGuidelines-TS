@@ -52,6 +52,39 @@ const legacyCases: {
         invalid: 'function create(fallback = null, value) { return value ?? fallback; }',
     },
     {
+        source: '@typescript-eslint/explicit-function-return-type',
+        setting: ['error', { allowHigherOrderFunctions: true }],
+        valid: 'export function outer() { return (): number => 1; }',
+        invalid: 'export function read() { return 1; }',
+    },
+    {
+        source: '@typescript-eslint/explicit-member-accessibility',
+        setting: ['error', {
+            accessibility: 'explicit',
+            overrides: {
+                accessors: 'explicit',
+                constructors: 'no-public',
+                methods: 'explicit',
+                properties: 'explicit',
+                parameterProperties: 'explicit',
+            },
+        }],
+        valid: 'export class Shape {\n    constructor() {}\n\n    public read(): number { return 1; }\n}',
+        invalid: 'export class Shape {\n    area = 1;\n}',
+    },
+    {
+        source: '@typescript-eslint/consistent-type-imports',
+        setting: ['error', { prefer: 'type-imports', fixStyle: 'inline-type-imports' }],
+        valid: 'import { type Value } from \'./valid\';\nexport type Copy = Value;\nexport type Value = number;',
+        invalid: 'import { Value } from \'./valid\';\nexport type Copy = Value;',
+    },
+    {
+        source: '@typescript-eslint/no-explicit-any',
+        setting: 'error',
+        valid: 'export const value: unknown = 1;',
+        invalid: 'export const value: any = 1;',
+    },
+    {
         source: '@typescript-eslint/no-unused-vars',
         setting: ['error', { vars: 'all', args: 'after-used', ignoreRestSiblings: true }],
         valid: 'type Shape = { area: number };\ntry { JSON.parse(\'{}\'); } catch (error) {}\nexport const read = (shape: Shape) => shape.area;',

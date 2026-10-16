@@ -19915,7 +19915,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "stylistic@5.10.0"
+      "origin": "stylistic@5.10.0",
+      "javascript": "inert"
     },
     "@typescript-eslint/func-call-spacing": {
       "canonicalSource": "func-call-spacing",
@@ -22549,7 +22550,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "oxlint@1.82.0"
+      "origin": "oxlint@1.82.0",
+      "javascript": "base"
     },
     "@typescript-eslint/no-implied-eval": {
       "canonicalSource": "no-implied-eval",
@@ -22701,7 +22703,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-array-constructor": {
       "canonicalSource": "no-array-constructor",
@@ -22715,7 +22718,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-shadow": {
       "canonicalSource": "no-shadow",
@@ -22729,7 +22733,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-useless-constructor": {
       "canonicalSource": "no-useless-constructor",
@@ -22743,7 +22748,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-dupe-class-members": {
       "canonicalSource": "no-dupe-class-members",
@@ -22758,7 +22764,8 @@
         "minItems": 0,
         "maxItems": 0
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-empty-function": {
       "canonicalSource": "no-empty-function",
@@ -22798,7 +22805,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-redeclare": {
       "canonicalSource": "no-redeclare",
@@ -22824,7 +22832,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-use-before-define": {
       "canonicalSource": "no-use-before-define",
@@ -22867,7 +22876,8 @@
         "minItems": 0,
         "maxItems": 1
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
+      "javascript": "base"
     },
     "@typescript-eslint/no-unused-vars": {
       "canonicalSource": "no-unused-vars",
@@ -22936,7 +22946,241 @@
       "optionDefaults": {
         "caughtErrors": "none"
       },
-      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension"
+      "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
+      "javascript": "base"
+    },
+    "@typescript-eslint/explicit-function-return-type": {
+      "canonicalSource": "explicit-function-return-type",
+      "target": "typescript/explicit-function-return-type",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "allowExpressions": {
+                "type": "boolean"
+              },
+              "allowTypedFunctionExpressions": {
+                "type": "boolean"
+              },
+              "allowHigherOrderFunctions": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/explicit-member-accessibility": {
+      "canonicalSource": "explicit-member-accessibility",
+      "target": "typescript/explicit-member-accessibility",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "accessibility": {
+                "enum": [
+                  "explicit",
+                  "no-public",
+                  "off"
+                ]
+              },
+              "overrides": {
+                "type": "object",
+                "properties": {
+                  "accessors": {
+                    "enum": [
+                      "explicit",
+                      "no-public",
+                      "off"
+                    ]
+                  },
+                  "constructors": {
+                    "enum": [
+                      "explicit",
+                      "no-public",
+                      "off"
+                    ]
+                  },
+                  "methods": {
+                    "enum": [
+                      "explicit",
+                      "no-public",
+                      "off"
+                    ]
+                  },
+                  "properties": {
+                    "enum": [
+                      "explicit",
+                      "no-public",
+                      "off"
+                    ]
+                  },
+                  "parameterProperties": {
+                    "enum": [
+                      "explicit",
+                      "no-public",
+                      "off"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "ignoredMethodNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0"
+    },
+    "@typescript-eslint/consistent-type-imports": {
+      "canonicalSource": "consistent-type-imports",
+      "target": "typescript/consistent-type-imports",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "prefer": {
+                "enum": [
+                  "type-imports",
+                  "no-type-imports"
+                ]
+              },
+              "fixStyle": {
+                "enum": [
+                  "separate-type-imports",
+                  "inline-type-imports"
+                ]
+              },
+              "disallowTypeAnnotations": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0",
+      "javascript": "inert"
+    },
+    "@typescript-eslint/no-explicit-any": {
+      "canonicalSource": "no-explicit-any",
+      "target": "typescript/no-explicit-any",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "fixToUnknown": {
+                "type": "boolean"
+              },
+              "ignoreRestArgs": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0",
+      "javascript": "inert"
+    },
+    "@typescript-eslint/no-non-null-assertion": {
+      "canonicalSource": "no-non-null-assertion",
+      "target": "typescript/no-non-null-assertion",
+      "implementation": "native",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [],
+        "minItems": 0,
+        "maxItems": 0
+      },
+      "origin": "oxlint@1.82.0",
+      "javascript": "inert"
+    },
+    "@typescript-eslint/dot-notation": {
+      "canonicalSource": "dot-notation",
+      "target": "typescript/dot-notation",
+      "implementation": "native",
+      "requiresTypeInfo": true,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "allowKeywords": {
+                "type": "boolean"
+              },
+              "allowPrivateClassPropertyAccess": {
+                "type": "boolean"
+              },
+              "allowProtectedClassPropertyAccess": {
+                "type": "boolean"
+              },
+              "allowIndexSignaturePropertyAccess": {
+                "type": "boolean"
+              },
+              "allowPattern": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0",
+      "javascript": "base",
+      "typescriptOnlyOptions": [
+        "allowPrivateClassPropertyAccess",
+        "allowProtectedClassPropertyAccess",
+        "allowIndexSignaturePropertyAccess"
+      ]
     },
     "accessor-pairs": {
       "canonicalSource": "accessor-pairs",
@@ -52008,6 +52252,84 @@
       "nativeCandidate": "eslint/no-unused-vars",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/explicit-function-return-type",
+      "target": "typescript/explicit-function-return-type",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/explicit-function-return-type",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/explicit-member-accessibility",
+      "target": "typescript/explicit-member-accessibility",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/explicit-member-accessibility",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/consistent-type-imports",
+      "target": "typescript/consistent-type-imports",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/consistent-type-imports",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-explicit-any",
+      "target": "typescript/no-explicit-any",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/no-explicit-any",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/no-non-null-assertion",
+      "target": "typescript/no-non-null-assertion",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/no-non-null-assertion",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/dot-notation",
+      "target": "typescript/dot-notation",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/dot-notation",
+      "requiresTypeInfo": true,
+      "candidateRequiresTypeInfo": true,
       "verification": "candidate-only",
       "oxlint": "1.82.0"
     },

@@ -882,6 +882,12 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | @typescript-eslint/no-redeclare | ag-ts/no-redeclare | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
 | @typescript-eslint/no-use-before-define | eslint/no-use-before-define | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
 | @typescript-eslint/no-unused-vars | eslint/no-unused-vars | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
+| @typescript-eslint/explicit-function-return-type | typescript/explicit-function-return-type | no | oxlint@1.82.0 |
+| @typescript-eslint/explicit-member-accessibility | typescript/explicit-member-accessibility | no | oxlint@1.82.0 |
+| @typescript-eslint/consistent-type-imports | typescript/consistent-type-imports | no | oxlint@1.82.0 |
+| @typescript-eslint/no-explicit-any | typescript/no-explicit-any | no | oxlint@1.82.0 |
+| @typescript-eslint/no-non-null-assertion | typescript/no-non-null-assertion | no | oxlint@1.82.0 |
+| @typescript-eslint/dot-notation | typescript/dot-notation | required | oxlint@1.82.0 |
 | accessor-pairs | ag-compat/accessor-pairs | no | eslint@8.57.1 |
 | array-bracket-newline | ag-compat/array-bracket-newline | no | eslint@8.57.1 |
 | array-bracket-spacing | ag-compat/array-bracket-spacing | no | eslint@8.57.1 |

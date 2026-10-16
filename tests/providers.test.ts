@@ -150,6 +150,29 @@ describe('effective compatibility configuration', () => {
             .toThrow('typeAware');
     });
 
+    it('runs extended core rules on JavaScript and needs no owner for TypeScript-only syntax', async () => {
+        const result = createCompatibilityConfig({
+            rules: {
+                '@typescript-eslint/dot-notation': ['error', { allowKeywords: true, allowPrivateClassPropertyAccess: false }],
+                '@typescript-eslint/no-unused-vars': ['error', { vars: 'all' }],
+                '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+                '@typescript-eslint/member-delimiter-style': 'error',
+                '@typescript-eslint/explicit-function-return-type': 'error',
+            },
+        });
+        expect(result.fallback).toMatchObject([{ source: '@typescript-eslint/explicit-function-return-type' }]);
+        expect(result.config.overrides![0]!.rules).toEqual({
+            'ag-compat/dot-notation': ['error', { allowKeywords: true }],
+            'ag-compat/no-unused-vars': ['error', { vars: 'all' }],
+        });
+        result.config.jsPlugins = [{ name: 'ag-compat', specifier: COMPAT }];
+        const diagnostics = await lintBatch(result.config, {
+            'main.js': 'const value = {};\nvalue["key"] = 1;\nconst unused = 1;\nexport { value };\n',
+        });
+        expect(diagnostics.get('main.js')!.map(({ code }) => code).sort())
+            .toEqual(['ag-compat(dot-notation)', 'ag-compat(no-unused-vars)']);
+    });
+
     it('needs no owner for disabled rules without an implementation or for the other language', () => {
         const rules = {
             '@typescript-eslint/no-magic-numbers': ['off', { ignoreArrayIndexes: true }],

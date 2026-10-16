@@ -97,6 +97,12 @@ export interface CompatibilityRule {
     schema: object;
     /** Source-version defaults the target would otherwise choose differently; explicit options win. */
     optionDefaults?: Record<string, unknown>;
+    /**
+     * JavaScript files: `base` runs the extended core rule, `inert` means only TypeScript syntax can be reported.
+     */
+    javascript?: 'base' | 'inert';
+    /** Options with no JavaScript meaning, removed before the core rule validates them. */
+    typescriptOnlyOptions?: string[];
     origin: string;
 }
 
@@ -241,6 +247,28 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         return unowned(`No implementation for rule ${source}.`);
     }
     if ((compatibility?.language ?? selected?.language) === 'typescript' && language !== 'typescript') {
+        if (compatibility?.javascript === 'inert' && options.setting !== undefined) {
+            return {
+                status: 'disabled',
+                source,
+                canonicalSource,
+                target: null,
+                setting: structuredClone(options.setting),
+                implementation: 'disabled',
+                requiresTypeInfo: false,
+                provider: null,
+                reason: `${source} only reports TypeScript syntax, which JavaScript files cannot contain.`,
+            };
+        }
+        if (compatibility?.javascript === 'base' && options.setting !== undefined) {
+            const ignored = compatibility.typescriptOnlyOptions ?? [];
+            const setting = Array.isArray(options.setting) && ignored.length
+                ? options.setting.map((option, index) => (index > 0 && option && typeof option === 'object'
+                    ? Object.fromEntries(Object.entries(option).filter(([key]) => !ignored.includes(key)))
+                    : option))
+                : options.setting;
+            return { ...resolveRule(canonicalSource, { ...options, language, setting }), source };
+        }
         return unowned(`${source} requires TypeScript source files.`);
     }
     const equivalent = !compatibility?.preserveTypeScriptTarget && compatibility?.language !== 'typescript'
