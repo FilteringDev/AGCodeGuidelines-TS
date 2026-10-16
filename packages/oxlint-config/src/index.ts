@@ -172,7 +172,8 @@ export function createCompatibilityConfig(options: CompatibilityConfigOptions): 
         if (decision.status === 'unsupported' || !decision.target || decision.disposition === 'compiler') {
             return;
         }
-        const setting = structuredClone(decision.setting) as Rules[string];
+        // Oxlint validates options of disabled rules too; merged ESLint configs keep stale ones.
+        const setting = severity(decision.setting) === 0 ? 'off' : structuredClone(decision.setting) as Rules[string];
         const previous = rules[decision.target];
         if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(setting)) {
             // A disabled base rule beside its enabled TypeScript extension leaves one active owner.

@@ -149,6 +149,22 @@ describe('effective compatibility configuration', () => {
         expect(Object.values(first!)).toEqual(['error']);
     });
 
+    it('drops stale options of disabled rules that Oxlint would still validate', async () => {
+        const result = createCompatibilityConfig({
+            rules: {
+                'dot-notation': ['off', { allowKeywords: true, allowPrivateClassPropertyAccess: false }],
+                'no-undef': 'error',
+            },
+        });
+        expect(result.config.overrides![0]!.rules).toEqual({
+            'ag-compat/dot-notation': 'off',
+            'ag-compat/no-undef': 'error',
+        });
+        result.config.jsPlugins = [{ name: 'ag-compat', specifier: COMPAT }];
+        const diagnostics = await lintBatch(result.config, { 'main.js': 'const value = {}; value["key"] = 1;' });
+        expect(diagnostics.get('main.js')).toEqual([]);
+    });
+
     it('runs a JavaScript alias without changing options or loading other providers', async () => {
         const result = createCompatibilityConfig({
             rules: { '@typescript-eslint/quotes': ['warn', 'single', { avoidEscape: true }] }, language: 'typescript',
