@@ -17,6 +17,12 @@
   and JavaScript provider implementations, including separate TypeScript style
   aliases when both source rules are active.
 
+### Changed
+
+- JavaScript-provider rules share one per-file compatibility layer instead of
+  rebuilding it for every rule, reducing full-preset lint time by about 27% on
+  the measured consumers with identical diagnostics.
+
 ### Fixed
 
 - Published JavaScript targets Node 22, and public configuration declarations
