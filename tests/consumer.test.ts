@@ -245,9 +245,11 @@ describe('installed package contract', () => {
     });
 
     it('installs without an ESLint engine', async () => {
-        const installed = await readdir(join(directory, 'node_modules/.pnpm'));
-        expect(installed.filter((name) => /^eslint@/u.test(name))).toEqual([]);
-        expect(installed.filter((name) => /^oxlint-tsgolint@/u.test(name))).toEqual([]);
+        // The lockfile lists every resolved package, also when pnpm uses a global virtual store.
+        const lockfile = await readFile(join(directory, 'pnpm-lock.yaml'), 'utf8');
+        expect(lockfile).toMatch(/^ {2}'?oxlint@/mu);
+        expect(lockfile).not.toMatch(/^ {2}'?eslint@/mu);
+        expect(lockfile).not.toMatch(/^ {2}'?oxlint-tsgolint@/mu);
     });
 
     it('resolves legacy settings and executes the packed naming rule without ESLint', async () => {
