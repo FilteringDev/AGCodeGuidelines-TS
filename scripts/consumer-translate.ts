@@ -14,7 +14,7 @@ import { pathToFileURL } from 'node:url';
 import minimatch from 'minimatch';
 import type { OxlintConfig } from 'oxlint';
 import { createCompatibilityConfigGroups, finalizeProviders } from '../packages/oxlint-config/src/index';
-import { collectEslint, languageOf } from './consumer-eslint';
+import { collectEslint, languageOf, typescriptEslintMajor } from './consumer-eslint';
 
 import type { EslintFile } from './consumer-eslint';
 
@@ -256,7 +256,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
         language: languageOf(file.filePath),
         config: file.config,
     }));
-    const result = translateConsumer(files, spec);
+    // Spec settings take precedence over the detected plugin version.
+    const major = typescriptEslintMajor(consumer);
+    const result = translateConsumer(files, {
+        ...spec,
+        settings: { ...(major === undefined ? {} : { agTypeScriptEslint: major }), ...spec.settings },
+    });
     writeFileSync(resolve(outputArgument), `${JSON.stringify(result.config, null, 2)}\n`);
     process.stdout.write(`${files.length} files, ${result.scopes.length} scopes\n`);
     result.scopes.forEach((scope, index) => {

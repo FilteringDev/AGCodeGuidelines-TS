@@ -3,6 +3,9 @@
  * No ESLint is loaded in this process; the consumer's copy runs in a child process from its directory.
  */
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
 
 import type { RuleMap } from '../packages/rule-catalog/src/index';
 
@@ -61,6 +64,23 @@ export function collectEslint(
         throw new Error(`Consumer ESLint failed: ${collected.stderr.slice(0, 4000)}`);
     }
     return JSON.parse(collected.stdout) as EslintFile[];
+}
+
+/**
+ * Read the major version of the typescript-eslint plugin that a consumer resolves, without loading it.
+ * Ported rules select that version's semantics through the `agTypeScriptEslint` setting.
+ * @param consumer - Absolute consumer directory.
+ * @returns The major version, or `undefined` when the consumer does not resolve the plugin.
+ */
+export function typescriptEslintMajor(consumer: string): number | undefined {
+    let manifest: string;
+    try {
+        manifest = createRequire(join(consumer, 'package.json')).resolve('@typescript-eslint/eslint-plugin/package.json');
+    } catch {
+        return undefined;
+    }
+    const { version } = JSON.parse(readFileSync(manifest, 'utf8')) as { version: string };
+    return Number.parseInt(version, 10);
 }
 
 /**

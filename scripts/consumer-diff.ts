@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 
 import { parseSync } from 'oxc-parser';
 import { createCompatibilityConfigGroups } from '../packages/oxlint-config/src/index';
-import { collectEslint, languageOf } from './consumer-eslint';
+import { collectEslint, languageOf, typescriptEslintMajor } from './consumer-eslint';
 
 import type { EslintFile } from './consumer-eslint';
 
@@ -77,6 +77,8 @@ const extIndex = options.indexOf('--ext');
 const extensions = extIndex === -1 ? ['.js', '.jsx', '.ts', '.tsx'] : options[extIndex + 1]!.split(',');
 const targets = options.filter((_, index) => extIndex === -1 || (index !== extIndex && index !== extIndex + 1));
 const files = collectEslint(consumer, extensions, targets);
+const major = typescriptEslintMajor(consumer);
+const versionSettings = major === undefined ? {} : { agTypeScriptEslint: major };
 
 const groups = new Map<string, { files: string[]; config: EslintFile['config']; language: 'javascript' | 'typescript' }>();
 for (const file of files) {
@@ -104,7 +106,7 @@ let rewritten = 0;
             files: group.files,
             env: group.config.env,
             globals: group.config.globals,
-            settings: group.config.settings,
+            settings: { ...group.config.settings, ...versionSettings },
             parserOptions: group.config.parserOptions,
         },
     }]);

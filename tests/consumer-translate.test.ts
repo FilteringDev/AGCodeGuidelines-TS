@@ -1,6 +1,16 @@
 /** @file Verify scoped consumer translation keeps every effective configuration separate. */
+import {
+    mkdir,
+    mkdtemp,
+    rm,
+    writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
+import { typescriptEslintMajor } from '../scripts/consumer-eslint';
 import {
     assignScopes,
     completeOverrides,
@@ -115,5 +125,21 @@ describe('translateConsumer', () => {
             { scopes: SCOPES, settings: { agTypeScriptEslint: 5 } },
         );
         expect(config.settings).toMatchObject({ react: { version: '17' }, agTypeScriptEslint: 5 });
+    });
+});
+
+describe('consumer typescript-eslint version', () => {
+    it('reads the resolved plugin major without loading it', async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'ag-ts-eslint-major-'));
+        try {
+            expect(typescriptEslintMajor(directory)).toBeUndefined();
+            const plugin = join(directory, 'node_modules/@typescript-eslint/eslint-plugin');
+            await mkdir(plugin, { recursive: true });
+            await writeFile(join(directory, 'package.json'), '{}');
+            await writeFile(join(plugin, 'package.json'), JSON.stringify({ version: '5.62.0' }));
+            expect(typescriptEslintMajor(directory)).toBe(5);
+        } finally {
+            await rm(directory, { recursive: true, force: true });
+        }
     });
 });
