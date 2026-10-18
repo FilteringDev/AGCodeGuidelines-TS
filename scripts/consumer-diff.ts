@@ -18,20 +18,9 @@ import { fileURLToPath } from 'node:url';
 
 import { parseSync } from 'oxc-parser';
 import { createCompatibilityConfigGroups } from '../packages/oxlint-config/src/index';
+import { collectEslint, languageOf } from './consumer-eslint';
 
-import type { RuleMap } from '../packages/rule-catalog/src/index';
-
-interface EslintFile {
-    filePath: string;
-    messages: { ruleId: string | null; line: number; column: number }[];
-    config: {
-        rules: RuleMap;
-        settings?: Record<string, unknown>;
-        env?: Record<string, boolean>;
-        globals?: Record<string, boolean | 'readonly' | 'writable' | 'off'>;
-        parserOptions?: Record<string, unknown>;
-    };
-}
+import type { EslintFile } from './consumer-eslint';
 
 interface OxlintDiagnostic {
     code?: string;
@@ -39,27 +28,6 @@ interface OxlintDiagnostic {
     labels?: { span: { line: number; column: number } }[];
 }
 
-const COLLECT = `
-import { ESLint } from 'eslint';
-const [extensions, ...targets] = JSON.parse(process.argv[1]);
-const eslint = new ESLint({ cache: false, extensions });
-const files = [];
-for (const result of await eslint.lintFiles(targets)) {
-    const config = await eslint.calculateConfigForFile(result.filePath);
-    files.push({
-        filePath: result.filePath,
-        messages: result.messages.map(({ ruleId, line, column }) => ({ ruleId, line, column })),
-        config: {
-            rules: config.rules,
-            settings: config.settings,
-            env: config.env,
-            globals: config.globals,
-            parserOptions: config.parserOptions,
-        },
-    });
-}
-process.stdout.write(JSON.stringify(files));
-`;
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const LINT_CLI = join(ROOT, 'packages/oxlint-config/dist/lint-cli.js');
 // Consumers being evaluated need not have installed the typed service yet.
@@ -108,19 +76,11 @@ const options = rest.filter((argument) => !['--rewrite-suppressions', '--type-aw
 const extIndex = options.indexOf('--ext');
 const extensions = extIndex === -1 ? ['.js', '.jsx', '.ts', '.tsx'] : options[extIndex + 1]!.split(',');
 const targets = options.filter((_, index) => extIndex === -1 || (index !== extIndex && index !== extIndex + 1));
-const collected = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', COLLECT, JSON.stringify([extensions, ...(targets.length ? targets : ['.'])])],
-    { cwd: consumer, encoding: 'utf8', maxBuffer: 1024 ** 3 },
-);
-if (collected.status !== 0) {
-    throw new Error(`Consumer ESLint failed: ${collected.stderr.slice(0, 4000)}`);
-}
-const files = JSON.parse(collected.stdout) as EslintFile[];
+const files = collectEslint(consumer, extensions, targets);
 
 const groups = new Map<string, { files: string[]; config: EslintFile['config']; language: 'javascript' | 'typescript' }>();
 for (const file of files) {
-    const language = /\.[cm]?tsx?$/u.test(file.filePath) ? 'typescript' : 'javascript';
+    const language = languageOf(file.filePath);
     const key = JSON.stringify([language, file.config]);
     const group = groups.get(key) ?? { files: [], config: file.config, language };
     group.files.push(relative(consumer, file.filePath));
