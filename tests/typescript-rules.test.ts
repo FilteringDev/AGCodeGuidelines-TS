@@ -107,10 +107,93 @@ new RuleTester().run('no-redeclare', rules['no-redeclare'], {
     ],
 });
 
+const tsx = { filename: 'main.tsx', languageOptions: { parserOptions: { lang: 'tsx' } } } as const;
+// Oxlint's RuleTester uses zero-based columns, and ESLint's uses one-based columns.
+const returnTypeError = (line: number, column: number, endColumn: number) => ({
+    messageId: 'missingReturnType', line, column: column - 1, endLine: line, endColumn: endColumn - 1,
+});
+// ESLint positions were measured against @typescript-eslint/eslint-plugin 5.62.0, 7.18.0, and 8.29.0.
+const semanticsCases = [
+    {
+        name: 'typed default parameter',
+        code: 'function run(cb: () => void = () => {}): void { cb(); }',
+        errors: { 5: [returnTypeError(1, 31, 36)], 7: [], 8: [] },
+    },
+    {
+        name: 'JSX attribute',
+        code: 'const element = <Button onClick={() => {}} />;',
+        errors: { 5: [returnTypeError(1, 34, 39)], 7: [], 8: [] },
+    },
+    {
+        name: 'higher-order function with several returns',
+        code: 'function pick(flag: boolean) {\n'
+            + '    if (flag) {\n        return (): number => 1;\n    }\n    return (): number => 2;\n}',
+        errors: { 5: [returnTypeError(1, 1, 29)], 7: [], 8: [] },
+    },
+    {
+        name: 'untyped variable inside a typed function',
+        code: 'function outer(): () => () => number {\n    const inner = () => () => 1;\n    return inner;\n}',
+        errors: { 5: [], 7: [returnTypeError(2, 28, 30)], 8: [returnTypeError(2, 28, 30)] },
+    },
+    {
+        name: 'const assertion wrapped in satisfies',
+        code: 'const read = () => ({ a: 1 } as const) satisfies { a: number };',
+        errors: { 5: [returnTypeError(1, 14, 19)], 7: [returnTypeError(1, 17, 19)], 8: [] },
+    },
+    {
+        name: 'method head',
+        code: 'class Widget {\n    method() { return 1; }\n}',
+        errors: { 5: [returnTypeError(2, 5, 13)], 7: [returnTypeError(2, 5, 11)], 8: [returnTypeError(2, 5, 11)] },
+    },
+] as const;
+
+new RuleTester().run('explicit-function-return-type', rules['explicit-function-return-type'], {
+    valid: [
+        'function work(): number { return 1; }',
+        'type Fn = () => void;\nconst typed: Fn = () => {};',
+        'declare function use(cb: () => void): void;\nuse(() => {});',
+        'const value = (() => 1) as () => number;',
+        'const hof = () => (): number => 1;',
+        'class Widget {\n    constructor() {}\n    set value(next: number) {}\n}',
+        'function outer(): () => void {\n    return function inner() {};\n}',
+        'const read = () => ({ a: 1 } as const);',
+        { code: '(() => 1)();', options: [{ allowIIFEs: true }] },
+        { code: 'const run = () => 1;', options: [{ allowedNames: ['run'] }] },
+        { code: 'const run = () => void 0;', options: [{ allowConciseArrowFunctionExpressionsStartingWithVoid: true }] },
+        { code: 'const run = [1].map(function () { return 1; });', options: [{ allowExpressions: true }] },
+        ...semanticsCases.flatMap(({ name, code, errors }) => ([5, 7, 8] as const)
+            .filter((major) => errors[major].length === 0)
+            .map((major) => ({
+                name: `${name} (v${major})`, code, settings: { agTypeScriptEslint: major }, ...tsx,
+            }))),
+    ].map((testCase) => (typeof testCase === 'string' ? { code: testCase, ...typescript } : { ...typescript, ...testCase })),
+    invalid: [
+        { code: 'function work() { return 1; }', ...typescript, errors: [returnTypeError(1, 1, 14)] },
+        { code: 'const run = () => 1;', ...typescript, errors: [returnTypeError(1, 16, 18)] },
+        {
+            code: 'const hof = () => () => 1;',
+            options: [{ allowHigherOrderFunctions: false }],
+            ...typescript,
+            errors: [returnTypeError(1, 16, 18), returnTypeError(1, 22, 24)],
+        },
+        {
+            code: 'type Fn = () => void;\nconst typed: Fn = () => {};',
+            options: [{ allowTypedFunctionExpressions: false }],
+            ...typescript,
+            errors: [returnTypeError(2, 22, 24)],
+        },
+        ...semanticsCases.flatMap(({ name, code, errors }) => ([5, 7, 8] as const)
+            .filter((major) => errors[major].length > 0)
+            .map((major) => ({
+                name: `${name} (v${major})`, code, settings: { agTypeScriptEslint: major }, ...tsx, errors: [...errors[major]],
+            }))),
+    ],
+});
+
 describe('TypeScript rule plugin contract', () => {
     it('exposes TypeScript-aware rules under their core names', () => {
         expect(plugin.meta?.name).toBe('ag-ts');
-        expect(Object.keys(rules)).toEqual(['naming-convention', 'no-redeclare']);
+        expect(Object.keys(rules)).toEqual(['explicit-function-return-type', 'naming-convention', 'no-redeclare']);
     });
 
     it('rejects merges that TypeScript does not permit', () => {

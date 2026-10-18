@@ -3,9 +3,11 @@
  */
 import type {
     ESTree,
+    LineColumn,
     Plugin,
     Rule,
     RuleMeta,
+    SourceCode,
 } from '@oxlint/plugins';
 import builtinRules from '../../../vendor/core/lib/rules/index';
 import { isCamelCase, isPascalCase, isUpperCase } from '../../../vendor/naming-format/format';
@@ -159,7 +161,405 @@ function bindingIdentifiers(node: ESTree.Node): ESTree.Node[] {
     }
 }
 
+type FunctionNode = ESTree.ArrowFunctionExpression | ESTree.Function;
+
+interface ReturnTypeOptions {
+    allowExpressions: boolean;
+    allowTypedFunctionExpressions: boolean;
+    allowHigherOrderFunctions: boolean;
+    allowDirectConstAssertionInArrowFunctions: boolean;
+    allowConciseArrowFunctionExpressionsStartingWithVoid: boolean;
+    allowFunctionsWithoutTypeParameters: boolean;
+    allowedNames: string[];
+    allowIIFEs: boolean;
+}
+
+/**
+ * Upstream rule semantics selected by the consumer's `@typescript-eslint/eslint-plugin` major version.
+ */
+interface ReturnTypeSemantics {
+    /** Ancestors, default parameters, and JSX containers follow typescript-eslint 6 and later. */
+    modern: boolean;
+    /** `satisfies` wrappers around a const assertion follow typescript-eslint 8 and later. */
+    satisfies: boolean;
+}
+
+const RETURN_TYPE_DEFAULTS: ReturnTypeOptions = {
+    allowExpressions: false,
+    allowTypedFunctionExpressions: true,
+    allowHigherOrderFunctions: true,
+    allowDirectConstAssertionInArrowFunctions: true,
+    allowConciseArrowFunctionExpressionsStartingWithVoid: false,
+    allowFunctionsWithoutTypeParameters: false,
+    allowedNames: [],
+    allowIIFEs: false,
+};
+
+const DEFAULT_TYPESCRIPT_ESLINT_MAJOR = 7;
+
+const returnTypeSchema = [{
+    type: 'object',
+    properties: {
+        ...Object.fromEntries(Object.keys(RETURN_TYPE_DEFAULTS)
+            .filter((key) => key !== 'allowedNames')
+            .map((key) => [key, { type: 'boolean' }])),
+        allowedNames: { type: 'array', items: { type: 'string' } },
+    },
+    additionalProperties: false,
+}] satisfies NonNullable<RuleMeta['schema']>;
+
+/**
+ * Check whether a node is a function with a body.
+ * @param node - Candidate node.
+ * @returns Whether the node is an arrow function, function expression, or function declaration.
+ */
+function isFunctionNode(node: ESTree.Node | null | undefined): node is FunctionNode {
+    return node?.type === 'ArrowFunctionExpression'
+        || node?.type === 'FunctionExpression'
+        || node?.type === 'FunctionDeclaration';
+}
+
+/**
+ * Check whether a node is an `as` or angle-bracket type assertion.
+ * @param node - Candidate node.
+ * @returns Whether the node is a type assertion.
+ */
+function isTypeAssertion(node: ESTree.Node): node is ESTree.TSAsExpression | ESTree.TSTypeAssertion {
+    return node.type === 'TSAsExpression' || node.type === 'TSTypeAssertion';
+}
+
+/**
+ * Check whether a node carries a type annotation.
+ * @param node - Binding, parameter, or class property.
+ * @returns Whether the node has a type annotation.
+ */
+function hasTypeAnnotation(node: ESTree.Node): boolean {
+    return Boolean((node as { typeAnnotation?: unknown }).typeAnnotation);
+}
+
+/**
+ * Check whether a parent node gives a function expression a contextual type.
+ * @param parent - Parent of the function or of its object literal.
+ * @param callee - The function itself, which is not typed by being called.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether the parent supplies a type.
+ */
+function isTypedParent(parent: ESTree.Node, callee: ESTree.Node | undefined, semantics: ReturnTypeSemantics): boolean {
+    return isTypeAssertion(parent)
+        || (parent.type === 'VariableDeclarator' && hasTypeAnnotation(parent.id))
+        || (semantics.modern && parent.type === 'AssignmentPattern' && hasTypeAnnotation(parent.left))
+        || (parent.type === 'PropertyDefinition' && hasTypeAnnotation(parent))
+        || (parent.type === 'CallExpression' && parent.callee !== callee)
+        || (semantics.modern && (parent.type === 'JSXExpressionContainer' || parent.type === 'JSXSpreadAttribute'));
+}
+
+/**
+ * Check whether a property belongs to an object literal with a contextual type.
+ * @param property - Parent of a function expression.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether the enclosing object literal is typed.
+ */
+function isPropertyOfObjectWithType(property: ESTree.Node | null, semantics: ReturnTypeSemantics): boolean {
+    if (property?.type !== 'Property') {
+        return false;
+    }
+    const objectExpression = property.parent;
+    if (objectExpression?.type !== 'ObjectExpression' || !objectExpression.parent) {
+        return false;
+    }
+    return isTypedParent(objectExpression.parent, undefined, semantics)
+        || isPropertyOfObjectWithType(objectExpression.parent, semantics);
+}
+
+/**
+ * Check whether an arrow function directly returns a const assertion.
+ * @param node - Function expression.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether the body is `... as const`.
+ */
+function returnsConstAssertion(node: FunctionNode, semantics: ReturnTypeSemantics): boolean {
+    if (node.type !== 'ArrowFunctionExpression') {
+        return false;
+    }
+    let { body } = node as { body: ESTree.Node };
+    while (semantics.satisfies && body.type === 'TSSatisfiesExpression') {
+        body = body.expression;
+    }
+    if (!isTypeAssertion(body) || body.typeAnnotation.type !== 'TSTypeReference') {
+        return false;
+    }
+    const { typeName } = body.typeAnnotation;
+    return typeName.type === 'Identifier' && typeName.name === 'const';
+}
+
+/**
+ * Check whether a function expression is exempt because of its context.
+ * @param node - Function expression.
+ * @param options - Rule options.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether the expression is typed by context, allowed as an expression, or returns `as const`.
+ */
+function isValidFunctionExpressionReturnType(
+    node: FunctionNode,
+    options: ReturnTypeOptions,
+    semantics: ReturnTypeSemantics,
+): boolean {
+    const { parent } = node;
+    if (options.allowTypedFunctionExpressions && (
+        isTypedParent(parent, node, semantics)
+        || isPropertyOfObjectWithType(parent, semantics)
+        || parent.type === 'NewExpression'
+    )) {
+        return true;
+    }
+    const declarationParents = ['VariableDeclarator', 'MethodDefinition', 'ExportDefaultDeclaration', 'PropertyDefinition'];
+    if (options.allowExpressions && !declarationParents.includes(parent.type)) {
+        return true;
+    }
+    return options.allowDirectConstAssertionInArrowFunctions && returnsConstAssertion(node, semantics);
+}
+
+/**
+ * Check whether a function only returns functions.
+ * @param node - Function node.
+ * @param returns - Return statements directly inside the function.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether the function is a higher-order function.
+ */
+function returnsFunction(
+    node: FunctionNode,
+    returns: ESTree.ReturnStatement[],
+    semantics: ReturnTypeSemantics,
+): boolean {
+    let body = node.body as ESTree.Node | null;
+    if (!semantics.modern) {
+        // typescript-eslint 5 only inspects a body made of a single return statement.
+        if (body?.type === 'BlockStatement' && body.body.length === 1) {
+            const [statement] = body.body;
+            if (statement?.type === 'ReturnStatement' && statement.argument) {
+                body = statement.argument;
+            }
+        }
+        return body?.type === 'ArrowFunctionExpression' || body?.type === 'FunctionExpression';
+    }
+    if (node.type === 'ArrowFunctionExpression' && isFunctionNode(body)) {
+        return true;
+    }
+    return returns.length > 0 && returns.every((statement) => isFunctionNode(statement.argument));
+}
+
+/**
+ * Check whether an enclosing function or variable already types a returned function.
+ * @param node - Function expression.
+ * @param semantics - Selected upstream semantics.
+ * @returns Whether an ancestor provides the return type.
+ */
+function ancestorHasReturnType(node: FunctionNode, semantics: ReturnTypeSemantics): boolean {
+    let ancestor: ESTree.Node | null = node.parent;
+    if (ancestor.type === 'Property') {
+        ancestor = ancestor.value;
+    }
+    const isReturn = ancestor.type === 'ReturnStatement';
+    const isBodylessArrow = ancestor.type === 'ArrowFunctionExpression' && ancestor.body.type !== 'BlockStatement';
+    if (!isReturn && !isBodylessArrow) {
+        return false;
+    }
+    while (ancestor) {
+        switch (ancestor.type) {
+            case 'ArrowFunctionExpression':
+            case 'FunctionExpression':
+            case 'FunctionDeclaration':
+                if (ancestor.returnType) {
+                    return true;
+                }
+                break;
+            case 'VariableDeclarator':
+                if (hasTypeAnnotation(ancestor.id)) {
+                    return true;
+                }
+                if (semantics.modern) {
+                    return false;
+                }
+                break;
+            case 'PropertyDefinition':
+                if (semantics.modern) {
+                    return hasTypeAnnotation(ancestor);
+                }
+                break;
+            case 'ExpressionStatement':
+                if (semantics.modern) {
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
+        ancestor = ancestor.parent;
+    }
+    return false;
+}
+
+/**
+ * Check whether a function is exempt by name, type parameters, or immediate invocation.
+ * @param node - Function node.
+ * @param options - Rule options.
+ * @returns Whether the function is allowed without a return type.
+ */
+function isAllowedFunction(node: FunctionNode, options: ReturnTypeOptions): boolean {
+    if (options.allowFunctionsWithoutTypeParameters && !node.typeParameters) {
+        return true;
+    }
+    if (options.allowIIFEs && node.parent.type === 'CallExpression') {
+        return true;
+    }
+    if (options.allowedNames.length === 0) {
+        return false;
+    }
+    if (node.type === 'FunctionDeclaration') {
+        return node.id?.type === 'Identifier' && options.allowedNames.includes(node.id.name);
+    }
+    let name = node.id?.name;
+    const { parent } = node;
+    if (!name && parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
+        name = parent.id.name;
+    } else if (!name && (parent.type === 'MethodDefinition' || parent.type === 'PropertyDefinition'
+        || parent.type === 'Property') && parent.key.type === 'Identifier' && !parent.computed) {
+        name = parent.key.name;
+    }
+    return Boolean(name) && options.allowedNames.includes(name!);
+}
+
+type Position = LineColumn;
+
+const isPunctuator = (value: string) => (token: { type: string; value: string }) => (
+    token.type === 'Punctuator' && token.value === value
+);
+
+/**
+ * Find the opening parenthesis of a function's parameters, or its single unparenthesized arrow parameter.
+ * @param node - Function node.
+ * @param sourceCode - Source code of the linted file.
+ * @returns The token that starts the parameter list.
+ */
+function parameterStart(node: FunctionNode, sourceCode: SourceCode): ESTree.Token {
+    if (node.type === 'ArrowFunctionExpression' && node.params.length === 1) {
+        const argument = sourceCode.getFirstToken(node.params[0]!)!;
+        const before = sourceCode.getTokenBefore(argument);
+        return before && isPunctuator('(')(before) ? before : argument;
+    }
+    return (node.id
+        ? sourceCode.getTokenAfter(node.id, isPunctuator('('))
+        : sourceCode.getFirstToken(node, isPunctuator('(')))!;
+}
+
+/**
+ * Compute the reported function head range used by the selected typescript-eslint version.
+ * @param node - Function node.
+ * @param sourceCode - Source code of the linted file.
+ * @param semantics - Selected upstream semantics.
+ * @returns The reported start and end positions.
+ */
+function functionHeadLoc(
+    node: FunctionNode,
+    sourceCode: SourceCode,
+    semantics: ReturnTypeSemantics,
+): { start: Position; end: Position } {
+    const { parent } = node;
+    const memberStart = (member: ESTree.MethodDefinition | ESTree.PropertyDefinition): Position => {
+        const lastDecorator = member.decorators.at(-1);
+        return lastDecorator ? sourceCode.getTokenAfter(lastDecorator)!.loc.start : member.loc.start;
+    };
+    const body = node.body as ESTree.Node;
+    if (!semantics.modern) {
+        let { start } = node.loc;
+        if (parent.type === 'MethodDefinition') {
+            start = memberStart(parent);
+        } else if (parent.type === 'Property' && parent.method) {
+            start = parent.loc.start;
+        }
+        const end = node.type === 'ArrowFunctionExpression'
+            ? sourceCode.getTokenBefore(body, isPunctuator('=>'))!.loc.end
+            : sourceCode.getTokenBefore(body)!.loc.end;
+        return { start: { ...start }, end: { ...end } };
+    }
+    if (parent.type === 'MethodDefinition' || parent.type === 'PropertyDefinition') {
+        return { start: { ...memberStart(parent) }, end: { ...parameterStart(node, sourceCode).loc.start } };
+    }
+    if (parent.type === 'Property') {
+        return { start: { ...parent.loc.start }, end: { ...parameterStart(node, sourceCode).loc.start } };
+    }
+    if (node.type === 'ArrowFunctionExpression') {
+        const arrow = sourceCode.getTokenBefore(body, isPunctuator('=>'))!;
+        return { start: { ...arrow.loc.start }, end: { ...arrow.loc.end } };
+    }
+    return { start: { ...node.loc.start }, end: { ...parameterStart(node, sourceCode).loc.start } };
+}
+
 export const rules = {
+    'explicit-function-return-type': {
+        meta: {
+            type: 'problem',
+            docs: { description: 'Require explicit return types on functions and class methods.' },
+            schema: returnTypeSchema,
+            messages: { missingReturnType: 'Missing return type on function.' },
+        },
+        create(context) {
+            const options = { ...RETURN_TYPE_DEFAULTS, ...(context.options[0] as Partial<ReturnTypeOptions>) };
+            const rawMajor = context.settings.agTypeScriptEslint;
+            const major = typeof rawMajor === 'number' ? rawMajor : DEFAULT_TYPESCRIPT_ESLINT_MAJOR;
+            const semantics: ReturnTypeSemantics = { modern: major >= 6, satisfies: major >= 8 };
+            const stack: { node: FunctionNode; returns: ESTree.ReturnStatement[] }[] = [];
+            const enter = (node: FunctionNode) => {
+                stack.push({ node, returns: [] });
+            };
+            const check = (node: FunctionNode, returns: ESTree.ReturnStatement[]) => {
+                const { parent } = node;
+                if (options.allowHigherOrderFunctions && returnsFunction(node, returns, semantics)) {
+                    return;
+                }
+                const isConstructor = parent.type === 'MethodDefinition' && parent.kind === 'constructor';
+                const isSetter = (parent.type === 'MethodDefinition' || parent.type === 'Property') && parent.kind === 'set';
+                if (node.returnType || isConstructor || isSetter) {
+                    return;
+                }
+                context.report({ node, loc: functionHeadLoc(node, context.sourceCode, semantics), messageId: 'missingReturnType' });
+            };
+            const exitExpression = (node: FunctionNode) => {
+                const { returns } = stack.pop()!;
+                const startsWithVoid = node.type === 'ArrowFunctionExpression' && node.expression
+                    && node.body.type === 'UnaryExpression' && node.body.operator === 'void';
+                if ((options.allowConciseArrowFunctionExpressionsStartingWithVoid && startsWithVoid)
+                    || isAllowedFunction(node, options)) {
+                    return;
+                }
+                if (options.allowTypedFunctionExpressions && (
+                    isValidFunctionExpressionReturnType(node, options, semantics)
+                    || ancestorHasReturnType(node, semantics)
+                )) {
+                    return;
+                }
+                check(node, returns);
+            };
+            return {
+                ArrowFunctionExpression: enter,
+                FunctionExpression: enter,
+                FunctionDeclaration: enter,
+                ReturnStatement(node) {
+                    stack.at(-1)?.returns.push(node);
+                },
+                'ArrowFunctionExpression:exit': exitExpression,
+                'FunctionExpression:exit': exitExpression,
+                'FunctionDeclaration:exit': function exitDeclaration(node: ESTree.Function) {
+                    const { returns } = stack.pop()!;
+                    const typed = options.allowTypedFunctionExpressions && Boolean(node.returnType);
+                    if (typed || isAllowedFunction(node, options)) {
+                        return;
+                    }
+                    check(node, returns);
+                },
+            };
+        },
+    } satisfies Rule,
     'naming-convention': {
         meta: {
             type: 'suggestion',

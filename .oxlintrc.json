@@ -34,7 +34,7 @@
         "packages/**/*.ts"
       ],
       "rules": {
-        "typescript/explicit-function-return-type": "off",
+        "ag-ts/explicit-function-return-type": "off",
         "typescript/explicit-member-accessibility": "off",
         "typescript/consistent-type-imports": "off",
         "typescript/consistent-type-exports": "off",
@@ -85,7 +85,7 @@
         "ag-jsdoc/require-param": "off",
         "typescript/consistent-type-imports": "off",
         "typescript/consistent-type-exports": "off",
-        "typescript/explicit-function-return-type": "off",
+        "ag-ts/explicit-function-return-type": "off",
         "typescript/explicit-member-accessibility": "off",
         "typescript/no-explicit-any": "off",
         "typescript/no-var-requires": "off",

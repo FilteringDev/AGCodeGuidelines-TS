@@ -54,13 +54,16 @@ beforeAll(async () => {
         'eslint/no-empty-function',
         'ag-style/indent',
         'typescript/no-explicit-any',
-        'typescript/explicit-function-return-type',
+        'ag-ts/explicit-function-return-type',
         'typescript/no-var-requires',
         'typescript/ban-ts-comment',
     ];
     const config = {
         ...preset,
-        jsPlugins: [{ name: 'ag-style', specifier: require.resolve('@agcodeguidelines/oxlint-plugin/stylistic') }],
+        jsPlugins: [
+            { name: 'ag-style', specifier: require.resolve('@agcodeguidelines/oxlint-plugin/stylistic') },
+            { name: 'ag-ts', specifier: require.resolve('@agcodeguidelines/oxlint-plugin/typescript') },
+        ],
         rules: Object.fromEntries(names.map((name) => [name, overlay[name as keyof typeof overlay]])),
         overrides: [],
     };

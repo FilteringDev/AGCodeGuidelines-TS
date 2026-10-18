@@ -585,6 +585,12 @@ registerCompatibility(
     'ag-ts; formats from typescript-eslint@8.70.0',
 );
 delete legacyCompatibility['@typescript-eslint/naming-convention']!.language;
+registerCompatibility(
+    '@typescript-eslint/explicit-function-return-type',
+    'ag-ts/explicit-function-return-type',
+    typescriptPlugin.rules['explicit-function-return-type'].meta.schema,
+    'ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics',
+);
 
 const extraClauses: Record<string, string[]> = {
     'types--primitives': [],
@@ -891,6 +897,11 @@ function resolveTarget(source: string): { target: string; implementation: Mappin
             return { target: `${namespace}${name}`, implementation: 'javascript' };
         }
     }
+    // Ported rules take precedence over native rules whose semantics differ from typescript-eslint.
+    if (source.startsWith('@typescript-eslint/')
+        && Object.hasOwn(typescriptPlugin.rules, source.slice('@typescript-eslint/'.length))) {
+        return { target: `ag-ts/${source.slice('@typescript-eslint/'.length)}`, implementation: 'javascript' };
+    }
     if (source.startsWith('@typescript-eslint/') && native.has(`typescript/${source.slice('@typescript-eslint/'.length)}`)) {
         return { target: `typescript/${source.slice('@typescript-eslint/'.length)}`, implementation: 'native' };
     }
@@ -1047,12 +1058,6 @@ for (const [name, defaults] of Object.entries(baseOptionTypeScriptExtensions)) {
 }
 const accessibilityLevel = { enum: ['explicit', 'no-public', 'off'] };
 const typescriptOnlyRules: [string, string, unknown][] = [
-    ['explicit-function-return-type', 'typescript/explicit-function-return-type', [{
-        type: 'object',
-        properties: Object.fromEntries(['allowExpressions', 'allowTypedFunctionExpressions', 'allowHigherOrderFunctions']
-            .map((option) => [option, { type: 'boolean' }])),
-        additionalProperties: false,
-    }]],
     ['explicit-member-accessibility', 'typescript/explicit-member-accessibility', [{
         type: 'object',
         properties: {

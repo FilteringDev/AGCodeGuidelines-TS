@@ -8399,9 +8399,9 @@
     },
     {
       "source": "@typescript-eslint/explicit-function-return-type",
-      "target": "typescript/explicit-function-return-type",
+      "target": "ag-ts/explicit-function-return-type",
       "setting": "error",
-      "implementation": "native",
+      "implementation": "javascript",
       "origin": "adguard-projects",
       "scope": "adguard-projects",
       "language": "typescript"
@@ -13071,7 +13071,7 @@
           }
         ],
         "typescript/consistent-type-exports": "error",
-        "typescript/explicit-function-return-type": "error",
+        "ag-ts/explicit-function-return-type": "error",
         "typescript/explicit-member-accessibility": [
           "error",
           {
@@ -22694,6 +22694,55 @@
       },
       "origin": "ag-ts; formats from typescript-eslint@8.70.0"
     },
+    "@typescript-eslint/explicit-function-return-type": {
+      "canonicalSource": "explicit-function-return-type",
+      "target": "ag-ts/explicit-function-return-type",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "allowExpressions": {
+                "type": "boolean"
+              },
+              "allowTypedFunctionExpressions": {
+                "type": "boolean"
+              },
+              "allowHigherOrderFunctions": {
+                "type": "boolean"
+              },
+              "allowDirectConstAssertionInArrowFunctions": {
+                "type": "boolean"
+              },
+              "allowConciseArrowFunctionExpressionsStartingWithVoid": {
+                "type": "boolean"
+              },
+              "allowFunctionsWithoutTypeParameters": {
+                "type": "boolean"
+              },
+              "allowIIFEs": {
+                "type": "boolean"
+              },
+              "allowedNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics"
+    },
     "@typescript-eslint/default-param-last": {
       "canonicalSource": "default-param-last",
       "target": "eslint/default-param-last",
@@ -22951,37 +23000,6 @@
       },
       "origin": "typescript-eslint@5.62.0/7.18.0 base-option extension",
       "javascript": "base"
-    },
-    "@typescript-eslint/explicit-function-return-type": {
-      "canonicalSource": "explicit-function-return-type",
-      "target": "typescript/explicit-function-return-type",
-      "implementation": "native",
-      "requiresTypeInfo": false,
-      "preserveTypeScriptTarget": true,
-      "language": "typescript",
-      "schema": {
-        "type": "array",
-        "items": [
-          {
-            "type": "object",
-            "properties": {
-              "allowExpressions": {
-                "type": "boolean"
-              },
-              "allowTypedFunctionExpressions": {
-                "type": "boolean"
-              },
-              "allowHigherOrderFunctions": {
-                "type": "boolean"
-              }
-            },
-            "additionalProperties": false
-          }
-        ],
-        "minItems": 0,
-        "maxItems": 1
-      },
-      "origin": "oxlint@1.82.0"
     },
     "@typescript-eslint/explicit-member-accessibility": {
       "canonicalSource": "explicit-member-accessibility",
@@ -50402,11 +50420,11 @@
     },
     {
       "source": "@typescript-eslint/explicit-function-return-type",
-      "target": "typescript/explicit-function-return-type",
+      "target": "ag-ts/explicit-function-return-type",
       "scope": "adguard-projects",
       "language": "typescript",
       "setting": "error",
-      "implementation": "native",
+      "implementation": "javascript",
       "nativeCandidate": "typescript/explicit-function-return-type",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
@@ -52142,6 +52160,19 @@
       "oxlint": "1.82.0"
     },
     {
+      "source": "@typescript-eslint/explicit-function-return-type",
+      "target": "ag-ts/explicit-function-return-type",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "javascript",
+      "nativeCandidate": "typescript/explicit-function-return-type",
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
       "source": "@typescript-eslint/default-param-last",
       "target": "eslint/default-param-last",
       "scope": "alias",
@@ -52253,19 +52284,6 @@
       "setting": "error",
       "implementation": "native",
       "nativeCandidate": "eslint/no-unused-vars",
-      "requiresTypeInfo": false,
-      "candidateRequiresTypeInfo": false,
-      "verification": "candidate-only",
-      "oxlint": "1.82.0"
-    },
-    {
-      "source": "@typescript-eslint/explicit-function-return-type",
-      "target": "typescript/explicit-function-return-type",
-      "scope": "alias",
-      "language": "typescript",
-      "setting": "error",
-      "implementation": "native",
-      "nativeCandidate": "typescript/explicit-function-return-type",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
       "verification": "candidate-only",

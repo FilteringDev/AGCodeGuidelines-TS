@@ -339,7 +339,7 @@ describe('installed package contract', () => {
             ),
         );
         expect(project.settings.agProfile).toBe('adguard-projects');
-        expect(project.overrides[0].rules['typescript/explicit-function-return-type']).toBe('error');
+        expect(project.overrides[0].rules['ag-ts/explicit-function-return-type']).toBe('error');
         expect(json.rules['ag-jsdoc/require-description']).toBeUndefined();
     });
 

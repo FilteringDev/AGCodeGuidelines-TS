@@ -733,7 +733,7 @@ Scope `base` is always active, `guideline` is added by `policy: 'guideline'`, an
 | member-delimiter-style | ag-style/member-delimiter-style | javascript | `"error"` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/consistent-type-imports | typescript/consistent-type-imports | native | `["error",{"fixStyle":"inline-type-imports"}]` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/consistent-type-exports | typescript/consistent-type-exports | native | `"error"` | adguard-projects | adguard-projects |  | opt-in required |
-| @typescript-eslint/explicit-function-return-type | typescript/explicit-function-return-type | native | `"error"` | adguard-projects | adguard-projects |  |  |
+| @typescript-eslint/explicit-function-return-type | ag-ts/explicit-function-return-type | javascript | `"error"` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/explicit-member-accessibility | typescript/explicit-member-accessibility | native | `["error",{"accessibility":"explicit","overrides":{"accessors":"explicit","constructors":"no-public","methods":"explicit","properties":"off","parameterProperties":"explicit"}}]` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/no-explicit-any | typescript/no-explicit-any | native | `"error"` | adguard-projects | adguard-projects |  |  |
 | @typescript-eslint/no-var-requires | typescript/no-var-requires | native | `"error"` | adguard-projects | adguard-projects |  |  |
@@ -873,6 +873,7 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | react-hooks/rules-of-hooks | react/rules-of-hooks | no | oxlint@1.82.0 |
 | react-hooks/exhaustive-deps | react/exhaustive-deps | no | oxlint@1.82.0 |
 | @typescript-eslint/naming-convention | ag-ts/naming-convention | no | ag-ts; formats from typescript-eslint@8.70.0 |
+| @typescript-eslint/explicit-function-return-type | ag-ts/explicit-function-return-type | no | ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics |
 | @typescript-eslint/default-param-last | eslint/default-param-last | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-array-constructor | eslint/no-array-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-shadow | eslint/no-shadow | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
@@ -882,7 +883,6 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | @typescript-eslint/no-redeclare | ag-ts/no-redeclare | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
 | @typescript-eslint/no-use-before-define | eslint/no-use-before-define | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
 | @typescript-eslint/no-unused-vars | eslint/no-unused-vars | no | typescript-eslint@5.62.0/7.18.0 base-option extension |
-| @typescript-eslint/explicit-function-return-type | typescript/explicit-function-return-type | no | oxlint@1.82.0 |
 | @typescript-eslint/explicit-member-accessibility | typescript/explicit-member-accessibility | no | oxlint@1.82.0 |
 | @typescript-eslint/consistent-type-imports | typescript/consistent-type-imports | no | oxlint@1.82.0 |
 | @typescript-eslint/no-explicit-any | typescript/no-explicit-any | no | oxlint@1.82.0 |

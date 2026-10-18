@@ -108,4 +108,12 @@ describe('translateConsumer', () => {
             { adguard: 'readonly' },
         ]);
     });
+
+    it('merges spec settings over the translated root settings', () => {
+        const { config } = translateConsumer(
+            files.map((file) => ({ ...file, config: { ...file.config, settings: { react: { version: '17' } } } })),
+            { scopes: SCOPES, settings: { agTypeScriptEslint: 5 } },
+        );
+        expect(config.settings).toMatchObject({ react: { version: '17' }, agTypeScriptEslint: 5 });
+    });
 });

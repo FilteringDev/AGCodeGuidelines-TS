@@ -33,6 +33,8 @@ export interface TranslationSpec {
     ignorePatterns?: string[];
     typeAware?: boolean;
     acceptNativeDifferences?: boolean;
+    /** Root settings merged over the translated ones, such as `agTypeScriptEslint`. */
+    settings?: Record<string, unknown>;
 }
 
 /** One linted file with its effective source configuration. */
@@ -207,7 +209,7 @@ export function translateConsumer(files: readonly SourceFile[], spec: Translatio
         ignorePatterns: structuredClone(spec.ignorePatterns ?? []),
         env: sharedEnvironment ? structuredClone(configs[0]!.env) : {},
         globals: sharedEnvironment ? structuredClone(configs[0]!.globals) : {},
-        settings: sharedRoot(configs, 'settings'),
+        settings: { ...sharedRoot(configs, 'settings'), ...spec.settings },
         rules: {},
         ...(configs[0]!.options ? { options: sharedRoot(configs, 'options') } : {}),
         jsPlugins: [...jsPlugins.values()],
