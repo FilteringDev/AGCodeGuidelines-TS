@@ -38,7 +38,15 @@ if (process.argv.includes('--write')) {
 } else if ((await readFile('vendor/manifest.json', 'utf8')) !== content) {
     throw new Error('Frozen inputs changed. Review the source update, then run pnpm run snapshots:record.');
 }
-const installed = await readdir('node_modules/.pnpm');
+// A global virtual store keeps no local `.pnpm` directory; its package map lists the installed packages instead.
+const installed = await readFile('node_modules/.package-map.json', 'utf8')
+    .then((map) => Object.keys((JSON.parse(map) as { packages: Record<string, unknown> }).packages))
+    .catch(async (error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ENOENT') {
+            throw error;
+        }
+        return readdir('node_modules/.pnpm');
+    });
 if (installed.some((name) => /^eslint@/u.test(name))) {
     throw new Error('An ESLint engine is installed; disable automatic peer installation and remove it.');
 }

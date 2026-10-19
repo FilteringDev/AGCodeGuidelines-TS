@@ -21,6 +21,7 @@ const externalLoaders: Record<string, string> = {
     'vendor/react/compat/iterators.ts': 'CommonJS-only iterator helper package entrypoints.',
     'vendor/react/lib/util/version.ts': 'Consumer React and Flow package versions.',
     'scripts/airbnb.ts': 'Pinned Airbnb configuration data evaluated in a VM.',
+    'scripts/consumer-eslint.ts': 'Consumer-installed typescript-eslint package manifest.',
     'scripts/generate.ts': 'Installed upstream metadata used to build the rule catalog.',
     'scripts/import-upstream.ts': 'Pinned upstream fixtures evaluated in a VM.',
     'packages/oxlint-config/src/compiler.ts': 'Consumer package specifiers in tsconfig extends chains.',
