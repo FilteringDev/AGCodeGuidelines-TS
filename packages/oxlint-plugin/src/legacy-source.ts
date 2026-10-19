@@ -1,8 +1,8 @@
 /** @file Supply legacy scope metadata using a standalone analyzer, without a lint engine. */
-import { analyze, Variable } from 'eslint-scope';
+import * as eslintScope from 'eslint-scope';
 import globals from 'globals';
 
-import type { Scope } from 'eslint-scope';
+import type { Scope, ScopeManager, Variable } from 'eslint-scope';
 import type { CreateRule, ESTree } from '@oxlint/plugins';
 
 type Context = Parameters<CreateRule['create']>[0];
@@ -15,7 +15,65 @@ type LegacyVariable = Variable & {
     eslintExplicitGlobal?: boolean;
     eslintExplicitGlobalComments?: ESTree.Comment[];
 };
-const VariableConstructor = Variable as unknown as new (variableName: string, owner: Scope) => LegacyVariable;
+type Decorated = { decorators?: ESTree.Decorator[] };
+/** Untyped analyzer internals used to extend reference collection. */
+interface ScopeInternals {
+    ScopeManager: new (options: object) => ScopeManager;
+    Referencer: new (options: object, manager: ScopeManager) => {
+        visit(node: unknown): void;
+        visitClass(node: Decorated): void;
+        visitProperty(node: Decorated): void;
+        PropertyDefinition(node: Decorated): void;
+    };
+}
+const { Referencer, ScopeManager: ScopeManagerConstructor } = eslintScope as unknown as ScopeInternals;
+const VariableConstructor = eslintScope.Variable as unknown as new (
+    variableName: string,
+    owner: Scope,
+) => LegacyVariable;
+
+/**
+ * Reference decorator expressions, which the standalone analyzer otherwise skips.
+ * Class decorators resolve in the enclosing scope and member decorators in the class scope.
+ */
+class DecoratorReferencer extends Referencer {
+    /**
+     * Reference class decorators before entering the class scope.
+     * @param node - Class declaration or expression.
+     */
+    override visitClass(node: Decorated): void {
+        this.visitDecorators(node);
+        super.visitClass(node);
+    }
+
+    /**
+     * Reference method decorators from the class scope.
+     * @param node - Method definition or object property.
+     */
+    override visitProperty(node: Decorated): void {
+        this.visitDecorators(node);
+        super.visitProperty(node);
+    }
+
+    /**
+     * Reference field decorators from the class scope, outside the initializer scope.
+     * @param node - Class field definition.
+     */
+    override PropertyDefinition(node: Decorated): void {
+        this.visitDecorators(node);
+        super.PropertyDefinition(node);
+    }
+
+    /**
+     * Visit each decorator expression in the current scope.
+     * @param node - Decorated class or class element.
+     */
+    private visitDecorators(node: Decorated): void {
+        for (const decorator of node.decorators ?? []) {
+            this.visit(decorator.expression);
+        }
+    }
+}
 // Keyed by the per-file AST: Oxlint reuses one sourceCode object for every file.
 const cache = new WeakMap<object, Map<string, Source>>();
 
@@ -112,15 +170,20 @@ export function legacySource(context: Context, version: number, parserOptions: R
         return cached;
     }
     const features = parserOptions.ecmaFeatures as Record<string, boolean> | undefined;
-    const manager = analyze(source.ast, {
+    // Mirrors eslint-scope's analyze() with a referencer that also visits decorators.
+    const options = {
+        optimistic: false,
+        directive: false,
         ecmaVersion: version,
         sourceType: context.languageOptions.sourceType === 'module' ? 'module' : 'script',
-        nodejsScope: features?.globalReturn || context.languageOptions.sourceType === 'commonjs',
-        impliedStrict: features?.impliedStrict,
+        nodejsScope: Boolean(features?.globalReturn || context.languageOptions.sourceType === 'commonjs'),
+        impliedStrict: Boolean(features?.impliedStrict),
         ignoreEval: true,
-        fallback: (node) => (source.visitorKeys[(node as ESTree.Node).type] as string[]) ?? [],
+        fallback: (node: ESTree.Node) => (source.visitorKeys[node.type] as string[]) ?? [],
         childVisitorKeys: source.visitorKeys,
-    } as Parameters<typeof analyze>[1]);
+    };
+    const manager = new ScopeManagerConstructor(options);
+    new DecoratorReferencer(options, manager).visit(source.ast);
     const global = manager.globalScope;
     const globalSets = globals as Record<string, Record<string, boolean>>;
     const configured: Record<string, boolean | string> = { ...globalSets.es5 };

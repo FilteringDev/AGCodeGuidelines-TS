@@ -33,3 +33,5 @@
 
 - Published JavaScript targets Node 22, and public configuration declarations
   support TypeScript 5 NodeNext consumers.
+- JavaScript-provider scope analysis counts identifiers used in class, method
+  and property decorators as references, so they are no longer reported unused.

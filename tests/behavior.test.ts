@@ -135,6 +135,27 @@ it.each(['jsx-uses-react', 'jsx-uses-vars'])('%s cooperates with unused binding 
     expect(disabled.get('main.jsx')).toHaveLength(1);
 });
 
+it('counts decorator expressions as references in JavaScript scope analysis', async () => {
+    const config = {
+        categories: { correctness: 'off' },
+        jsPlugins: [{ name: 'ag-compat', specifier: REQUIRE.resolve('@agcodeguidelines/oxlint-plugin/compat') }],
+        rules: { 'ag-compat/no-unused-vars': 'error' },
+    };
+    const code = [
+        "import { action, observable, sealed, unused } from 'mobx';",
+        '@sealed',
+        'class Store {',
+        '    @observable value = 1;',
+        '    @action.bound',
+        '    set(next) { this.value = next; }',
+        '}',
+        'export { Store };',
+        '',
+    ].join('\n');
+    const diagnostics = (await lintBatch(config, { 'main.js': code })).get('main.js') ?? [];
+    expect(diagnostics.map(({ message }) => message)).toEqual([expect.stringContaining("'unused'")]);
+});
+
 it('keeps per-file scope caches when providers load before Oxlint', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'ag-preload-'));
     const compat = REQUIRE.resolve('@agcodeguidelines/oxlint-plugin/compat');
