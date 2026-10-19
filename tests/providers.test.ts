@@ -12,6 +12,7 @@ import {
 import typescriptStylistic from '../packages/oxlint-plugin/src/typescript-stylistic';
 import { lintBatch } from './cli';
 
+const BOUNDARIES = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/boundaries'));
 const COMPAT = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/compat'));
 const NOTICE = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/notice'));
 const STYLE = fileURLToPath(import.meta.resolve('@agcodeguidelines/oxlint-plugin/stylistic'));
@@ -207,6 +208,7 @@ describe('effective compatibility configuration', () => {
                     'import/parsers': { '@typescript-eslint/parser': ['.ts'] },
                     'import/extensions': ['.ts'],
                     propWrapperFunctions: ['exact'],
+                    'boundaries/elements': [{ type: 'test-folder', pattern: 'test', mode: 'folder' }],
                 },
             },
         });
@@ -216,9 +218,37 @@ describe('effective compatibility configuration', () => {
             'import/resolver': { typescript: { alwaysTryTypes: true, project: 'tsconfig.json' }, node: { extensions: ['.ts'] } },
             'import/extensions': ['.ts'],
             propWrapperFunctions: ['exact'],
+            'boundaries/elements': [{ type: 'test-folder', pattern: 'test', mode: 'folder' }],
             agSourceType: 'module',
             agRuleEcmaVersion: 2018,
         });
+    });
+
+    it('keeps the boundaries elements that the element-types rule reads', async () => {
+        const result = createCompatibilityConfig({
+            rules: {
+                'boundaries/element-types': ['error', {
+                    default: 'allow',
+                    rules: [{ from: 'test-folder', disallow: ['src-index'] }],
+                }],
+            },
+            context: {
+                settings: {
+                    'boundaries/elements': [
+                        { type: 'src-index', pattern: 'src/index.js', mode: 'file' },
+                        { type: 'test-folder', pattern: 'test', mode: 'folder' },
+                    ],
+                },
+            },
+        });
+        expect(result.fallback).toEqual([]);
+        result.config.jsPlugins = [{ name: 'ag-boundaries', specifier: BOUNDARIES }];
+        const diagnostics = await lintBatch(result.config, {
+            'src/index.js': 'export const value = 1;\n',
+            'test/main.js': 'import { value } from \'../src/index.js\';\n\nexport { value };\n',
+        });
+        expect(diagnostics.get('src/index.js')).toEqual([]);
+        expect(diagnostics.get('test/main.js')).toHaveLength(1);
     });
 
     it.each([[2015, 0], [2018, 1]])('reports the translated ecmaVersion %i to rules', async (ecmaVersion, count) => {

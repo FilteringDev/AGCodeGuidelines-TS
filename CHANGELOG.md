@@ -35,3 +35,5 @@
   support TypeScript 5 NodeNext consumers.
 - JavaScript-provider scope analysis counts identifiers used in class, method
   and property decorators as references, so they are no longer reported unused.
+- Compatibility translation keeps `boundaries/*` element, ignore, include, root
+  path and dependency-node settings, so translated boundaries rules apply again.

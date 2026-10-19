@@ -94,6 +94,12 @@ const PASSTHROUGH_SETTINGS = new Set([
     'formComponents',
     'linkComponents',
     'jsdoc',
+    'boundaries/elements',
+    'boundaries/ignore',
+    'boundaries/include',
+    'boundaries/root-path',
+    'boundaries/dependency-nodes',
+    'boundaries/additional-dependency-nodes',
 ]);
 const RESOLVER_OPTIONS: Record<string, readonly string[]> = {
     node: ['extensions', 'moduleDirectory'],
