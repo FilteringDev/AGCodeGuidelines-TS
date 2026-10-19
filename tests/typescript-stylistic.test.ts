@@ -74,6 +74,13 @@ new RuleTester().run('semi', plugin.rules.semi!, {
  */
 const skipped: Record<string, RuleTester.ValidTestCase[]> = {
     'function-call-spacing': [{ code: "const loaded = import ('./data.js');", options: ['never'] }],
+    indent: [
+        { code: 'const value = run<\nstring\n>();', options: [4] },
+        {
+            code: 'class Store {\n    read = async (): Promise<\n    string\n    > => value;\n}',
+            options: [4, { SwitchCase: 1 }],
+        },
+    ],
     'key-spacing': [{ code: "import data from './data.json' with { type : 'json' };" }],
     'keyword-spacing': [
         { code: 'class Store {\n    accessor[key] = 1;\n}' },
@@ -148,7 +155,6 @@ describe('TypeScript style plugin contract', () => {
     it('keeps the pinned metadata and leaves rules without coverage differences unchanged', () => {
         const unchanged = new Set([
             'comma-spacing',
-            'indent',
             'lines-around-comment',
             'lines-between-class-members',
             'member-delimiter-style',

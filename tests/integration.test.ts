@@ -171,6 +171,19 @@ const legacyCases: {
         valid: 'interface Shape {\n area: number;\n}',
         invalid: 'interface Shape {\n area: number\n}',
     },
+    // Consumer layout settings keep the pinned core rules, which ignore TypeScript members.
+    {
+        source: 'indent',
+        setting: ['error', 4, { SwitchCase: 1 }],
+        valid: 'interface Shape {\n  area: number;\n}\nfunction run() {\n    return 1;\n}',
+        invalid: 'function run() {\n  return 1;\n}',
+    },
+    {
+        source: 'key-spacing',
+        setting: ['error', { beforeColon: false, afterColon: true }],
+        valid: 'interface Index {\n    [key: string] : string;\n}\nconst value = { area: 1 };',
+        invalid: 'const value = { area:1 };',
+    },
     {
         source: '@typescript-eslint/func-call-spacing',
         setting: ['error', 'never'],

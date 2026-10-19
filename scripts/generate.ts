@@ -419,6 +419,8 @@ interface Equivalent {
     target: string | null;
     reason: string;
     adapt?: (setting: RuleSetting) => RuleSetting;
+    /** Consumer settings keep the pinned core target, which ignores the syntax the equivalent adds. */
+    sourceSettingKeepsCore?: true;
 }
 
 const TYPESCRIPT_EXTENSIONS = {
@@ -476,7 +478,11 @@ const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
         target: 'eslint/no-use-before-define',
         reason: 'Ignores type-only references such as `typeof` queries.',
     },
-    indent: { target: 'ag-style/indent', reason: 'Indents interfaces, enums, and type annotations.' },
+    indent: {
+        target: 'ag-style/indent',
+        reason: 'Indents interfaces, enums, and type annotations.',
+        sourceSettingKeepsCore: true,
+    },
     'comma-dangle': {
         target: 'ag-style/comma-dangle',
         reason: 'Also checks enums, type parameters, and tuples with the array setting, as airbnb-typescript does.',
@@ -496,7 +502,11 @@ const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
         target: 'ag-style/comma-spacing',
         reason: 'Checks type arguments and accepts the TSX `<T,>` form.',
     },
-    'key-spacing': { target: 'ag-style/key-spacing', reason: 'Checks interface and type literal members.' },
+    'key-spacing': {
+        target: 'ag-style/key-spacing',
+        reason: 'Checks interface and type literal members.',
+        sourceSettingKeepsCore: true,
+    },
     'lines-between-class-members': {
         target: 'ag-style/lines-between-class-members',
         reason: 'Accepts adjacent overload signatures.',
@@ -989,6 +999,7 @@ function mapRule(
                 ? 'disabled'
                 : equivalent.target.startsWith('eslint/') ? 'native' : 'javascript',
             reason: equivalent.reason,
+            ...(equivalent.sourceSettingKeepsCore ? { sourceSettingKeepsCore: true } : {}),
         };
         const layer = layers[scope].typescriptRules;
         if (mapping.target && mapping.target !== equivalent.target) {

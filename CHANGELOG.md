@@ -48,6 +48,14 @@
   `brace-style`. The translated `block-spacing` alias now has an implementation.
 - `ag-ts/naming-convention` no longer checks `infer` type parameters and
   mapped-type keys, matching typescript-eslint.
+- In TypeScript files without imports or exports, configured globals no longer
+  turn top-level declarations of the same name into globals when `sourceType` is
+  `module`, so `no-redeclare` accepts `declare const` beside a configured global.
+- Compatibility translation keeps the pinned core `indent` and `key-spacing`
+  rules for consumer-supplied TypeScript settings, so they no longer report
+  interface members and index signatures the former configuration accepted.
+- `ag-ts-style/indent` no longer checks type-argument lists, which
+  typescript-eslint leaves unchecked.
 - TypeScript `class-methods-use-this` counts `this` in default parameters, as
   ESLint and typescript-eslint do, through the new
   `ag-ts/class-methods-use-this`. `@typescript-eslint/class-methods-use-this`

@@ -79,10 +79,15 @@ const cache = new WeakMap<object, Map<string, Source>>();
 
 /**
  * Preserve TypeScript scope information while applying explicit global directives.
+ * Oxc parses a TypeScript file without imports or exports as a script, so its top-level
+ * declarations share the global scope with configured globals. Under module semantics
+ * ESLint keeps them in a separate module scope, so the facade clears the global flags
+ * Oxlint copies onto those declarations.
  * @param source - Native TypeScript source and scope graph.
+ * @param moduleSemantics - Whether a script-parsed file is configured as a module.
  * @returns A source facade preserving explicit global declarations.
  */
-function nativeCommentGlobals(source: Source): Source {
+function nativeCommentGlobals(source: Source, moduleSemantics: boolean): Source {
     const declarations = new Map<string, string>();
     for (const comment of source.getAllComments()) {
         if (comment.type !== 'Block') {
@@ -98,7 +103,7 @@ function nativeCommentGlobals(source: Source): Source {
             declarations.set(match[1]!, match[2] ?? 'readonly');
         }
     }
-    if (!declarations.size) {
+    if (!declarations.size && !moduleSemantics) {
         return source;
     }
     type NativeScope = ReturnType<Source['getScope']>;
@@ -110,6 +115,20 @@ function nativeCommentGlobals(source: Source): Source {
         }
         const set = new Map(scope.set);
         if (scope.type === 'global') {
+            if (moduleSemantics) {
+                for (const [name, variable] of set) {
+                    const legacy = variable as unknown as LegacyVariable;
+                    if (variable.defs.length
+                        && (legacy.eslintImplicitGlobalSetting !== undefined || legacy.eslintExplicitGlobal)) {
+                        set.set(name, Object.create(variable, {
+                            writeable: { value: undefined },
+                            eslintImplicitGlobalSetting: { value: undefined },
+                            eslintExplicitGlobal: { value: false },
+                            eslintExplicitGlobalComments: { value: undefined },
+                        }) as typeof variable);
+                    }
+                }
+            }
             for (const [name, value] of declarations) {
                 if (value === 'off') {
                     if (!set.get(name)?.defs.length) {
@@ -155,7 +174,10 @@ function nativeCommentGlobals(source: Source): Source {
 export function legacySource(context: Context, version: number, parserOptions: Record<string, unknown>): Source {
     const source = context.sourceCode;
     if (/\.[cm]?tsx?$/u.test(context.filename)) {
-        return nativeCommentGlobals(source);
+        return nativeCommentGlobals(
+            source,
+            context.languageOptions.sourceType === 'module' && source.ast.sourceType === 'script',
+        );
     }
     const key = JSON.stringify([
         version,

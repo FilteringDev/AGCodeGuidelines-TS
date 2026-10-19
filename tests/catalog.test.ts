@@ -125,6 +125,28 @@ describe('legacy rule resolution', () => {
         });
     });
 
+    it('keeps the pinned core target for consumer layout settings in TypeScript', () => {
+        // The pinned core rules ignore TypeScript members and type annotations. A consumer configuration keeps
+        // that behavior, and the preset still selects the TypeScript-aware equivalent.
+        const cases = [
+            ['indent', ['error', 4, { SwitchCase: 1 }]],
+            ['key-spacing', ['error', { beforeColon: false, afterColon: true }]],
+        ] as const;
+        for (const [source, setting] of cases) {
+            expect(resolveRule(source, { language: 'typescript' })).toMatchObject({
+                status: 'resolved', target: `ag-style/${source}`,
+            });
+            expect(resolveRule(source, { language: 'typescript', setting })).toMatchObject({
+                status: 'resolved', target: `ag-compat/${source}`, setting,
+            });
+            expect(resolveRule(source, { language: 'typescript', setting: ['error', { unknownOption: true }] }))
+                .toMatchObject({ status: 'unsupported' });
+        }
+        expect(resolveRule('semi', { language: 'typescript', setting: ['error', 'always'] })).toMatchObject({
+            status: 'resolved', target: 'ag-style/semi',
+        });
+    });
+
     it('reports unknown names and returns independent settings', () => {
         expect(resolveRule('unknown/missing')).toMatchObject({ status: 'unsupported' });
         const resolved = resolveRule('quotes');

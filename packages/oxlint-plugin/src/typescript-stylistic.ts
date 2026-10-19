@@ -114,6 +114,8 @@ const COVERAGE: Partial<Record<RuleName, Coverage>> = {
         adapt: commaDangleContext,
     },
     'function-call-spacing': { skip: ['ImportExpression'] },
+    // typescript-eslint lists type arguments as known nodes but sets no offsets for their elements.
+    indent: { skip: ['TSTypeParameterInstantiation'] },
     'key-spacing': { skip: ['ImportAttribute'] },
     'keyword-spacing': { skip: ['AccessorProperty', 'TSSatisfiesExpression'] },
     'no-extra-parens': {

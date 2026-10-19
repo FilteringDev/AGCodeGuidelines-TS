@@ -34,6 +34,11 @@ export interface TypeScriptEquivalent {
     setting: RuleSetting;
     implementation: Implementation;
     reason: string;
+    /**
+     * A consumer setting keeps the pinned core target in TypeScript files. The core rule ignores
+     * the TypeScript syntax this equivalent checks, so legacy configurations keep their results.
+     */
+    sourceSettingKeepsCore?: true;
 }
 
 export interface Mapping {
@@ -273,9 +278,10 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
         }
         return unowned(`${source} requires TypeScript source files.`);
     }
-    const equivalent = !compatibility?.preserveTypeScriptTarget && compatibility?.language !== 'typescript'
+    const candidate = !compatibility?.preserveTypeScriptTarget && compatibility?.language !== 'typescript'
         && language === 'typescript'
         ? selected?.typescript : undefined;
+    const equivalent = candidate?.sourceSettingKeepsCore && options.setting !== undefined ? undefined : candidate;
     const useTypeScriptEquivalent = Boolean(equivalent);
     const target = useTypeScriptEquivalent ? equivalent!.target : compatibility?.target ?? selected!.target;
     const setting = options.setting ?? (useTypeScriptEquivalent ? equivalent!.setting : selected?.setting) ?? 'error';

@@ -3688,7 +3688,8 @@
           }
         ],
         "implementation": "javascript",
-        "reason": "Indents interfaces, enums, and type annotations."
+        "reason": "Indents interfaces, enums, and type annotations.",
+        "sourceSettingKeepsCore": true
       }
     },
     {
@@ -3723,7 +3724,8 @@
           }
         ],
         "implementation": "javascript",
-        "reason": "Checks interface and type literal members."
+        "reason": "Checks interface and type literal members.",
+        "sourceSettingKeepsCore": true
       }
     },
     {

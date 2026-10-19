@@ -100,9 +100,34 @@ const invalid = [
     ['switch case', 'switch (mode) {\n    case 1:\n        var value = 1;\n        var value = 2;\n}', 1],
 ] as const;
 
+// Oxc parses a TypeScript file without imports or exports as a script, where configured globals share
+// the scope of top-level declarations. ESLint applies the configured module semantics instead.
+const scriptParsed = {
+    code: 'declare const __IS_MV3__: boolean;\nconst status = __IS_MV3__;',
+    languageOptions: {
+        sourceType: 'script',
+        globals: { __IS_MV3__: 'writable', status: 'readonly' },
+        parserOptions: { lang: 'ts' },
+    },
+} as const;
+
 new RuleTester().run('no-redeclare', rules['no-redeclare'], {
-    valid: valid.map(([name, code]) => ({ name, code, ...typescript })),
+    valid: [
+        ...valid.map(([name, code]) => ({ name, code, ...typescript })),
+        { name: 'configured global declared under module semantics', ...scriptParsed, settings: { agSourceType: 'module' } },
+        {
+            name: 'comment global declared under module semantics',
+            code: '/* global extra */\ndeclare const __IS_MV3__: boolean;',
+            languageOptions: scriptParsed.languageOptions,
+            settings: { agSourceType: 'module' },
+        },
+    ],
     invalid: [
+        {
+            name: 'configured global declared in a script',
+            ...scriptParsed,
+            errors: [{ messageId: 'redeclaredAsBuiltin' }, { messageId: 'redeclaredAsBuiltin' }],
+        },
         ...invalid.map(([name, code, errors]) => ({
             name,
             code,

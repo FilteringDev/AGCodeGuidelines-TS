@@ -145,8 +145,16 @@ the validated consumers: `comma-dangle` report locations for enums, generics
 and tuples, single-parameter TSX generics under `never`, and the
 `agRuleEcmaVersion` default (latest, where ESLint 8 defaults to 5);
 `keyword-spacing` around `type` in import and export declarations; braces of
-import attributes in `object-curly-spacing`; `indent` node coverage; and the
-extra statement scopes of `padding-line-between-statements`.
+import attributes in `object-curly-spacing`; `indent` node coverage beyond
+type-argument lists, which those sources list as known nodes without offsets
+and `ag-ts-style/indent` therefore leaves unchecked; and the extra statement
+scopes of `padding-line-between-statements`.
+
+A consumer-supplied core `indent` or `key-spacing` setting for TypeScript files
+keeps the pinned ESLint core rule (`ag-compat/<rule>`), as the former ESLint
+configuration ran it. That rule ignores TypeScript members such as interface
+bodies and index signatures. The preset and settings-free requests still select
+the TypeScript-aware Stylistic rule.
 
 `createCompatibilityConfigGroups()` accepts multiple already-resolved, explicit
 source contexts and returns independent Oxlint configs. It is not a file walker
@@ -191,9 +199,17 @@ differences that remain after translation. Each is a pinned-version or engine
 difference, not a dropped check:
 
 - `ag-jsdoc` is `eslint-plugin-jsdoc@64.3.6`, while the consumers ran 48.11.0.
-  `valid-types` rejects `@param ...args` names, and `check-param-names` checks
-  function-typed property signatures. Rewrite or suppress those comments with
-  the `ag-jsdoc/` owner.
+  `valid-types` rejects `@param ...args` names, `check-param-names` checks
+  function-typed property signatures and destructured parameters,
+  `check-tag-names` reports inline tags such as `{@code}`, and `require-throws`
+  reports a throwing constructor without its own `@throws` tag, which 48.11.0
+  did not report in the measured consumer.
+  Rewrite or suppress those comments with the `ag-jsdoc/` owner.
+- Oxc parses a TypeScript file without imports or exports as a script, so its
+  top-level declarations would merge with configured globals of the same name.
+  When the configured `sourceType` is `module`, the TypeScript scope adapter
+  keeps such declarations local, as `@typescript-eslint/parser` does, and
+  `no-redeclare` no longer reports `declare const` beside a configured global.
 - Oxlint 1.82.0 starts a block `eslint-disable` range at the end of the comment,
   so a diagnostic at line 1, column 0 or 1 is not suppressed by a block
   directive that also starts on line 1 (for example a file-overview check). Put
