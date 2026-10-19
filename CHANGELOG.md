@@ -55,7 +55,9 @@
   rules for consumer-supplied TypeScript settings, so they no longer report
   interface members and index signatures the former configuration accepted.
 - `ag-ts-style/indent` no longer checks type-argument lists, which
-  typescript-eslint leaves unchecked.
+  typescript-eslint leaves unchecked. When `ignoredNodes` lists
+  `TSTypeParameterInstantiation`, the rule still ignores the tokens of those
+  lists.
 - TypeScript `class-methods-use-this` counts `this` in default parameters, as
   ESLint and typescript-eslint do, through the new
   `ag-ts/class-methods-use-this`. `@typescript-eslint/class-methods-use-this`

@@ -80,6 +80,15 @@ const skipped: Record<string, RuleTester.ValidTestCase[]> = {
             code: 'class Store {\n    read = async (): Promise<\n    string\n    > => value;\n}',
             options: [4, { SwitchCase: 1 }],
         },
+        // `ignoredNodes` binds the skipped visitor key to the listener that ignores the node's tokens.
+        {
+            code: 'class Events {\n    static start = new Event<\n        Details,\n        Options\n    >();\n}',
+            options: [4, { ignoredNodes: ['TSTypeParameterInstantiation'] }],
+        },
+        {
+            code: 'type Params = Pick<\n    Context,\n    \'id\'\n>;',
+            options: [4, { ignoredNodes: ['TSTypeParameterInstantiation'] }],
+        },
     ],
     'key-spacing': [{ code: "import data from './data.json' with { type : 'json' };" }],
     'keyword-spacing': [

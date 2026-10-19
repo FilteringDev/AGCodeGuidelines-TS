@@ -48,6 +48,8 @@ type Handler = (node: Node) => void;
 interface Coverage {
     /** Stylistic visitors for nodes that neither the typescript-eslint extension nor its base rule checks. */
     readonly skip?: readonly string[];
+    /** Whether the rule options bind a skipped visitor key to another listener that must stay. */
+    readonly keep?: (context: Context, node: string) => boolean;
     /** Nodes the source rule checks, mapped to the Stylistic visitor whose handler checks the same tokens. */
     readonly reuse?: Readonly<Record<string, string>>;
     /** Options adapter for a source rule that reads its options differently. */
@@ -72,6 +74,18 @@ function isSingleLineBody(context: Context, node: Node): boolean {
     const close = context.sourceCode.getLastToken(node);
     return exceptions?.allowSingleLine === true && open !== null && close !== null
         && open.loc.end.line === close.loc.start.line;
+}
+
+/**
+ * Check whether `indent` options ignore a node type by the selector that names it.
+ * @param context - Oxlint rule context with the merged `indent` options.
+ * @param node - Node type of a skipped visitor.
+ * @returns Whether `ignoredNodes` lists the node type, so that the visitor key holds the listener that ignores
+ * the node's tokens instead of the listener that sets their offsets.
+ */
+function isIgnoredNode(context: Context, node: string): boolean {
+    const options = context.options[1] as { ignoredNodes?: unknown } | undefined;
+    return Array.isArray(options?.ignoredNodes) && options.ignoredNodes.includes(node);
 }
 
 /**
@@ -115,7 +129,7 @@ const COVERAGE: Partial<Record<RuleName, Coverage>> = {
     },
     'function-call-spacing': { skip: ['ImportExpression'] },
     // typescript-eslint lists type arguments as known nodes but sets no offsets for their elements.
-    indent: { skip: ['TSTypeParameterInstantiation'] },
+    indent: { skip: ['TSTypeParameterInstantiation'], keep: isIgnoredNode },
     'key-spacing': { skip: ['ImportAttribute'] },
     'keyword-spacing': { skip: ['AccessorProperty', 'TSSatisfiesExpression'] },
     'no-extra-parens': {
@@ -149,6 +163,7 @@ function matchCoverage(rule: CreateRule, coverage: Coverage | undefined): Rule {
     }
     const {
         skip = [],
+        keep,
         reuse = {},
         adapt,
         exempt,
@@ -159,7 +174,9 @@ function matchCoverage(rule: CreateRule, coverage: Coverage | undefined): Rule {
             const adapted = adapt ? adapt(context) : context;
             const visitor: Visitor = { ...rule.create(adapted) };
             for (const node of skip) {
-                delete visitor[node];
+                if (!keep?.(adapted, node)) {
+                    delete visitor[node];
+                }
             }
             for (const [node, source] of Object.entries(reuse)) {
                 if (!visitor[source]) {
