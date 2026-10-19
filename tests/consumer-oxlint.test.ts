@@ -113,6 +113,18 @@ describe('consumer Oxlint groups', () => {
         });
     });
 
+    it('matches hooks diagnostics that Oxlint reports under the react-hooks display name', () => {
+        const source = 'react-hooks/exhaustive-deps';
+        const targetsByFile = new Map([['a.tsx', new Map([[source, 'react/exhaustive-deps']])]]);
+        expect(compareFindings(
+            [{
+                file: 'a.tsx', ruleId: source, line: 3, column: 8,
+            }],
+            [{ code: 'react-hooks(exhaustive-deps)', filename: 'a.tsx', labels: [{ span: { line: 3, column: 8 } }] }],
+            targetsByFile,
+        )).toEqual({ [source]: { matched: 1, eslintOnly: [], oxlintOnly: [] } });
+    });
+
     it('translates suppression comments to the target rule names', () => {
         const targets = new Map([['no-console', 'ag-compat/no-console'], ['no-var', 'eslint/no-var']]);
         const text = [

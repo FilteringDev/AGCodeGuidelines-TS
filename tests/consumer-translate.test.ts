@@ -15,6 +15,7 @@ import {
     assignScopes,
     completeOverrides,
     inScope,
+    isIgnored,
     lastScope,
     translateConsumer,
 } from '../scripts/consumer-translate';
@@ -32,6 +33,18 @@ describe('consumer translation scopes', () => {
         expect(inScope('.config/tool.js', ['**/*.js'])).toBe(true);
         expect(inScope('src/a.test.ts', ['**/*.ts'], ['**/*.test.ts'])).toBe(false);
         expect(inScope('src/a.ts', ['**/*.ts'], ['**/*.test.ts'])).toBe(true);
+    });
+
+    it('ignores files the way gitignore patterns do', () => {
+        expect(isIgnored('src/.eslintrc.cjs', ['**/.*'])).toBe(true);
+        expect(isIgnored('.eslintrc.cjs', ['**/.*'])).toBe(true);
+        expect(isIgnored('src/a.js', ['**/.*'])).toBe(false);
+        expect(isIgnored('a/vendor/b.js', ['vendor/'])).toBe(true);
+        expect(isIgnored('vendor', ['vendor/'])).toBe(false);
+        expect(isIgnored('src/build/a.js', ['/build'])).toBe(false);
+        expect(isIgnored('build/a.js', ['/build'])).toBe(true);
+        expect(isIgnored('x/pages/a/imported.js', ['pages/*/imported.js'])).toBe(false);
+        expect(isIgnored('pages/a/imported.js', ['pages/*/imported.js'])).toBe(true);
     });
 
     it('lets the last matching scope win', () => {
@@ -78,6 +91,13 @@ describe('translateConsumer', () => {
             config: { rules: { 'no-console': ['error'], 'no-debugger': ['error'] } },
         },
     ];
+
+    it('leaves ignored files out of scope assignment', () => {
+        const extra: SourceFile = { path: 'src/.eslintrc.js', language: 'javascript', config: { rules: {} } };
+        expect(() => translateConsumer([...files, extra], { scopes: SCOPES })).toThrow(/mixes 2 configurations/u);
+        const { scopes } = translateConsumer([...files, extra], { scopes: SCOPES, ignorePatterns: ['**/.*'] });
+        expect(scopes.map((scope) => scope.count)).toEqual([1, 1, 1]);
+    });
 
     it('emits one complete override per scope', () => {
         const { config, scopes } = translateConsumer(files, { scopes: SCOPES, ignorePatterns: ['build'] });

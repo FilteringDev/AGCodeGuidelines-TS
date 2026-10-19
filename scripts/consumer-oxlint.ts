@@ -33,6 +33,8 @@ export interface RuleComparison {
 
 const DIRECTIVE = /^(\s*eslint-(?:disable|enable|disable-line|disable-next-line))(\s+)(.*?)(\s+--[\s\S]*|\s*)$/su;
 const PARSE = 'parse';
+/** Diagnostic plugin names that Oxlint prints differently from the configuration plugin name. */
+const DISPLAY_PLUGINS: Readonly<Record<string, string>> = { 'react-hooks': 'react' };
 
 export interface OxlintGroupRun {
     /** Built resource-aware lint CLI. */
@@ -163,11 +165,15 @@ export function disableSuppressions(filename: string, text: string): { text: str
 /**
  * Read the translated rule of an Oxlint diagnostic.
  * @param diagnostic - Oxlint diagnostic.
- * @returns `plugin/rule`, or `parse` for diagnostics without a rule.
+ * @returns `plugin/rule` with the configuration plugin name, or `parse` for diagnostics without a rule.
  */
 function diagnosticTarget(diagnostic: OxlintDiagnostic): string {
     const match = /^([^()]+)\((.+)\)$/u.exec(diagnostic.code ?? '');
-    return match ? `${match[1]}/${match[2]}` : PARSE;
+    if (!match) {
+        return PARSE;
+    }
+    // Oxlint configures the hooks rules under `react/` but reports them as `react-hooks(...)`.
+    return `${DISPLAY_PLUGINS[match[1]!] ?? match[1]}/${match[2]}`;
 }
 
 /**

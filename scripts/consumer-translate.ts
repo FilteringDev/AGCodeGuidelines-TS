@@ -30,6 +30,7 @@ export interface TranslationScope {
 /** Consumer-specific translation input. */
 export interface TranslationSpec {
     scopes: TranslationScope[];
+    /** Patterns Oxlint ignores; matching source files need no scope and are left out of the translation. */
     ignorePatterns?: string[];
     typeAware?: boolean;
     acceptNativeDifferences?: boolean;
@@ -66,6 +67,25 @@ const MATCH_OPTIONS = { dot: true };
 export function inScope(path: string, files: readonly string[], excludeFiles: readonly string[] = []): boolean {
     return files.some((pattern) => minimatch(path, pattern, MATCH_OPTIONS))
         && !excludeFiles.some((pattern) => minimatch(path, pattern, MATCH_OPTIONS));
+}
+
+/**
+ * Check whether an ignore pattern excludes a file, following the gitignore rules Oxlint applies.
+ * A pattern without an inner slash matches at any depth, and a pattern matching a directory excludes its contents.
+ * @param path - File path relative to the configuration directory.
+ * @param patterns - Ignore patterns.
+ * @returns Whether the file is ignored.
+ */
+export function isIgnored(path: string, patterns: readonly string[]): boolean {
+    const segments = path.split('/');
+    return patterns.some((raw) => {
+        const directoryOnly = raw.endsWith('/');
+        const anchored = raw.replace(/\/$/u, '').includes('/');
+        const pattern = raw.replace(/^\/|\/$/gu, '');
+        const options = { ...MATCH_OPTIONS, matchBase: !anchored };
+        return segments.some((_, index) => (!directoryOnly || index < segments.length - 1)
+            && minimatch(segments.slice(0, index + 1).join('/'), pattern, options));
+    });
 }
 
 /**
@@ -155,7 +175,8 @@ function sharedRoot<K extends keyof OxlintConfig>(configs: readonly OxlintConfig
  * @returns The configuration, scope assignment and source-owned rules.
  */
 export function translateConsumer(files: readonly SourceFile[], spec: TranslationSpec): TranslationResult {
-    const keyed = files.map((file) => ({ ...file, key: JSON.stringify([file.language, file.config]) }));
+    const keyed = files.filter((file) => !isIgnored(file.path, spec.ignorePatterns ?? []))
+        .map((file) => ({ ...file, key: JSON.stringify([file.language, file.config]) }));
     const keys = assignScopes(keyed, spec.scopes);
     const results = spec.scopes.map((scope, index) => {
         const source = keyed.find((file) => file.key === keys[index])!;
@@ -263,7 +284,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
         settings: { ...(major === undefined ? {} : { agTypeScriptEslint: major }), ...spec.settings },
     });
     writeFileSync(resolve(outputArgument), `${JSON.stringify(result.config, null, 2)}\n`);
-    process.stdout.write(`${files.length} files, ${result.scopes.length} scopes\n`);
+    const ignored = files.filter((file) => isIgnored(file.path, spec.ignorePatterns ?? [])).length;
+    process.stdout.write(`${files.length} files (${ignored} ignored), ${result.scopes.length} scopes\n`);
     result.scopes.forEach((scope, index) => {
         const rules = Object.values(result.config.overrides![index]!.rules ?? {}).filter((setting) => setting !== 'off');
         process.stdout.write(`  scope ${index} ${scope.language} ${scope.files.join(',')}: `
