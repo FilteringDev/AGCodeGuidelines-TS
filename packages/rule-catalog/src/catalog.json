@@ -2150,7 +2150,7 @@
       "implementation": "javascript",
       "origin": "airbnb@19.0.4/base@15.0.0",
       "typescript": {
-        "target": "eslint/class-methods-use-this",
+        "target": "ag-ts/class-methods-use-this",
         "setting": [
           "error",
           {
@@ -2175,8 +2175,8 @@
             "ignoreOverrideMethods": true
           }
         ],
-        "implementation": "native",
-        "reason": "Exempts override methods, which a base class requires to be instance methods."
+        "implementation": "javascript",
+        "reason": "Exempts override methods, which a base class requires to be instance methods, and counts `this` in default parameters."
       }
     },
     {
@@ -12494,7 +12494,7 @@
   },
   "typescriptRules": {
     "ag-compat/class-methods-use-this": "off",
-    "eslint/class-methods-use-this": [
+    "ag-ts/class-methods-use-this": [
       "error",
       {
         "exceptMethods": [
@@ -22742,6 +22742,59 @@
         "maxItems": 1
       },
       "origin": "ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics"
+    },
+    "@typescript-eslint/class-methods-use-this": {
+      "canonicalSource": "class-methods-use-this",
+      "target": "ag-ts/class-methods-use-this",
+      "implementation": "javascript",
+      "requiresTypeInfo": false,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "exceptMethods": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "enforceForClassFields": {
+                "type": "boolean",
+                "default": true
+              },
+              "ignoreOverrideMethods": {
+                "type": "boolean"
+              },
+              "ignoreClassesThatImplementAnInterface": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "public-fields"
+                    ]
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "ag-ts; typescript-eslint@7.18.0 semantics",
+      "javascript": "base",
+      "typescriptOnlyOptions": [
+        "ignoreOverrideMethods",
+        "ignoreClassesThatImplementAnInterface"
+      ]
     },
     "@typescript-eslint/default-param-last": {
       "canonicalSource": "default-param-last",
@@ -40466,7 +40519,7 @@
     },
     {
       "source": "class-methods-use-this",
-      "target": "eslint/class-methods-use-this",
+      "target": "ag-ts/class-methods-use-this",
       "scope": "base",
       "language": "typescript",
       "setting": [
@@ -40493,7 +40546,7 @@
           "ignoreOverrideMethods": true
         }
       ],
-      "implementation": "native",
+      "implementation": "javascript",
       "nativeCandidate": "eslint/class-methods-use-this",
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
@@ -52170,6 +52223,19 @@
       "requiresTypeInfo": false,
       "candidateRequiresTypeInfo": false,
       "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/class-methods-use-this",
+      "target": "ag-ts/class-methods-use-this",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "javascript",
+      "nativeCandidate": null,
+      "requiresTypeInfo": false,
+      "candidateRequiresTypeInfo": false,
+      "verification": "no-native-candidate",
       "oxlint": "1.82.0"
     },
     {

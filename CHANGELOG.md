@@ -42,3 +42,10 @@
   imports, import attributes or parenthesized types those sources accept, and
   they report interface, type-literal and enum braces for `block-spacing` and
   `brace-style`. The translated `block-spacing` alias now has an implementation.
+- `ag-ts/naming-convention` no longer checks `infer` type parameters and
+  mapped-type keys, matching typescript-eslint.
+- TypeScript `class-methods-use-this` counts `this` in default parameters, as
+  ESLint and typescript-eslint do, through the new
+  `ag-ts/class-methods-use-this`. `@typescript-eslint/class-methods-use-this`
+  settings translate to it, including `ignoreOverrideMethods` and
+  `ignoreClassesThatImplementAnInterface`.

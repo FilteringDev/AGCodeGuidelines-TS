@@ -117,6 +117,35 @@ export function isAllowedMerge(declarations: Declaration[]): boolean {
 
 const noRedeclare = builtinRules.get('no-redeclare')!;
 
+const classMethodsUseThis = builtinRules.get('class-methods-use-this')!;
+const [classMethodsBaseSchema] = classMethodsUseThis.meta!.schema as [{ properties: Record<string, unknown> }];
+
+interface ClassMethodsOptions {
+    exceptMethods?: string[];
+    enforceForClassFields?: boolean;
+    ignoreOverrideMethods?: boolean;
+    ignoreClassesThatImplementAnInterface?: boolean | 'public-fields';
+}
+
+/**
+ * Decide whether the TypeScript-only options of `@typescript-eslint/class-methods-use-this` exempt a member.
+ * @param member - Method or property definition whose function does not use `this`.
+ * @param options - Rule options.
+ * @returns Whether the member is exempt.
+ */
+export function isExemptClassMember(
+    member: ESTree.MethodDefinition | ESTree.PropertyDefinition,
+    options: ClassMethodsOptions,
+): boolean {
+    if (options.ignoreOverrideMethods === true && member.override === true) {
+        return true;
+    }
+    const implementsInterface = ((member.parent.parent as ESTree.Class).implements?.length ?? 0) > 0;
+    const isPublic = !member.accessibility || member.accessibility === 'public';
+    return implementsInterface && (options.ignoreClassesThatImplementAnInterface === true
+        || (options.ignoreClassesThatImplementAnInterface === 'public-fields' && isPublic));
+}
+
 const FORMATS = { camelCase: isCamelCase, PascalCase: isPascalCase, UPPER_CASE: isUpperCase };
 type NamingSelector = 'variable' | 'function' | 'typeLike';
 interface NamingOption {
@@ -496,6 +525,44 @@ function functionHeadLoc(
 }
 
 export const rules = {
+    'class-methods-use-this': {
+        meta: {
+            ...classMethodsUseThis.meta as RuleMeta,
+            schema: [{
+                ...classMethodsBaseSchema,
+                properties: {
+                    ...classMethodsBaseSchema.properties,
+                    ignoreOverrideMethods: { type: 'boolean' },
+                    ignoreClassesThatImplementAnInterface: {
+                        oneOf: [{ type: 'boolean' }, { type: 'string', enum: ['public-fields'] }],
+                    },
+                },
+            }],
+        },
+        create(context) {
+            const options = (context.options[0] ?? {}) as ClassMethodsOptions;
+            const {
+                ignoreOverrideMethods,
+                ignoreClassesThatImplementAnInterface,
+                ...base
+            } = options;
+            // The pinned rule counts `this` anywhere in the function, including default parameters, as
+            // ESLint and typescript-eslint do; it rejects the TypeScript-only options.
+            const filtered = Object.create(context, {
+                options: { value: [base] },
+                report: {
+                    value: (descriptor: Parameters<typeof context.report>[0]) => {
+                        const member = (descriptor as unknown as { node: ESTree.Node }).node.parent as
+                            ESTree.MethodDefinition | ESTree.PropertyDefinition;
+                        if (!isExemptClassMember(member, options)) {
+                            context.report(descriptor);
+                        }
+                    },
+                },
+            }) as typeof context;
+            return legacyContext(classMethodsUseThis as unknown as Rule, filtered);
+        },
+    } satisfies Rule,
     'explicit-function-return-type': {
         meta: {
             type: 'problem',
@@ -619,6 +686,10 @@ export const rules = {
                     check(node.id, 'typeLike');
                 },
                 TSTypeParameter(node) {
+                    // typescript-eslint selects declared type parameters only, not `infer` or mapped-type keys.
+                    if (node.parent?.type !== 'TSTypeParameterDeclaration') {
+                        return;
+                    }
                     check(node.name, 'typeLike');
                 },
             };

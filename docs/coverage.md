@@ -149,7 +149,7 @@ Scope `base` is always active, `guideline` is added by `policy: 'guideline'`, an
 | array-callback-return | ag-compat/array-callback-return | javascript | `["error",{"allowImplicit":true}]` | airbnb@19.0.4/base@15.0.0 | base |  |  |
 | block-scoped-var | ag-compat/block-scoped-var | javascript | `"error"` | airbnb@19.0.4/base@15.0.0 | base |  |  |
 | complexity | disabled | disabled | `["off",20]` | airbnb@19.0.4/base@15.0.0 | base |  |  |
-| class-methods-use-this | ag-compat/class-methods-use-this | javascript | `["error",{"exceptMethods":["render","getInitialState","getDefaultProps","getChildContext","componentWillMount","UNSAFE_componentWillMount","componentDidMount","componentWillReceiveProps","UNSAFE_componentWillReceiveProps","shouldComponentUpdate","componentWillUpdate","UNSAFE_componentWillUpdate","componentDidUpdate","componentWillUnmount","componentDidCatch","getSnapshotBeforeUpdate"]}]` | airbnb@19.0.4/base@15.0.0 | base | eslint/class-methods-use-this: Exempts override methods, which a base class requires to be instance methods. |  |
+| class-methods-use-this | ag-compat/class-methods-use-this | javascript | `["error",{"exceptMethods":["render","getInitialState","getDefaultProps","getChildContext","componentWillMount","UNSAFE_componentWillMount","componentDidMount","componentWillReceiveProps","UNSAFE_componentWillReceiveProps","shouldComponentUpdate","componentWillUpdate","UNSAFE_componentWillUpdate","componentDidUpdate","componentWillUnmount","componentDidCatch","getSnapshotBeforeUpdate"]}]` | airbnb@19.0.4/base@15.0.0 | base | ag-ts/class-methods-use-this: Exempts override methods, which a base class requires to be instance methods, and counts `this` in default parameters. |  |
 | consistent-return | ag-compat/consistent-return | javascript | `"error"` | airbnb@19.0.4/base@15.0.0 | base |  |  |
 | curly | ag-compat/curly | javascript | `["error","all"]` | eslintrc.cjs | base |  |  |
 | default-case | ag-compat/default-case | javascript | `["error",{"commentPattern":"^no default$"}]` | airbnb@19.0.4/base@15.0.0 | base |  |  |
@@ -874,6 +874,7 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | react-hooks/exhaustive-deps | react/exhaustive-deps | no | oxlint@1.82.0 |
 | @typescript-eslint/naming-convention | ag-ts/naming-convention | no | ag-ts; formats from typescript-eslint@8.70.0 |
 | @typescript-eslint/explicit-function-return-type | ag-ts/explicit-function-return-type | no | ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics |
+| @typescript-eslint/class-methods-use-this | ag-ts/class-methods-use-this | no | ag-ts; typescript-eslint@7.18.0 semantics |
 | @typescript-eslint/default-param-last | eslint/default-param-last | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-array-constructor | eslint/no-array-constructor | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |
 | @typescript-eslint/no-shadow | eslint/no-shadow | no | typescript-eslint@5.62.0/7.18.0 zero-option base-rule extension |

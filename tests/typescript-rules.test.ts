@@ -28,6 +28,10 @@ new RuleTester().run('naming-convention', rules['naming-convention'], {
         'const value = { bad_key: 1 }; function work(bad_parameter: number) {} namespace lower_namespace {}',
         'const element = <Component bad_prop="value" />;',
         'const \u00e9l\u00e9ment = 1; class \u00c9l\u00e9ment {}',
+        // typescript-eslint selects declared type parameters only.
+        'type Last<T> = T extends [...infer _Rest, infer _Last] ? _Last : never;',
+        'type Keys<T> = { [k in keyof T]: T[k] };',
+        'const value = function () {}; const Klass = class {};',
     ].map((code) => ({
         code,
         options: namingOptions,
@@ -54,6 +58,16 @@ new RuleTester().run('naming-convention', rules['naming-convention'], {
     ].map((code) => ({
         code, options: namingOptions, ...typescript, errors: [{ messageId: 'doesNotMatchFormat' }],
     })),
+});
+
+describe('naming-convention options', () => {
+    it('rejects missing and repeated selectors', () => {
+        const create = (options: unknown[]) => rules['naming-convention'].create(
+            { options } as unknown as Parameters<typeof rules['naming-convention']['create']>[0],
+        );
+        expect(() => create([])).toThrow('requires explicit supported selector/format options');
+        expect(() => create([namingOptions[0], namingOptions[0]])).toThrow('Repeated naming selectors');
+    });
 });
 
 const valid = [
@@ -190,10 +204,53 @@ new RuleTester().run('explicit-function-return-type', rules['explicit-function-r
     ],
 });
 
+const missingThis = [{ messageId: 'missingThis' }];
+new RuleTester().run('class-methods-use-this', rules['class-methods-use-this'], {
+    valid: [
+        { code: 'class A { private readonly x = 1; public m(v = this.x): number { return v; } }' },
+        { code: 'class A { public m(): number { return super.toString().length; } }' },
+        { code: 'class A { public static m(): number { return 1; } constructor() {} }' },
+        { code: 'abstract class A { public abstract m(): number; }' },
+        { code: 'class A { public m(): number; public m(): number { return this.n; } private n = 1; }' },
+        { code: 'class A { public m(): number { return 1; } }', options: [{ exceptMethods: ['m'] }] },
+        { code: 'class A { private f = () => 1; }', options: [{ enforceForClassFields: false }] },
+        {
+            code: 'class B extends A { public override m(): number { return 1; } }',
+            options: [{ ignoreOverrideMethods: true }],
+        },
+        {
+            code: 'class B implements I { private m(): number { return 1; } }',
+            options: [{ ignoreClassesThatImplementAnInterface: true }],
+        },
+        {
+            code: 'class B implements I { public m(): number { return 1; } n(): number { return 1; } }',
+            options: [{ ignoreClassesThatImplementAnInterface: 'public-fields' }],
+        },
+    ].map((testCase) => ({ ...typescript, ...testCase })),
+    invalid: [
+        { code: 'class A { public m(): number { return 1; } }' },
+        { code: 'class A { private f = (): number => 1; }' },
+        { code: 'class B extends A { public override m(): number { return 1; } }' },
+        {
+            code: 'class B implements I { private m(): number { return 1; } }',
+            options: [{ ignoreClassesThatImplementAnInterface: 'public-fields' }],
+        },
+        {
+            code: 'class B { public m(): number { return 1; } }',
+            options: [{ ignoreClassesThatImplementAnInterface: true }],
+        },
+    ].map((testCase) => ({ ...typescript, ...testCase, errors: missingThis })),
+});
+
 describe('TypeScript rule plugin contract', () => {
     it('exposes TypeScript-aware rules under their core names', () => {
         expect(plugin.meta?.name).toBe('ag-ts');
-        expect(Object.keys(rules)).toEqual(['explicit-function-return-type', 'naming-convention', 'no-redeclare']);
+        expect(Object.keys(rules)).toEqual([
+            'class-methods-use-this',
+            'explicit-function-return-type',
+            'naming-convention',
+            'no-redeclare',
+        ]);
     });
 
     it('rejects merges that TypeScript does not permit', () => {

@@ -45,6 +45,11 @@ const violations: [string, string, string][] = [
     ],
     ['type argument spacing', 'type Table = Map<string,number>;\n\nexport type { Table };', 'ag-style/comma-spacing'],
     ['var redeclaration', 'var value = 1;\nvar value = 2;\n\nexport { value };', 'ag-ts/no-redeclare'],
+    [
+        'method without this',
+        'class Shape {\n    public area(): number {\n        return 1;\n    }\n}\n\nexport { Shape };',
+        'ag-ts/class-methods-use-this',
+    ],
     ['array constructor', 'const VALUES = new Array(1, 2);\n\nexport { VALUES };', 'eslint/no-array-constructor'],
     ['use before define', 'const FIRST = SECOND;\nconst SECOND = 1;\n\nexport { FIRST, SECOND };', 'eslint/no-use-before-define'],
     [

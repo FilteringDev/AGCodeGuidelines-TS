@@ -101,6 +101,19 @@ describe('legacy rule resolution', () => {
         expect(resolveRule('no-redeclare', { language: 'typescript' })).toMatchObject({
             status: 'resolved', target: 'ag-ts/no-redeclare',
         });
+        expect(resolveRule('class-methods-use-this', { language: 'typescript' })).toMatchObject({
+            status: 'resolved', target: 'ag-ts/class-methods-use-this', setting: ['error', { ignoreOverrideMethods: true }],
+        });
+        const typed = ['error', { ignoreOverrideMethods: true }] as const;
+        expect(resolveRule('@typescript-eslint/class-methods-use-this', { language: 'typescript', setting: typed }))
+            .toMatchObject({ status: 'resolved', target: 'ag-ts/class-methods-use-this', setting: typed });
+        const generated = resolveRule('class-methods-use-this', { language: 'typescript' });
+        expect(resolveRuleDetailed('class-methods-use-this', {
+            language: 'typescript',
+            setting: generated.status === 'unsupported' ? 'off' : generated.setting,
+        })).toMatchObject({ target: 'ag-ts/class-methods-use-this', setting: ['error', { ignoreOverrideMethods: true }] });
+        expect(resolveRule('@typescript-eslint/class-methods-use-this', { language: 'javascript', setting: typed }))
+            .toMatchObject({ status: 'resolved', target: 'ag-compat/class-methods-use-this', setting: ['error', {}] });
         expect(resolveRule('no-undef', { language: 'typescript' })).toMatchObject({
             status: 'compiler', target: null,
         });

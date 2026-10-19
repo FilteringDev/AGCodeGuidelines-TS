@@ -449,8 +449,9 @@ const TYPESCRIPT_EQUIVALENTS: Record<string, Equivalent> = {
     },
     'no-dupe-class-members': { target: 'eslint/no-dupe-class-members', reason: 'Accepts method overload signatures.' },
     'class-methods-use-this': {
-        target: 'eslint/class-methods-use-this',
-        reason: 'Exempts override methods, which a base class requires to be instance methods.',
+        target: 'ag-ts/class-methods-use-this',
+        reason: 'Exempts override methods, which a base class requires to be instance methods, and counts `this` in '
+            + 'default parameters.',
         adapt: (setting) => withOptions(setting, ([options]) => [{
             ...(options as object),
             ignoreOverrideMethods: true,
@@ -591,6 +592,16 @@ registerCompatibility(
     typescriptPlugin.rules['explicit-function-return-type'].meta.schema,
     'ag-ts; typescript-eslint@5.62.0/7.18.0/8.29.0 semantics',
 );
+registerCompatibility(
+    '@typescript-eslint/class-methods-use-this',
+    'ag-ts/class-methods-use-this',
+    typescriptPlugin.rules['class-methods-use-this'].meta.schema,
+    'ag-ts; typescript-eslint@7.18.0 semantics',
+);
+legacyCompatibility['@typescript-eslint/class-methods-use-this']!.javascript = 'base';
+legacyCompatibility['@typescript-eslint/class-methods-use-this']!.typescriptOnlyOptions = [
+    'ignoreOverrideMethods', 'ignoreClassesThatImplementAnInterface',
+];
 
 const extraClauses: Record<string, string[]> = {
     'types--primitives': [],

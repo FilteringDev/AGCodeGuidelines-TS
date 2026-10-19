@@ -291,7 +291,9 @@ export function resolveRule(source: string, options: RuleResolutionOptions = {})
     } else {
         implementation = compatibility?.implementation ?? selected!.implementation;
     }
-    if ((options.setting !== undefined || compatibility) && severity(setting) > 0) {
+    // A catalog TypeScript equivalent carries generated options for its own target, not the source schema.
+    const catalogEquivalent = useTypeScriptEquivalent && options.setting === undefined;
+    if ((options.setting !== undefined || compatibility) && !catalogEquivalent && severity(setting) > 0) {
         const schema = compatibility?.schema;
         if (!schema) {
             return { status: 'unsupported', source, reason: `Custom options for ${source} are not verified.` };

@@ -178,6 +178,27 @@ suppression behavior against the exact owner. Never apply a prefix-only rewrite
 to untransferred rules. Test filenames with spaces and apostrophes using argument
 arrays, without constructing shell command strings.
 
+## Known upstream differences
+
+Consumer parity runs against the former ESLint configurations found these
+differences that remain after translation. Each is a pinned-version or engine
+difference, not a dropped check:
+
+- `ag-jsdoc` is `eslint-plugin-jsdoc@64.3.6`, while the consumers ran 48.11.0.
+  `valid-types` rejects `@param ...args` names, and `check-param-names` checks
+  function-typed property signatures. Rewrite or suppress those comments with
+  the `ag-jsdoc/` owner.
+- Oxlint 1.82.0 starts a block `eslint-disable` range at the end of the comment,
+  so a diagnostic at line 1, column 0 or 1 is not suppressed by a block
+  directive that also starts on line 1 (for example a file-overview check). Put
+  such suppressions in a line comment before the reported position.
+- Native `eslint/class-methods-use-this` ignores `this` in default parameters.
+  TypeScript files therefore use `ag-ts/class-methods-use-this`, which runs the
+  pinned rule and exempts `override` methods. A consumer-supplied
+  `class-methods-use-this` setting keeps its options verbatim and gets no
+  override exemption, matching the former ESLint behavior; only catalog
+  defaults add `ignoreOverrideMethods: true`.
+
 ## Consumer exception matrix
 
 All entries below remain compatibility obligations. Unless independently tested

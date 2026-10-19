@@ -431,7 +431,7 @@ describe('public configuration API', () => {
         expect(typescript.rules!['ag-ts/no-redeclare']).toBe('error');
         expect(guideline.overrides![1]!.files).toEqual(['**/*.{cjs,cts}', '**/.eslintrc.js']);
         expect(typescript.rules!['typescript/no-require-imports']).toBe('error');
-        expect(typescript.rules!['eslint/class-methods-use-this']).toMatchObject(['error', { ignoreOverrideMethods: true }]);
+        expect(typescript.rules!['ag-ts/class-methods-use-this']).toMatchObject(['error', { ignoreOverrideMethods: true }]);
     });
 
     it('keeps AdGuard project conventions in an opt-in profile', () => {
