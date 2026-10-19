@@ -23,8 +23,8 @@ export interface EslintFile {
 
 const COLLECT = `
 import { ESLint } from 'eslint';
-const [extensions, ...targets] = JSON.parse(process.argv[1]);
-const eslint = new ESLint({ cache: false, extensions });
+const [extensions, allowInlineConfig, ...targets] = JSON.parse(process.argv[1]);
+const eslint = new ESLint({ cache: false, extensions, allowInlineConfig });
 const files = [];
 for (const result of await eslint.lintFiles(targets)) {
     const config = await eslint.calculateConfigForFile(result.filePath);
@@ -48,16 +48,19 @@ process.stdout.write(JSON.stringify(files));
  * @param consumer - Absolute consumer directory containing its ESLint installation and configuration.
  * @param extensions - File extensions ESLint lints when given directories.
  * @param targets - Files or directories relative to the consumer.
+ * @param allowInlineConfig - Whether ESLint honors configuration and suppression comments.
  * @returns Absolute file paths, messages and effective configurations.
  */
 export function collectEslint(
     consumer: string,
     extensions: readonly string[],
     targets: readonly string[],
+    allowInlineConfig = true,
 ): EslintFile[] {
+    const argument = JSON.stringify([extensions, allowInlineConfig, ...(targets.length ? targets : ['.'])]);
     const collected = spawnSync(
         process.execPath,
-        ['--input-type=module', '-e', COLLECT, JSON.stringify([extensions, ...(targets.length ? targets : ['.'])])],
+        ['--input-type=module', '-e', COLLECT, argument],
         { cwd: consumer, encoding: 'utf8', maxBuffer: 1024 ** 3 },
     );
     if (collected.status !== 0) {
