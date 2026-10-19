@@ -24,6 +24,21 @@ import typescriptResolver, {
 } from '../vendor/import/compat/import-resolver';
 import RemoteSourceCode from '../vendor/import/compat/remote-source';
 
+/**
+ * Run a callback from another working directory.
+ * @param directory - Temporary working directory.
+ * @param callback - Assertions that depend on the working directory.
+ */
+function inDirectory(directory: string, callback: () => void): void {
+    const previous = process.cwd();
+    process.chdir(directory);
+    try {
+        callback();
+    } finally {
+        process.chdir(previous);
+    }
+}
+
 type Parsed = {
     body: { type: string; range: [number, number]; loc: { start: { line: number; column: number } } }[];
     comments: { range: [number, number]; value: string }[];
@@ -90,11 +105,15 @@ it('resolves TypeScript aliases, extension aliases, package exports, and builtin
         writeFileSync(join(root, 'node_modules/example/index.d.ts'), 'export declare const value: number;');
         const filename = join(root, 'entry.ts');
         writeFileSync(filename, '');
-        for (const specifier of ['./src/value.js', './src/value', '@app/value']) {
-            const resolved = typescriptResolver.resolve(specifier, filename);
-            expect(resolved.found).toBe(true);
-            expect(resolved.found && resolved.path?.endsWith(join('src', 'value.ts'))).toBe(true);
-        }
+        inDirectory(root, () => {
+            for (const specifier of ['./src/value.js', './src/value', '@app/value']) {
+                const resolved = typescriptResolver.resolve(specifier, filename);
+                expect(resolved.found).toBe(true);
+                expect(resolved.found && resolved.path?.endsWith(join('src', 'value.ts'))).toBe(true);
+            }
+            expect(typescriptResolver.resolve('@app/value', filename, true)).toMatchObject({ found: true });
+            expect(typescriptResolver.resolve('@app/value', filename, null)).toMatchObject({ found: true });
+        });
         const example = typescriptResolver.resolve('example', filename);
         expect(example.found).toBe(true);
         expect(example.found && example.path?.endsWith(join('example', 'index.d.ts'))).toBe(true);
@@ -107,8 +126,8 @@ it('resolves TypeScript aliases, extension aliases, package exports, and builtin
             alwaysTryTypes: true,
             project: join(root, 'tsconfig.json'),
         });
-        expect(first.resolver).toBe(second.resolver);
-        expect(first.config).toEqual(second.config);
+        expect(first).toBe(second);
+        expect(first.resolversFor(filename)).toBe(second.resolversFor(filename));
         expect(typescriptResolverCacheSize()).toBeGreaterThanOrEqual(before);
         const explicit = typescriptResolver.resolve('./src/value.js', filename, {
             project: join(root, 'tsconfig.json'),
@@ -122,6 +141,68 @@ it('resolves TypeScript aliases, extension aliases, package exports, and builtin
         })).toEqual({ found: false });
     } finally {
         rmSync(root, { recursive: true, force: true });
+    }
+});
+
+it('reads the configured projects without following project references', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ag-resolver-refs-'));
+    const bare = mkdtempSync(join(tmpdir(), 'ag-resolver-bare-'));
+    try {
+        mkdirSync(join(root, 'src'));
+        mkdirSync(join(root, 'sub'));
+        writeFileSync(join(root, 'src/value.ts'), 'export const value = 1;');
+        writeFileSync(join(root, 'tsconfig.json'), JSON.stringify({ files: [], references: [{ path: './sub' }] }));
+        writeFileSync(
+            join(root, 'sub/tsconfig.json'),
+            JSON.stringify({ compilerOptions: { paths: { '@sub/*': ['../src/*'] } } }),
+        );
+        const entry = join(root, 'entry.ts');
+        const nested = join(root, 'sub/entry.ts');
+        writeFileSync(entry, '');
+        writeFileSync(nested, '');
+        const value = join('src', 'value.ts');
+        const found = (result: ReturnType<typeof typescriptResolver.resolve>): boolean => (
+            result.found && !!result.path?.endsWith(value)
+        );
+
+        inDirectory(root, () => {
+            expect(typescriptResolver.resolve('@sub/value', entry)).toEqual({ found: false });
+            expect(typescriptResolver.resolve('@sub/value', nested)).toEqual({ found: false });
+        });
+        inDirectory(join(root, 'sub'), () => {
+            expect(found(typescriptResolver.resolve('@sub/value', entry))).toBe(true);
+        });
+        expect(typescriptResolver.resolve('@sub/value', nested, { tsconfig: { configFile: join(root, 'tsconfig.json') } }))
+            .toEqual({ found: false });
+        expect(found(typescriptResolver.resolve('@sub/value', nested, {
+            tsconfig: { configFile: join(root, 'tsconfig.json'), references: 'auto' },
+        }))).toBe(true);
+
+        expect(found(typescriptResolver.resolve('@sub/value', entry, { project: join(root, 'sub/tsconfig.json') })))
+            .toBe(true);
+        expect(found(typescriptResolver.resolve('@sub/value', entry, { project: join(root, 'sub') }))).toBe(true);
+        expect(found(typescriptResolver.resolve('@sub/value', entry, {
+            project: [join(root, 'missing.json'), join(root, 'sub/tsconfig.json')],
+        }))).toBe(true);
+        expect(typescriptResolver.resolve('@sub/value', entry, { project: join(root, 'missing.json') }))
+            .toEqual({ found: false });
+        expect(typescriptResolver.resolve('@sub/value', entry, { project: join(root, '*/tsconfig.json') }))
+            .toEqual({ found: false });
+
+        mkdirSync(join(bare, 'src'));
+        writeFileSync(join(bare, 'src/value.ts'), 'export const value = 1;');
+        const loose = join(bare, 'entry.ts');
+        writeFileSync(loose, '');
+        inDirectory(bare, () => {
+            expect(found(typescriptResolver.resolve('./src/value.js', loose))).toBe(true);
+        });
+        expect(found(typescriptResolver.resolve('./src/value.js', loose, { project: join(bare, 'missing.json') })))
+            .toBe(true);
+        expect(typescriptResolver.resolve('fs', loose, { project: join(root, 'sub/tsconfig.json') }))
+            .toEqual({ found: true, path: null });
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+        rmSync(bare, { recursive: true, force: true });
     }
 });
 

@@ -107,6 +107,17 @@ const RESOLVER_OPTIONS: Record<string, readonly string[]> = {
 };
 
 /**
+ * Detect resolver projects that the pinned resolver expands as globs, which the Oxc resolver reads literally.
+ * @param options - Resolver options object.
+ * @returns Whether any project entry contains glob syntax.
+ */
+function hasGlobProject(options: Record<string, unknown>): boolean {
+    const { project } = options;
+    const entries: unknown[] = Array.isArray(project) ? project : [project];
+    return entries.some((entry) => typeof entry === 'string' && /[*?[\]{}!]/u.test(entry));
+}
+
+/**
  * Map consumer settings onto the provider settings that reproduce them.
  * @param settings - Effective source settings.
  * @returns Oxlint settings and the keys whose behavior is not verified.
@@ -133,7 +144,8 @@ function translateSettings(
             const supported = resolvers.length > 0 && resolvers.every(([name, options]) => (
                 Object.hasOwn(RESOLVER_OPTIONS, name)
                 && (options === true || (options !== null && typeof options === 'object' && !Array.isArray(options)
-                    && Object.keys(options).every((option) => RESOLVER_OPTIONS[name]!.includes(option))))
+                    && Object.keys(options).every((option) => RESOLVER_OPTIONS[name]!.includes(option))
+                    && !hasGlobProject(options as Record<string, unknown>)))
             ));
             if (!supported) {
                 unverified.push(key);

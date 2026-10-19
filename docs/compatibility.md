@@ -85,7 +85,13 @@ component lists, `jsdoc` and similar). `react` is copied to `agReact`, and kept 
 `react` only for a concrete version Oxlint's native schema accepts.
 `import/parsers` is dropped because Oxc parses TypeScript and JSX dependencies and
 consumer parser packages must not load. `import/resolver` is accepted for the
-`node` and `typescript` resolvers with their supported options. Any other key keeps
+`node` and `typescript` resolvers with their supported options. As with
+`eslint-import-resolver-typescript` 3.5.5, the `typescript` resolver reads each
+`project` file, or the `tsconfig.json` nearest each `project` directory, and tries
+them in order; without `project` it reads the `tsconfig.json` nearest the working
+directory. Project references are not followed unless the vendored resolver receives
+an explicit `tsconfig` option. Glob `project` entries are not expanded, so a
+setting containing them keeps non-native rules as fallback. Any other key keeps
 non-native rules as fallback. Typed rules remain fallback unless their separate
 service is explicitly enabled. `scripts/consumer-diff.ts` compares a consumer's
 ESLint results with this translation rule by rule; this API alone is not evidence

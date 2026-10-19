@@ -35,6 +35,10 @@
   support TypeScript 5 NodeNext consumers.
 - JavaScript-provider scope analysis counts identifiers used in class, method
   and property decorators as references, so they are no longer reported unused.
+- The `typescript` import resolver reads the configured `project` tsconfig files
+  or the nearest `tsconfig.json` without following project references, so
+  `ag-import/order` and other import rules classify aliases as the pinned resolver
+  does. Glob `project` entries keep translated import rules as fallback.
 - Compatibility translation keeps `boundaries/*` element, ignore, include, root
   path and dependency-node settings, so translated boundaries rules apply again.
 - `ag-ts-style` rules check the syntax their typescript-eslint sources check:

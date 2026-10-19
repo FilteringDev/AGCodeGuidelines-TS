@@ -147,6 +147,12 @@ describe('effective compatibility configuration', () => {
         expect(createCompatibilityConfig({
             rules: { 'import/no-unresolved': 'error' }, context: { settings: { 'import/resolver': { webpack: {} } } },
         }).fallback).toMatchObject([{ reason: expect.stringContaining('import/resolver') }]);
+        for (const project of ['packages/*/tsconfig.json', ['tsconfig.json', 'packages/{a,b}']]) {
+            expect(createCompatibilityConfig({
+                rules: { 'import/no-unresolved': 'error' },
+                context: { settings: { 'import/resolver': { typescript: { project } } } },
+            }).fallback).toMatchObject([{ reason: expect.stringContaining('import/resolver') }]);
+        }
         expect(() => createCompatibilityConfig({ rules: {}, typeAware: 'yes' as unknown as boolean }))
             .toThrow('typeAware');
     });
