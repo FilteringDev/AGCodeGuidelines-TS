@@ -30,8 +30,10 @@ Unsupported parser/settings contracts remain fallback rather than being dropped.
 
 Generated aliases use the exact schemas of frozen core and existing provider
 implementations. TypeScript extension rules use `ag-ts-style` when their source
-settings must coexist with base rules under `ag-style`. Aliases do not enable a
-rule in a preset; request and scope each rule explicitly.
+settings must coexist with base rules under `ag-style`; `ag-ts-style` checks the
+syntax the typescript-eslint source rules check, with the differences listed in
+`docs/compatibility.md`. Aliases do not enable a rule in a preset; request and
+scope each rule explicitly.
 
 `createCompatibilityConfigGroups([...])` packages several already-resolved
 source contexts independently. Each group requires a unique `id` and explicit

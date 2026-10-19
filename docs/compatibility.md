@@ -126,6 +126,22 @@ and compiler-owned rules keep their existing targets. This avoids collapsing
 simultaneously active source rules onto one setting, but it is not a claim of
 parity for every consumer tuple.
 
+`ag-ts-style` matches the visitor coverage of the typescript-eslint 5.62 and
+7.18 sources and their ESLint 8.57.1 base rules. It drops Stylistic visitors
+for syntax those sources do not check, such as auto-accessors, `satisfies`,
+dynamic imports, import attributes, catch clauses, declared module bodies and
+parenthesized types. It adds the TypeScript bodies those sources check and
+Stylistic does not: interface, type-literal and enum braces for
+`block-spacing`, and interface and enum braces for `brace-style`, including the
+`allowSingleLine` exception for every TypeScript body. Known differences
+remain where a visitor is shared with checked syntax or the rule is unused by
+the validated consumers: `comma-dangle` report locations for enums, generics
+and tuples, single-parameter TSX generics under `never`, and the
+`agRuleEcmaVersion` default (latest, where ESLint 8 defaults to 5);
+`keyword-spacing` around `type` in import and export declarations; braces of
+import attributes in `object-curly-spacing`; `indent` node coverage; and the
+extra statement scopes of `padding-line-between-statements`.
+
 `createCompatibilityConfigGroups()` accepts multiple already-resolved, explicit
 source contexts and returns independent Oxlint configs. It is not a file walker
 or an ESLint hierarchy resolver. Consumers must still migrate ignore, nested

@@ -37,3 +37,8 @@
   and property decorators as references, so they are no longer reported unused.
 - Compatibility translation keeps `boundaries/*` element, ignore, include, root
   path and dependency-node settings, so translated boundaries rules apply again.
+- `ag-ts-style` rules check the syntax their typescript-eslint sources check:
+  they no longer report function types, auto-accessors, `satisfies`, dynamic
+  imports, import attributes or parenthesized types those sources accept, and
+  they report interface, type-literal and enum braces for `block-spacing` and
+  `brace-style`. The translated `block-spacing` alias now has an implementation.
