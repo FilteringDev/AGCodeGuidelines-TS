@@ -22587,6 +22587,31 @@
       "origin": "oxlint@1.82.0",
       "javascript": "same"
     },
+    "@typescript-eslint/consistent-type-exports": {
+      "canonicalSource": "consistent-type-exports",
+      "target": "typescript/consistent-type-exports",
+      "implementation": "native",
+      "requiresTypeInfo": true,
+      "preserveTypeScriptTarget": true,
+      "language": "typescript",
+      "schema": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "fixMixedExportsWithInlineTypeSpecifier": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "origin": "oxlint@1.82.0 + differential probe vs typescript-eslint@7.18.0"
+    },
     "@typescript-eslint/return-await": {
       "canonicalSource": "return-await",
       "target": "typescript/return-await",
@@ -50470,7 +50495,7 @@
       "nativeCandidate": "typescript/consistent-type-exports",
       "requiresTypeInfo": true,
       "candidateRequiresTypeInfo": true,
-      "verification": "candidate-only",
+      "verification": "diagnostic-differences",
       "oxlint": "1.82.0"
     },
     {
@@ -52160,6 +52185,19 @@
       "requiresTypeInfo": true,
       "candidateRequiresTypeInfo": true,
       "verification": "candidate-only",
+      "oxlint": "1.82.0"
+    },
+    {
+      "source": "@typescript-eslint/consistent-type-exports",
+      "target": "typescript/consistent-type-exports",
+      "scope": "alias",
+      "language": "typescript",
+      "setting": "error",
+      "implementation": "native",
+      "nativeCandidate": "typescript/consistent-type-exports",
+      "requiresTypeInfo": true,
+      "candidateRequiresTypeInfo": true,
+      "verification": "diagnostic-differences",
       "oxlint": "1.82.0"
     },
     {

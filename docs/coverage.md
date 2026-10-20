@@ -869,6 +869,7 @@ These identifiers are resolved by `resolveRule`; they do not activate additional
 | @typescript-eslint/no-unused-expressions | eslint/no-unused-expressions | no | oxlint@1.82.0 |
 | @typescript-eslint/no-implied-eval | typescript/no-implied-eval | required | oxlint@1.82.0 |
 | @typescript-eslint/no-throw-literal | typescript/only-throw-error | required | oxlint@1.82.0 |
+| @typescript-eslint/consistent-type-exports | typescript/consistent-type-exports | required | oxlint@1.82.0 + differential probe vs typescript-eslint@7.18.0 |
 | @typescript-eslint/return-await | typescript/return-await | required | oxlint@1.82.0 |
 | react-hooks/rules-of-hooks | react/rules-of-hooks | no | oxlint@1.82.0 |
 | react-hooks/exhaustive-deps | react/exhaustive-deps | no | oxlint@1.82.0 |
@@ -1404,5 +1405,6 @@ The packed catalog exposes `catalog.inventory` for every mapping, TypeScript rep
 | no-debugger | eslint/no-debugger | No options. Diagnostic wording differs; rule identifiers and suppressions require migration. |
 | no-duplicate-case | eslint/no-duplicate-case | No options. Diagnostic wording, labels and ranges differ; see the native parity snapshots. |
 | no-sparse-arrays | eslint/no-sparse-arrays | No options. Diagnostic wording, labels and ranges differ; see the native parity snapshots. |
+| @typescript-eslint/consistent-type-exports | typescript/consistent-type-exports | No options. Diagnostic columns differ (rule start vs identifier); rule identifiers and suppressions require migration. |
 
 See [consumer compatibility and acceptance](compatibility.md) for unresolved options, ownership and consumer exceptions.

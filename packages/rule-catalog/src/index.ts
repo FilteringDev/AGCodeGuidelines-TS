@@ -166,6 +166,12 @@ export const nativeEvidence: Record<string, NativeEvidence> = {
         source: 'eslint@8.57.1',
         differences: ['Diagnostic wording, labels and ranges differ; see the native parity snapshots.'],
     },
+    '@typescript-eslint/consistent-type-exports': {
+        target: 'typescript/consistent-type-exports',
+        oxlint: '1.82.0',
+        source: 'typescript-eslint@7.18.0',
+        differences: ['Diagnostic columns differ (rule start vs identifier); rule identifiers and suppressions require migration.'],
+    },
 };
 
 export type DetailedRuleResolution = RuleResolution & {
@@ -377,7 +383,16 @@ export function resolveRuleDetailed(source: string, options: DetailedResolutionO
     }
     if (evidence && sourceSetting !== undefined && severity(sourceSetting) > 0) {
         if (Array.isArray(sourceSetting) && sourceSetting.length !== 1) {
+            // An evidence-carrying rule may still accept verified options:
+            // when the registered compatibility schema validates the
+            // option payload, fall through to ownership with those
+            // options instead of rejecting outright.
+            const entry = (catalog.compatibility ?? {})[source];
+            const verified = entry?.schema
+                && VALIDATOR.compile(entry.schema)(sourceSetting.slice(1));
+            if (!verified) {
             return unsupported(`Unsupported options for ${source}: this rule accepts no options.`);
+        }
         }
         resolution = resolveRule(source);
         if (resolution.status !== 'unsupported') {

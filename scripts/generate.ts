@@ -177,6 +177,17 @@ registerCompatibility(
 );
 registerCompatibility('@typescript-eslint/no-implied-eval', 'typescript/no-implied-eval', [], 'oxlint@1.82.0');
 registerCompatibility('@typescript-eslint/no-throw-literal', 'typescript/only-throw-error', [], 'oxlint@1.82.0');
+// fixMixedExportsWithInlineTypeSpecifier verified by differential probe
+// (finding-equality vs typescript-eslint@7.18.0 on mixed type/value
+// exports; only diagnostic columns differ). Schema below is the pinned
+// source schema for that single option.
+registerCompatibility('@typescript-eslint/consistent-type-exports', 'typescript/consistent-type-exports', [
+    {
+        type: 'object',
+        properties: { fixMixedExportsWithInlineTypeSpecifier: { type: 'boolean' } },
+        additionalProperties: false,
+    },
+], 'oxlint@1.82.0 + differential probe vs typescript-eslint@7.18.0');
 registerCompatibility('@typescript-eslint/return-await', 'typescript/return-await', [
     { enum: ['always', 'never', 'in-try-catch', 'error-handling-correctness-only'] },
 ], 'oxlint@1.82.0');
