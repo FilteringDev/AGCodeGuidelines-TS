@@ -50,14 +50,14 @@ are unchanged; like ESLint's cache it does not track other files a rule reads.
 `;
 
 /**
- * List the files Oxlint would lint, using its own ignore and extension handling.
- * @param oxlint - Oxlint Node entry point.
- * @param plan - Shareable options and targets.
+ * Run the engine once and capture bounded standard output.
+ * @param args - Engine executable and arguments.
  * @param cwd - Consumer working directory.
- * @returns Relative filenames, or none when discovery is not reproducible.
+ * @param maxBuffer - Maximum retained output bytes.
+ * @returns Exit status and captured output, or empty output past the bound.
  */
 function runEngine(args: string[], cwd: string, maxBuffer: number): Promise<{ status: number | null; stdout: string }> {
-    return new Promise((resolve, reject) => {
+    return new Promise((settle, reject) => {
         const child = spawn(process.execPath, args, { cwd, stdio: ['ignore', 'pipe', 'ignore'] });
         let stdout = '';
         let length = 0;
@@ -68,7 +68,7 @@ function runEngine(args: string[], cwd: string, maxBuffer: number): Promise<{ st
             }
         });
         child.on('error', reject);
-        child.on('close', (status) => resolve({ status, stdout: length <= maxBuffer ? stdout : '' }));
+        child.on('close', (status) => settle({ status, stdout: length <= maxBuffer ? stdout : '' }));
     });
 }
 
