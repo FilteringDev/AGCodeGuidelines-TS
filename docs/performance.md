@@ -148,6 +148,49 @@ are explicit ownership and bounded startup work; costs include migration,
 diagnostic differences and a remaining complete fallback pass. No speedup or
 production rollout is accepted on these historical changes alone.
 
+## Staged full-migration measurements (tsurlfilter wave)
+
+Staged cold-lane comparisons (N=3-5 per variant, cache disabled per run,
+identical file lists both sides, Node 22.12.0, Oxlint 1.82.0, ESLint
+8.57.1) of the current hybrid against union migrated Oxlint configs
+(typeAware, per-group union coverage, bare specifiers resolved against
+workspace dist for measurement). Warm lanes are not reported: the
+hybrid's `--cache` flag has no counterpart in the ESLint-only command,
+so warm comparisons would measure caching artifacts, not engines.
+
+| Scope | Files | Hybrid cold | Migrated Oxlint cold | Ratio |
+| --- | ---: | ---: | ---: | ---: |
+| logger | 8 | 1.62-1.71 s | 0.56-0.58 s | ~2.9x |
+| adguard-api-mv3 | 13 | 1.81-1.89 s | 0.33-0.34 s | ~5.5x |
+| eslint-plugin-logger-context | 5 | 1.47-1.54 s | 0.31-0.32 s | ~4.8x |
+| adguard-api | 36 | 2.04-2.10 s | 0.30-0.31 s | ~6.8x |
+| tsurlfilter | 162 | ~6.8 s | 0.59-0.60 s | ~11x |
+| tswebextension | 287 | 8.62-8.68 s | 0.63-0.66 s | ~13x |
+| dnr-rulesets | 41 | 1.53-1.54 s | 0.54-0.56 s | ~2.8x |
+| css-tokenizer | 56 | 2.63-2.75 s | 0.52-0.54 s | ~5x |
+| agtree | 259 | 9.28-9.49 s | 0.64-0.67 s | ~14x |
+| ex-adguard-api | 11 | 1.65-1.66 s | 0.33 s | ~5x |
+| ex-adguard-api-mv3 | 13 | 1.64-1.69 s | 0.38-0.39 s | ~4.3x |
+| ex-tswebextension-mv2 | 24 | 1.79-1.81 s | 0.36 s | ~5x |
+| ex-tswebextension-mv3 | 38 | 1.79-1.83 s | 0.31-0.33 s | ~5.6x |
+
+VPN src (594 files): hybrid ESLint 11.23-11.31 s vs union Oxlint
+0.63-0.66 s (~17x). VPN tasks/tests (126 files) and browser
+Extension/src plus tools plus tests (941 files linted, 362 rules,
+0 diagnostics) verify parity; their staged ratios are pending.
+dnr-converter has no staged judgment: its hybrid baseline exits 1
+on the pre-existing unbuilt plugin dist, so comparison against a
+broken baseline would prove nothing.
+
+These staged signals exceed the 15% T7 bar by an order of magnitude
+with no IQR overlap possible at these separations, but they are not
+formal T7 judgments: the formal 10x10 interleaved harness per wave
+gate still applies before any gate flips on. Parity status per
+scope is recorded in the wave cutover commits on the consumer
+branch; open adjudications (next-line stacking impossibility,
+tsgolint tsc-clean precondition) are recorded there, not waived.
+
+
 ## Reproducible protocol
 
 Prepare disposable baseline/candidate copies using the existing mirror tooling
