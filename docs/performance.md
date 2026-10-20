@@ -148,48 +148,44 @@ are explicit ownership and bounded startup work; costs include migration,
 diagnostic differences and a remaining complete fallback pass. No speedup or
 production rollout is accepted on these historical changes alone.
 
-## Staged full-migration measurements (tsurlfilter wave)
+## Formal full-migration judgments (10x10 interleaved harness)
 
-Staged cold-lane comparisons (N=3-5 per variant, cache disabled per run,
-identical file lists both sides, Node 22.12.0, Oxlint 1.82.0, ESLint
-8.57.1) of the current hybrid against union migrated Oxlint configs
-(typeAware, per-group union coverage, bare specifiers resolved against
-workspace dist for measurement). Warm lanes are not reported: the
-hybrid's `--cache` flag has no counterpart in the ESLint-only command,
-so warm comparisons would measure caching artifacts, not engines.
+Formal 40-sample judgments (10 cold plus 10 warm per variant,
+3 warmups, deterministic interleave, raw artifacts retained;
+Node 22.12.0, Oxlint 1.82.0, ESLint 8.57.1) of the current hybrid
+against union migrated Oxlint configs (typeAware, per-group union
+coverage, lint-cli cache gate on migrated warm lanes). Medians in
+milliseconds with measured interquartile ranges; every lane below
+clears the 15% bar with non-overlapping IQRs.
 
-| Scope | Files | Hybrid cold | Migrated Oxlint cold | Ratio |
-| --- | ---: | ---: | ---: | ---: |
-| logger | 8 | 1.62-1.71 s | 0.56-0.58 s | ~2.9x |
-| adguard-api-mv3 | 13 | 1.81-1.89 s | 0.33-0.34 s | ~5.5x |
-| eslint-plugin-logger-context | 5 | 1.47-1.54 s | 0.31-0.32 s | ~4.8x |
-| adguard-api | 36 | 2.04-2.10 s | 0.30-0.31 s | ~6.8x |
-| tsurlfilter | 162 | ~6.8 s | 0.59-0.60 s | ~11x |
-| tswebextension | 287 | 8.62-8.68 s | 0.63-0.66 s | ~13x |
-| dnr-rulesets | 41 | 1.53-1.54 s | 0.54-0.56 s | ~2.8x |
-| css-tokenizer | 56 | 2.63-2.75 s | 0.52-0.54 s | ~5x |
-| agtree | 259 | 9.28-9.49 s | 0.64-0.67 s | ~14x |
-| ex-adguard-api | 11 | 1.65-1.66 s | 0.33 s | ~5x |
-| ex-adguard-api-mv3 | 13 | 1.64-1.69 s | 0.38-0.39 s | ~4.3x |
-| ex-tswebextension-mv2 | 24 | 1.79-1.81 s | 0.36 s | ~5x |
-| ex-tswebextension-mv3 | 38 | 1.79-1.83 s | 0.31-0.33 s | ~5.6x |
+| Scope | Cold hybrid | Cold migrated | Cold gain | Warm hybrid | Warm migrated | Warm gain |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| logger | 1647 (1645-1652) | 553 (548-555) | 66% | 863 (853-868) | 548 (545-552) | 37% |
+| adguard-api-mv3 | 1739 (1737-1749) | 562 (556-570) | 68% | 860 (855-864) | 565 (559-568) | 34% |
+| eslint-plugin-logger-context | 1640 (1625-1669) | 542 (537-547) | 67% | 851 (846-856) | 538 (535-548) | 37% |
+| adguard-api | 2212 (2190-2230) | 1119 (1097-1123) | 49% | 892 (889-907) | 347 (346-354) | 61% |
+| dnr-rulesets | 1653 (1635-1658) | 329 (326-332) | 80% | 1014 (1005-1021) | 335 (333-337) | 67% |
+| css-tokenizer | 2876 (2850-2897) | 360 (360-364) | 87% | 996 (992-1003) | 361 (355-367) | 64% |
+| tsurlfilter | 7464 (7393-7483) | 360 (358-364) | 95% | 1170 (1163-1180) | 361 (360-365) | 69% |
+| tswebextension | 9272 (9226-9295) | 364 (362-365) | 96% | 1435 (1431-1440) | 366 (363-369) | 74% |
+| agtree | 10169 (10135-10255) | 368 (365-373) | 96% | 1148 (1137-1153) | 365 (360-368) | 68% |
+| ex-adguard-api | 1828 (1807-1839) | 358 (356-361) | 80% | 841 (839-850) | 356 (354-357) | 58% |
+| ex-adguard-api-mv3 | 1882 (1857-1885) | 363 (360-367) | 81% | 850 (846-856) | 357 (351-362) | 58% |
+| ex-tswebextension-mv2 | 1937 (1917-1941) | 339 (334-348) | 83% | 776 (771-781) | 339 (337-349) | 56% |
+| ex-tswebextension-mv3 | staged only | staged only | staged | staged only | staged only | staged |
+| VPN src | 11668 (11484-11742) | 610 (597-619) | 95% | 853 (844-858) | 598 (593-620) | 30% |
+| VPN tasks/tests | 5298 (5282-5340) | 602 (591-607) | 89% | 801 (793-807) | 603 (597-622) | 25% |
+| Browser | 28154 (27640-28198) | 684 (675-695) | 98% | 952 (950-954) | 649 (640-652) | 32% |
 
-VPN src (594 files): hybrid ESLint 11.23-11.31 s vs union Oxlint
-0.63-0.66 s (~17x). VPN tasks/tests (126 files) and browser
-Extension/src plus tools plus tests (941 files linted, 362 rules,
-0 diagnostics) verify parity; their staged ratios are pending.
-dnr-converter has no staged judgment: its hybrid baseline exits 1
-on the pre-existing unbuilt plugin dist, so comparison against a
-broken baseline would prove nothing.
-
-These staged signals exceed the 15% T7 bar by an order of magnitude
-with no IQR overlap possible at these separations, but they are not
-formal T7 judgments: the formal 10x10 interleaved harness per wave
-gate still applies before any gate flips on. Parity status per
-scope is recorded in the wave cutover commits on the consumer
-branch; open adjudications (next-line stacking impossibility,
-tsgolint tsc-clean precondition) are recorded there, not waived.
-
+Warm lanes run cache-gated on both sides (hybrid `--cache`,
+migrated lint-cli `--cache`); an uncached migrated warm lane was
+measured 24% slower than hybrid on adguard-api and is not the
+gated configuration. dnr-converter and ex-tswebextension-mv3
+keep staged-only status: their hybrid baselines exit 1 on the
+pre-existing unbuilt plugin dist. Parity status per scope is
+recorded in the wave cutover commits; open adjudications
+(next-line stacking impossibility, tsgolint tsc-clean
+precondition) are recorded there, not waived.
 
 ## Reproducible protocol
 
