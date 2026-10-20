@@ -266,6 +266,31 @@ them. Mapping availability does not enable a rule or prove option parity.
 | Docker | Copy every new config/helper into `source-base`; add shared-config regression checks to an existing Docker test path |
 | Versions | Preserve normal CI dev-version injection; never commit temporary versions or generated build outputs |
 
+## Full-migration status (wave-gated, gates off)
+
+Migration waves proceed per consumer with union migrated configs plus
+generated tails; all gates stay off until the SDK update, formal T7,
+and owner sign-offs land. Status is evidence, not rollout.
+
+* tsurlfilter (13/14 scopes cut over; dnr-converter emission via
+  direct parse, its `require-logger-context` tail-owned and
+  blocked-pre-existing): parity exit-0-empty per identical file
+  list on every scope except recorded adjudications (next-line
+  stacking impossibility on `__dirname` sites; tsgolint
+  tsc-clean precondition). Suppression rewrites follow the
+  suppress-by-intent rule: stacked `oxlint-disable` lines where
+  proven, satisfaction (`@file`, increment rewrite) where the fix
+  is behavior-identical and test-covered, untouched originals
+  where oxlint honors ESLint-compat handling.
+* VPN (cut over): 4-group union, 9 providers, EMPTY tail
+  (`no-undef` off in source; 4 typed rules to tsgolint).
+* Browser (cut over): 15-group union, 11 providers; 5-rule
+  compiler tail needs owner disposition; tail severities are
+  per-scope (e.g. `no-undef` off in background, error in tools),
+  so wiring is per-group, never one flat tail.
+* Open adjudications and preconditions live in the wave cutover
+  commits on the consumer branches, not waived here.
+
 ## Review and rollout gates
 
 Read the [performance protocol](performance.md) before making a speed claim.
