@@ -17,6 +17,10 @@
       "types": "./dist/lint-runner.d.ts",
       "default": "./dist/lint-runner.js"
     },
+    "./lint-cli": {
+      "types": "./dist/lint-cli.d.ts",
+      "default": "./dist/lint-cli.js"
+    },
     "./javascript": "./dist/javascript.json",
     "./typescript": "./dist/typescript.json",
     "./javascript-adguard-projects": "./dist/javascript-adguard-projects.json",
