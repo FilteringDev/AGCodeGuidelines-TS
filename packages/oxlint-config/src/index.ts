@@ -227,7 +227,7 @@ function translateParserOptions(
 /**
  * Select providers after finalizing explicit rules, including every override.
  * @param config - An explicit configuration without inherited configurations.
- * @returns An independent configuration omitting unused providers and their redundant off entries.
+ * @returns An independent configuration omitting unused providers and provider-prefixed off entries.
  */
 export function finalizeProviders(config: OxlintConfig): OxlintConfig {
     if (config.extends?.length) {
@@ -255,6 +255,33 @@ export function finalizeProviders(config: OxlintConfig): OxlintConfig {
     [result.rules, ...(result.overrides ?? []).map((override) => override.rules)].forEach((rules) => {
         Object.keys(rules ?? {}).forEach((target) => {
             if (removable.has(target.slice(0, target.lastIndexOf('/')))) {
+                delete rules![target];
+            }
+        });
+    });
+    const known = new Set([
+        ...Object.keys(PROVIDERS),
+        ...Object.keys(PROVIDER_ALIASES),
+        ...registered.flatMap((provider) => (typeof provider === 'string' ? [] : [provider.name])),
+    ]);
+    // Prune a disabled entry only when no other layer enables the same rule.
+    // A top-level enable combined with an override disable narrows the scope;
+    // deleting the override entry would re-enable the rule for those files.
+    const layers = [result.rules, ...(result.overrides ?? []).map((override) => override.rules)];
+    const enabledByLayer = layers.map((rules) => new Set(
+        Object.entries(rules ?? {})
+            .filter(([, setting]) => {
+                const level = (Array.isArray(setting) ? setting[0] : setting) ?? 'off';
+                return level === 1 || level === 2 || level === 'warn' || level === 'error' || level === 'deny';
+            })
+            .map(([target]) => target),
+    ));
+    layers.forEach((rules, index) => {
+        Object.entries(rules ?? {}).forEach(([target, setting]) => {
+            const level = (Array.isArray(setting) ? setting[0] : setting) ?? 'off';
+            const enabledElsewhere = enabledByLayer.some((enabled, other) => other !== index && enabled.has(target));
+            if (!enabledElsewhere && known.has(target.slice(0, target.lastIndexOf('/')))
+                && (level === 0 || level === 'off' || level === 'allow')) {
                 delete rules![target];
             }
         });

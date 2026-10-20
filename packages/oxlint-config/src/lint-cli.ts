@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** @file Start a lint command after validating one process-tree memory budget. */
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import {
     existsSync,
     readFileSync,
@@ -56,13 +56,34 @@ are unchanged; like ESLint's cache it does not track other files a rule reads.
  * @param cwd - Consumer working directory.
  * @returns Relative filenames, or none when discovery is not reproducible.
  */
-function discoverFiles(oxlint: string, plan: ShardPlan, cwd: string): string[] {
-    const result = spawnSync(
-        process.execPath,
+function runEngine(args: string[], cwd: string, maxBuffer: number): Promise<{ status: number | null; stdout: string }> {
+    return new Promise((resolve, reject) => {
+        const child = spawn(process.execPath, args, { cwd, stdio: ['ignore', 'pipe', 'ignore'] });
+        let stdout = '';
+        let length = 0;
+        child.stdout?.on('data', (chunk: Buffer) => {
+            length += chunk.length;
+            if (length <= maxBuffer) {
+                stdout += chunk.toString('utf8');
+            }
+        });
+        child.on('error', reject);
+        child.on('close', (status) => resolve({ status, stdout: length <= maxBuffer ? stdout : '' }));
+    });
+}
+
+/**
+ * List the files Oxlint would lint, using its own ignore and extension handling.
+ * @param oxlint - Oxlint Node entry point.
+ * @param plan - Shareable options and targets.
+ * @param cwd - Consumer working directory.
+ * @returns Relative filenames, or none when discovery is not reproducible.
+ */
+async function discoverFiles(oxlint: string, plan: ShardPlan, cwd: string): Promise<string[]> {
+    const result = await runEngine(
         [oxlint, ...plan.options, '--debug=files', ...(plan.targets.length ? ['--', ...plan.targets] : [])],
-        {
-            cwd, encoding: 'utf8', maxBuffer: 256 * MIB, stdio: ['ignore', 'pipe', 'ignore'],
-        },
+        cwd,
+        256 * MIB,
     );
     return result.status === 0 ? result.stdout.split('\n').filter(Boolean) : [];
 }
@@ -74,10 +95,8 @@ function discoverFiles(oxlint: string, plan: ShardPlan, cwd: string): string[] {
  * @param cwd - Consumer working directory.
  * @returns A digest, or undefined when the configuration cannot be printed.
  */
-function cacheKey(oxlint: string, plan: ShardPlan, cwd: string): string | undefined {
-    const printed = spawnSync(process.execPath, [oxlint, ...plan.options, '--print-config'], {
-        cwd, encoding: 'utf8', maxBuffer: 64 * MIB, stdio: ['ignore', 'pipe', 'ignore'],
-    });
+async function cacheKey(oxlint: string, plan: ShardPlan, cwd: string): Promise<string | undefined> {
+    const printed = await runEngine([oxlint, ...plan.options, '--print-config'], cwd, 64 * MIB);
     if (printed.status !== 0) {
         return undefined;
     }
@@ -155,9 +174,16 @@ export async function runLintCli(
     let shards: string[][] | undefined;
     let cache: { path: string; data: LintCache; hashes: Map<string, string>; files: string[] } | undefined;
     if (plan) {
-        const files = discoverFiles(oxlint, plan, cwd);
+        // Discovery and print-config are independent engine spawns with the
+        // same ignore semantics; overlap them instead of paying both startups
+        // sequentially. The print-config output only feeds the cache key, so
+        // a failed discovery still yields no files as before.
+        const [files, printed] = await Promise.all([
+            discoverFiles(oxlint, plan, cwd),
+            parsed.cache ? cacheKey(oxlint, plan, cwd) : Promise.resolve(undefined),
+        ]);
         let pending = files;
-        const key = parsed.cache && files.length ? cacheKey(oxlint, plan, cwd) : undefined;
+        const key = parsed.cache && files.length ? printed : undefined;
         if (key) {
             const path = resolve(cwd, parsed.cacheLocation ?? DEFAULT_CACHE_LOCATION);
             const data = readLintCache(path, key);
@@ -191,7 +217,10 @@ export async function runLintCli(
         AG_LINT_LEASE_MIB: String(inherited ? parentLease || reservation : 0),
         AG_LINT_LEASE_THREADS: String(inherited ? 1 : snapshot.parallelism),
     };
-    const outputDirectory = shards ? await mkdtemp(join(tmpdir(), 'ag-lint-')) : undefined;
+    // A full cache hit leaves no shard behind: skip the per-run temp
+    // directory entirely instead of creating and removing an unused one,
+    // and leave the cache file untouched since nothing was re-linted.
+    const outputDirectory = shards?.length ? await mkdtemp(join(tmpdir(), 'ag-lint-')) : undefined;
     const tasks: LintTask[] = shards
         ? shards.flatMap((files) => {
             const fixed = [oxlint, '--threads=1', '--format=json', ...plan!.options, '--'];
@@ -204,7 +233,7 @@ export async function runLintCli(
                 threads: 1,
                 tolerated: [1],
             }));
-        }).map((task, index) => ({ ...task, stdout: join(outputDirectory!, `${index}.json`) }))
+        }).map((task, index) => (outputDirectory ? { ...task, stdout: join(outputDirectory, `${index}.json`) } : task))
         : [{
             command,
             args: engineArgs,

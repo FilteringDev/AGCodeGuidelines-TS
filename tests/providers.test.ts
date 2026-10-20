@@ -286,12 +286,20 @@ describe('effective compatibility configuration', () => {
             },
         });
         expect(result.config.overrides![0]!.rules).toEqual({
-            'ag-compat/dot-notation': 'off',
             'ag-compat/no-undef': 'error',
         });
         result.config.jsPlugins = [{ name: 'ag-compat', specifier: COMPAT }];
         const diagnostics = await lintBatch(result.config, { 'main.js': 'const value = {}; value["key"] = 1;' });
         expect(diagnostics.get('main.js')).toEqual([]);
+    });
+
+    it('keeps an override disable when another layer enables the same rule', () => {
+        const result = finalizeProviders({
+            rules: { 'ag-compat/no-undef': 'error' },
+            overrides: [{ files: ['*.ts'], rules: { 'ag-compat/no-undef': 'off' } }],
+        });
+        expect(result.rules).toEqual({ 'ag-compat/no-undef': 'error' });
+        expect(result.overrides![0]!.rules).toEqual({ 'ag-compat/no-undef': 'off' });
     });
 
     it('runs a JavaScript alias without changing options or loading other providers', async () => {
