@@ -28,6 +28,10 @@
   with its own JavaScript-plugin thread, and merges one identical report.
 - `ag-lint --cache` reuses diagnostics of unchanged files with ESLint cache
   semantics, keyed by the resolved root configuration and tool versions.
+- `ag-lint` overlaps file discovery with print-config instead of running
+  them sequentially, and skips per-run temp setup on full cache hits.
+- `finalizeProviders` keeps override-level disables that narrow a rule
+  enabled in another layer, preserving scope narrowing.
 
 ### Fixed
 
