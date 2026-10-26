@@ -36,12 +36,13 @@ jobs:
       - name: Stage unchanged package bytes and standalone runtime check
         env:
           COREPACK_HOME: ${{ runner.temp }}/consumer-corepack
+          AG_CACHE_ROOT: ${{ runner.temp }}/ag-cache
         run: |
-          mkdir -p .cache/runtime-packages
+          mkdir -p "${AG_CACHE_ROOT}/runtime-packages"
           for package in oxlint-plugin rule-catalog oxlint-config; do
-            pnpm --dir "packages/$package" pack --pack-destination "$PWD/.cache/runtime-packages"
+            pnpm --dir "packages/$package" pack --pack-destination "${AG_CACHE_ROOT}/runtime-packages"
           done
-          pnpm exec esbuild scripts/packed-runtime.ts --bundle --platform=node --format=esm --target=node22 --outfile=.cache/packed-runtime.mjs
+          pnpm exec esbuild scripts/packed-runtime.ts --bundle --platform=node --format=esm --target=node22 --outfile="${AG_CACHE_ROOT}/packed-runtime.mjs"
           pnpm --package=corepack@0.34.0 dlx corepack pnpm@10.33.4 --version
       - uses: actions/setup-node@v7
         with:
@@ -49,7 +50,8 @@ jobs:
       - name: Test tarballs outside the development workspace
         env:
           AG_PNPM_CLI: ${{ runner.temp }}/consumer-corepack/v1/pnpm/10.33.4/bin/pnpm.cjs
-        run: node .cache/packed-runtime.mjs .cache/runtime-packages
+          AG_CACHE_ROOT: ${{ runner.temp }}/ag-cache
+        run: node "${AG_CACHE_ROOT}/packed-runtime.mjs" "${AG_CACHE_ROOT}/runtime-packages"
 
   check:
     strategy:
@@ -69,6 +71,10 @@ jobs:
         with:
           version: ${{ matrix.pnpm }}
       - run: pnpm install --frozen-lockfile
+      - name: Point repo scratch at the runner temp directory
+        run: |
+          echo "AG_CACHE_ROOT=${{ runner.temp }}/ag-cache" >> "$GITHUB_ENV"
+          echo "AG_COVERAGE_DIR=${{ runner.temp }}/ag-coverage" >> "$GITHUB_ENV"
       - run: pnpm run check
       - name: Require deterministic generated files
         run: git diff --exit-code
@@ -76,4 +82,4 @@ jobs:
         if: always()
         with:
           name: coverage-${{ matrix.os }}
-          path: coverage/
+          path: ${{ runner.temp }}/ag-coverage/

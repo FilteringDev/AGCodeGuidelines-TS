@@ -1,6 +1,8 @@
 /**
  * @file Vitest projects share one explicit Node environment and coverage policy.
  */
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -15,6 +17,7 @@ export default defineConfig({
         reporters: ['default'],
         coverage: {
             provider: 'v8',
+            reportsDirectory: process.env.AG_COVERAGE_DIR ?? join(tmpdir(), 'agcodeguidelines-coverage'),
             reportOnFailure: true,
             include: ['packages/*/src/**/*.ts', 'vendor/import/compat/**/*.ts'],
             exclude: ['**/*.d.ts'],

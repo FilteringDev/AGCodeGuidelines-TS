@@ -299,7 +299,8 @@ current compatibility or performance evidence.
 
 Use `pnpm build` followed by
 `pnpm exec tsx scripts/stage.ts 0.1.0-review.20261015` to create exact-version
-archives and a SHA-256 manifest in a new ignored review directory. Staging uses
+archives and a SHA-256 manifest in a new review directory under `$AG_CACHE_ROOT`
+(default `/tmp/agcodeguidelines-cache`). Staging uses
 disposable package copies and does not edit source manifests or publish.
 Use the same archive bytes for packed and consumer validation.
 

@@ -9,8 +9,9 @@ import {
     writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 
+import cacheRoot from './cache-root';
 import { execPnpm } from './process';
 import { portReference } from './reference';
 
@@ -58,7 +59,7 @@ if (process.argv.includes('--latest-guide')) {
     lock.guide.revision = commit.sha;
 }
 const temporary = await mkdtemp(join(tmpdir(), 'ag-source-download-'));
-const root = resolve('.cache/upstream');
+const root = process.env.AG_UPSTREAM_ROOT ?? cacheRoot('upstream');
 await mkdir(root, { recursive: true });
 try {
     for (const source of Object.values(lock.sources)) {

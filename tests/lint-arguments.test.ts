@@ -18,11 +18,11 @@ describe('lint invocation arguments', () => {
             maxMemMiB: 512,
             profile: 'trace.json',
         });
-        expect(parseLintArguments(['--cache', '--cache-location=.cache/lint.json', '--format=unix'])).toEqual({
+        expect(parseLintArguments(['--cache', '--cache-location=/tmp/ag-lint.json', '--format=unix'])).toEqual({
             args: ['--format=unix'],
             help: false,
             cache: true,
-            cacheLocation: '.cache/lint.json',
+            cacheLocation: '/tmp/ag-lint.json',
         });
     });
 

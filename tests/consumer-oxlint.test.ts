@@ -42,7 +42,7 @@ function lintGroup(consumer: string, scopes: string[], files: string[]): string[
     return runOxlintGroup({
         cli: CLI,
         consumer,
-        configPath: join(consumer, '.cache/consumer-diff/group-0.json'),
+        configPath: join(consumer, 'consumer-diff/group-0.json'),
         config: withResolvedPlugins(group!.config),
         files,
     }).map((diagnostic) => {

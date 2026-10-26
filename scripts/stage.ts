@@ -15,13 +15,14 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import semver from 'semver';
 
+import cacheRoot from './cache-root';
 import { execPnpm } from './process';
 
 const version = process.argv[2];
 if (!version || semver.valid(version) !== version || !semver.prerelease(version) || version.includes('+')) {
     throw new Error('Usage: pnpm exec tsx scripts/stage.ts <exact-prerelease-version> [output-directory]');
 }
-const destination = resolve(process.argv[3] ?? `.cache/review/${version}`);
+const destination = resolve(process.argv[3] ?? cacheRoot('review', version));
 await mkdir(dirname(destination), { recursive: true });
 await mkdir(destination);
 const temporary = await mkdtemp(join(tmpdir(), 'ag-review-stage-'));

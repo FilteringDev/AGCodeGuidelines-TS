@@ -11,8 +11,10 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+import cacheRoot from './cache-root';
+
 const directory = await mkdtemp(join(tmpdir(), 'ag-minimum-runtime-'));
-const archiveDirectory = resolve(process.argv[2] ?? '.cache/runtime-packages');
+const archiveDirectory = resolve(process.argv[2] ?? cacheRoot('runtime-packages'));
 const names = ['oxlint-plugin', 'rule-catalog', 'oxlint-config'];
 const pnpmArgs = process.env.AG_PNPM_CLI ? [process.env.AG_PNPM_CLI] : [];
 

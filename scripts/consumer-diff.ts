@@ -8,7 +8,12 @@
  * leaves them; the comments are restored afterwards unless --rewrite-suppressions keeps them.
  * --no-inline-config ignores suppression comments on both sides, so suppressed code is compared too.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import {
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    writeFileSync,
+} from 'node:fs';
 import {
     dirname,
     join,
@@ -18,6 +23,7 @@ import {
 import { fileURLToPath } from 'node:url';
 
 import { createCompatibilityConfigGroups } from '../packages/oxlint-config/src/index';
+import cacheRoot from './cache-root';
 import { collectEslint, languageOf, typescriptEslintMajor } from './consumer-eslint';
 import {
     comparableFindings,
@@ -73,7 +79,8 @@ for (const file of files) {
     groups.set(key, group);
 }
 
-const directory = join(consumer, '.cache/consumer-diff');
+mkdirSync(cacheRoot('consumer-diff'), { recursive: true });
+const directory = mkdtempSync(join(cacheRoot('consumer-diff'), 'run-'));
 const fallback: Record<string, { reason: string; files: number }> = {};
 const compiler: Record<string, { reason: string; files: number }> = {};
 const targetsByFile = new Map<string, ReadonlyMap<string, string>>();

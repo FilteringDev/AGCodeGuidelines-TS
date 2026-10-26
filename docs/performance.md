@@ -60,7 +60,8 @@ No discovery or scheduling-runtime change is adopted by this follow-up.
 Consumer controls and calibrated weights remain rehearsal-only patches, not
 committed consumer configuration. Raw samples, all statuses, P25/P75/extrema,
 resource reports, calibration, source hashes and exact control manifests are
-retained under `.cache/invocation-study/followup/`. No new default-branch
+retained under `$AG_CACHE_ROOT/invocation-study/followup/` (default
+`/tmp/agcodeguidelines-cache/invocation-study/followup/`). No new default-branch
 checkout comparison is claimed.
 
 ## Resource-aware pilot measurements
@@ -118,7 +119,8 @@ not a substitute for the repeated four-way comparison above.
 
 Raw manifests, all samples, min/max and P25/P75, full stdout/stderr and per-sample
 resource profiles are retained locally under
-`.cache/invocation-study/final/`. The earlier VPN run with shared caches was
+`$AG_CACHE_ROOT/invocation-study/final/` (default
+`/tmp/agcodeguidelines-cache/invocation-study/final/`). The earlier VPN run with shared caches was
 discarded from acceptance, not combined with these samples. Original consumer
 checkouts were not changed. Absolute local tarball overrides remain test-only
 and must not be committed or used as a release mechanism.

@@ -9,7 +9,7 @@ an ESLint engine dependency nor the optional typed service.
 
 ```sh
 pnpm run lint -- --max-mem 8192
-pnpm run lint -- --max-mem=2048 --threads=1 --profile .cache/lint-profile.json
+pnpm run lint -- --max-mem=2048 --threads=1 --profile "${AG_CACHE_ROOT:-/tmp/agcodeguidelines-cache}/lint-profile.json"
 pnpm exec ag-lint --max-mem 8192 --command node tasks/lint.mjs
 ```
 

@@ -146,15 +146,15 @@ in the four migration-added configuration/helper files; they are unfinished migr
 code, not all preexisting application violations. Target helper fixes, native errors,
 VPN Node 24 regressions and environment prerequisites remain outside this source patch.
 
-The local [consolidated evidence](../.cache/import-validation/results.json)
+The local [consolidated evidence](../../tmp/agcodeguidelines-cache/import-validation/results.json)
 contains original revisions, per-manifest/config rows, commands, working
 directories, exits, durations, policy audits and repository summaries.
 Repository details:
 
-- [VPN summary](../.cache/import-validation/AdGuardVPNExtension/summary.json)
-- [Browser summary](../.cache/import-validation/AdguardBrowserExtension/summary.json)
-- [Scriptlets summary](../.cache/import-validation/Scriptlets/summary.json)
-- [Monorepo summary](../.cache/import-validation/tsurlfilter/summary.json)
+- [VPN summary](../../tmp/agcodeguidelines-cache/import-validation/AdGuardVPNExtension/summary.json)
+- [Browser summary](../../tmp/agcodeguidelines-cache/import-validation/AdguardBrowserExtension/summary.json)
+- [Scriptlets summary](../../tmp/agcodeguidelines-cache/import-validation/Scriptlets/summary.json)
+- [Monorepo summary](../../tmp/agcodeguidelines-cache/import-validation/tsurlfilter/summary.json)
 
 Evidence is local ignored data, not included in a fresh Git checkout.
 Target `tools/lint-packages` snapshots are explicit installation/Docker inputs.
@@ -176,7 +176,7 @@ Version-stamping and packing checks must use disposable copies, not source
 manifests. Rebuild source packages before rerunning the local report generator:
 
 ```sh
-node .cache/import-validation/report.mjs
+node "$AG_CACHE_ROOT/import-validation/report.mjs"
 ```
 
 Rollout remains blocked on recorded lint/type findings, VPN Node 24 regressions,
