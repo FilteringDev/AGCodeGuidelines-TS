@@ -1,12 +1,16 @@
 /** @file Verify consumer group configurations stored outside the consumer root still select their files. */
 import {
+    realpath,
     mkdir,
     mkdtemp,
     rm,
     writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import {
+    join,
+    resolve,
+} from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -54,11 +58,12 @@ function lintGroup(consumer: string, scopes: string[], files: string[]): string[
 describe('consumer Oxlint groups', () => {
     it('escapes glob syntax in literal paths', () => {
         expect(escapeGlob('/a/(g)/[id].{ts}')).toBe('/a/\\(g\\)/\\[id\\].\\{ts\\}');
-        expect(fileScopes('/consumer', ['src/a.ts'])).toEqual(['/consumer/src/a.ts']);
+        const expected = escapeGlob(join('/consumer', 'src', 'a.ts'));
+        expect(fileScopes('/consumer', ['src/a.ts'])).toEqual([expected]);
     });
 
     it('selects exactly the group files from a nested configuration at ESLint locations', async () => {
-        const consumer = await mkdtemp(join(tmpdir(), 'ag-consumer-oxlint-'));
+        const consumer = await realpath(await mkdtemp(join(tmpdir(), 'ag-consumer-oxlint-')));
         try {
             await mkdir(join(consumer, 'src/(group)'), { recursive: true });
             const files = ['src/a.ts', 'src/(group)/[id].ts'];

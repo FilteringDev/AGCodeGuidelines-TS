@@ -6,15 +6,20 @@ import { batchLintFiles } from '../packages/oxlint-config/src/lint-batch';
 describe('literal argv file batches', () => {
     it('preserves filenames and order without a fixed hundred-file split', () => {
         const files = Array.from({ length: 1000 }, (_unused, index) => `/src/file-${index}.ts`);
-        const batches = batchLintFiles(files, { environment: {} });
+        const batches = batchLintFiles(files, { environment: {}, platform: 'linux' });
         expect(batches).toHaveLength(1);
         expect(batches.flat()).toEqual(files);
-        expect(batchLintFiles([])).toEqual([]);
+        expect(batchLintFiles([], { platform: 'linux' })).toEqual([]);
     });
 
     it('accounts for fixed args, inherited environment and non-ASCII byte lengths', () => {
         const files = ["file with 'quotes'.ts", '\uD55C\uAE00.ts', '--literal.ts'];
-        const options = { maxBytes: 64, environment: { ENV: 'value' }, fixedArgs: ['node', '--config', 'lint.json'] };
+        const options = {
+            maxBytes: 64,
+            environment: { ENV: 'value' },
+            fixedArgs: ['node', '--config', 'lint.json'],
+            platform: 'linux',
+        };
         const batches = batchLintFiles(files, options);
         expect(batches.length).toBeGreaterThan(1);
         expect(batches.flat()).toEqual(files);
