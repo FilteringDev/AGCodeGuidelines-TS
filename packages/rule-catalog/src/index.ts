@@ -391,8 +391,8 @@ export function resolveRuleDetailed(source: string, options: DetailedResolutionO
             const verified = entry?.schema
                 && VALIDATOR.compile(entry.schema)(sourceSetting.slice(1));
             if (!verified) {
-            return unsupported(`Unsupported options for ${source}: this rule accepts no options.`);
-        }
+                return unsupported(`Unsupported options for ${source}: this rule accepts no options.`);
+            }
         }
         resolution = resolveRule(source);
         if (resolution.status !== 'unsupported') {
