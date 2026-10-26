@@ -55,7 +55,7 @@ function lintGroup(consumer: string, scopes: string[], files: string[]): string[
 describe('consumer Oxlint groups', () => {
     it('escapes glob syntax in literal paths', () => {
         expect(escapeGlob('/a/(g)/[id].{ts}')).toBe('/a/\\(g\\)/\\[id\\].\\{ts\\}');
-        const expected = escapeGlob(join('/consumer', 'src', 'a.ts'));
+        const expected = escapeGlob(resolve('/consumer', 'src', 'a.ts'));
         expect(fileScopes('/consumer', ['src/a.ts'])).toEqual([expected]);
     });
 

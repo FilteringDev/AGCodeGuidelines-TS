@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { MIB, resolveMemoryBudget } from '../packages/oxlint-config/src/memory-budget';
-import { runLintTasks } from '../packages/oxlint-config/src/lint-runner';
+import { processTreeMiB, runLintTasks } from '../packages/oxlint-config/src/lint-runner';
 
 import type { LintTask } from '../packages/oxlint-config/src/lint-runner';
 
@@ -180,6 +180,11 @@ describe('bounded lint forward progress', () => {
         controller.abort('SIGTERM');
         expect(await runLintTasks([task()], { ...OPTIONS, signal: controller.signal }))
             .toMatchObject({ status: 143, started: 0, completed: 0 });
+    });
+
+    it('observes the owned process tree without trusting reused identifiers', () => {
+        expect(processTreeMiB()).toBeGreaterThan(0);
+        expect(processTreeMiB(2 ** 31)).toBeGreaterThanOrEqual(0);
     });
 
     it.skipIf(process.platform === 'win32')('preserves child SIGKILL instead of reporting a lint violation', async () => {

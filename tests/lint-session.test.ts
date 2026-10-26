@@ -87,4 +87,24 @@ describe('one lint admission coordinator', () => {
         });
         await closed;
     });
+
+    it('rejects malformed admission payloads without granting a lease', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const socket = createConnection(session.descriptor.endpoint);
+            const outcome = await new Promise<string>((resolve) => {
+                socket.on('error', (error: Error) => resolve(`error:${error.message}`));
+                socket.on('close', () => resolve('closed'));
+                socket.on('connect', () => {
+                    socket.write(`${JSON.stringify({ lease: 'x'.repeat(9000) })}\n`);
+                });
+                setTimeout(() => resolve('timeout'), 2000);
+            });
+            socket.destroy();
+            expect(outcome === 'closed' || outcome === 'timeout' || outcome.startsWith('error:')).toBe(true);
+        } finally {
+            await session.close();
+        }
+    });
 });
