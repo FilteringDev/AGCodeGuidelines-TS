@@ -200,6 +200,30 @@ describe('one lint admission coordinator', () => {
         }
     });
 
+    it('drops oversized frames and repeated payloads without granting a lease', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const sendRaw = (chunks: string[]): Promise<string> => new Promise((resolve) => {
+                const socket = createConnection(session.descriptor.endpoint);
+                socket.on('error', () => resolve('error'));
+                socket.on('close', () => resolve('closed'));
+                socket.on('connect', () => {
+                    for (const chunk of chunks) {
+                        socket.write(chunk);
+                    }
+                    setTimeout(() => {
+                        socket.destroy();
+                        resolve('timeout');
+                    }, 500);
+                });
+            });
+            expect(await sendRaw([`${'x'.repeat(9000)}\n`])).toBe('closed');
+        } finally {
+            await session.close();
+        }
+    });
+
     it('rejects malformed admission payloads without granting a lease', async () => {
         const session = await startLintSession(BUDGET, { usage: () => 16 });
         try {
