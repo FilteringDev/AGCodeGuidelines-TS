@@ -111,6 +111,10 @@ describe('bounded lint forward progress', () => {
         await expect(runLintTasks([{ ...task(), memoryMiB: 256 }], OPTIONS)).rejects.toThrow('reservation');
         await expect(runLintTasks([{ ...task(), threads: 3 }], OPTIONS)).rejects.toThrow('CPU');
         await expect(runLintTasks([{ ...task(), memoryMiB: 0 }], OPTIONS)).rejects.toThrow('positive integer');
+        await expect(runLintTasks([task()], { ...OPTIONS, intervalMs: 0 }))
+            .rejects.toThrow('must be positive');
+        await expect(runLintTasks([{ ...task(), threads: 0 }], OPTIONS))
+            .rejects.toThrow('positive integer');
     });
 
     it('waits for active work instead of treating its reservation as stalled pressure', async () => {
@@ -173,6 +177,13 @@ describe('bounded lint forward progress', () => {
             },
         });
         expect(report).toMatchObject({ status: 3, completed: 1, peakTreeMiB: 300 });
+    });
+
+    it('rejects unobservable process trees instead of admitting blindly', async () => {
+        await expect(runLintTasks([task()], {
+            ...OPTIONS,
+            usage: () => Number.NaN,
+        })).rejects.toThrow('could not be observed');
     });
 
     it('preserves explicit SIGTERM cancellation before launching work', async () => {
