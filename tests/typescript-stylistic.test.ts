@@ -173,7 +173,7 @@ describe('TypeScript style plugin contract', () => {
         for (const name of names) {
             const source = stylistic.rules[name as keyof typeof stylistic.rules];
             expect(plugin.rules[name]!.meta).toBe(source?.meta);
-            expect(plugin.rules[name] === source).toBe(unchanged.has(name));
+            expect((plugin.rules[name] as unknown) === (source as unknown)).toBe(unchanged.has(name));
         }
     });
 });
