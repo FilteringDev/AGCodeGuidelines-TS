@@ -108,6 +108,39 @@ describe('one lint admission coordinator', () => {
         }
     });
 
+    it('releases active leases when their sockets close mid-grant', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const first = createConnection(session.descriptor.endpoint);
+            await new Promise<void>((resolve) => {
+                first.on('connect', () => resolve());
+            });
+            first.write(`${JSON.stringify({ token: session.descriptor.token, memory: 128, threads: 1 })}\n`);
+            const granted = await new Promise<unknown>((resolve, reject) => {
+                const timer = setTimeout(() => reject(new Error('Admission reply timed out.')), 5000);
+                first.on('error', reject);
+                first.on('data', (data: Buffer) => {
+                    if (data.toString('utf8').includes('\n')) {
+                        clearTimeout(timer);
+                        resolve(data.toString('utf8'));
+                    }
+                });
+            });
+            expect(String(granted)).toContain('granted');
+            expect(session.metrics().acquired).toBe(1);
+            first.destroy();
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 100);
+            });
+            expect(session.metrics().released).toBe(1);
+            const release = await acquireLintLease(session.descriptor, 128, 1);
+            release();
+        } finally {
+            await session.close();
+        }
+    });
+
     it('validates inherited metadata and rejects already cancelled requests', async () => {
         expect(readLintSession(undefined)).toBeUndefined();
         expect(() => readLintSession('{}')).toThrow('Invalid inherited');
