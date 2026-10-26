@@ -187,6 +187,17 @@ describe('bounded lint forward progress', () => {
         expect(processTreeMiB(2 ** 31)).toBeGreaterThanOrEqual(0);
     });
 
+    it('tracks owned descendants while work runs and releases them on stop', async () => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 500);
+        const report = await runLintTasks([task('setInterval(() => {}, 1000)')], {
+            ...OPTIONS,
+            signal: controller.signal,
+        });
+        clearTimeout(timer);
+        expect(report).toMatchObject({ status: 130, started: 1, completed: 1 });
+    });
+
     it.skipIf(process.platform === 'win32')('preserves child SIGKILL instead of reporting a lint violation', async () => {
         expect(await runLintTasks([task('process.kill(process.pid, "SIGKILL")')], OPTIONS))
             .toMatchObject({ status: 137, completed: 1, tasks: [{ signal: 'SIGKILL' }] });

@@ -108,6 +108,17 @@ describe('memory-aware lint CLI', () => {
             expect(profile.engineArgs).not.toContain('--max-mem');
             expect(profile.phases.engineResolutionMs).toBeGreaterThanOrEqual(0);
             await expect(runLintCli(['--max-mem', '1'], { cwd: directory })).rejects.toThrow('headroom');
+            const cacheError = vi.spyOn(process.stderr, 'write').mockReturnValue(true);
+            try {
+                const cacheOnly = await runLintCli(
+                    ['--max-mem', '1024', '--cache', '--command', process.execPath, '-e', 'process.exit(0)'],
+                    { cwd: directory, stdio: 'ignore' },
+                );
+                expect(cacheOnly).toBe(0);
+                expect(cacheError.mock.calls.map(([text]) => String(text)).join('')).toContain('--cache requires');
+            } finally {
+                cacheError.mockRestore();
+            }
         } finally {
             await rm(directory, { recursive: true, force: true });
         }
