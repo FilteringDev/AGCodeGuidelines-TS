@@ -1,16 +1,13 @@
 /** @file Verify consumer group configurations stored outside the consumer root still select their files. */
 import {
-    realpath,
     mkdir,
     mkdtemp,
+    realpath,
     rm,
     writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import {
-    join,
-    resolve,
-} from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
