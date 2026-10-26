@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { MIB, resolveMemoryBudget } from '../packages/oxlint-config/src/memory-budget';
-import { processTreeMiB, runLintTasks } from '../packages/oxlint-config/src/lint-runner';
+import { observeProcesses, processTreeMiB, runLintTasks } from '../packages/oxlint-config/src/lint-runner';
 
 import type { LintTask } from '../packages/oxlint-config/src/lint-runner';
 
@@ -195,6 +195,35 @@ describe('bounded lint forward progress', () => {
 
     it('observes the owned process tree without trusting reused identifiers', () => {
         expect(processTreeMiB()).toBeGreaterThan(0);
+        expect(processTreeMiB(2 ** 31)).toBeGreaterThanOrEqual(0);
+    });
+
+    it('walks injected process tables without trusting reused identifiers', () => {
+        const stat = (started: string) => `(node) R 1 1 1 0 -1 0 0 0 0 0 0 ${started} 0 0 0 0 0 0 0 0 0 0 0`;
+        const seen: number[] = [];
+        const reader = {
+            status: (identifier: number) => {
+                seen.push(identifier);
+                return 'Name:\tnode\nVmRSS:\t 2048 kB\n';
+            },
+            stat: (identifier: number) => {
+                if (identifier === 7) {
+                    throw new Error('no such process');
+                }
+                return stat(identifier === 1 ? '10' : '20');
+            },
+            tasks: (identifier: number) => (identifier === 1 ? ['3'] : []),
+            children: (identifier: number, thread: string) => {
+                if (thread === '3' && identifier === 1) {
+                    return [1, 2, 7];
+                }
+                throw new Error('no such thread');
+            },
+        };
+        const observations = observeProcesses(1, reader);
+        expect(observations).toHaveLength(2);
+        expect(observations.reduce((sum, observation) => sum + observation.bytes, 0)).toBe(4096 * 1024);
+        expect(seen).toContain(1);
         expect(processTreeMiB(2 ** 31)).toBeGreaterThanOrEqual(0);
     });
 

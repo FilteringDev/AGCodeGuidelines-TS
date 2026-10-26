@@ -73,14 +73,46 @@ export interface LintRunnerOptions {
     intervalMs?: number;
     admissionTimeoutMs?: number;
     stdio?: 'inherit' | 'ignore';
+    /** Platform identifier for descendant tracking; defaults to the current process platform. */
+    platform?: string;
+    /** Process-table reader for descendant discovery; defaults to the Linux process table. */
+    reader?: ProcessObservationReader;
 }
+
+/** Process-table reads used for descendant discovery; injectable for testing on any platform. */
+export interface ProcessObservationReader {
+    /** Process-table status entry, or throws when the process no longer exists. */
+    status: (identifier: number) => string;
+    /** Process-table stat entry, or throws when the process no longer exists. */
+    stat: (identifier: number) => string;
+    /** Thread names owning child lists, or throws when the process no longer exists. */
+    tasks: (identifier: number) => string[];
+    /** Child identifiers of one thread, or throws when the thread no longer exists. */
+    children: (identifier: number, thread: string) => number[];
+}
+
+/** Default reader backed by the Linux process table. */
+const linuxProcessReader: ProcessObservationReader = {
+    status: (identifier) => readFileSync(`/proc/${identifier}/status`, 'utf8'),
+    stat: (identifier) => readFileSync(`/proc/${identifier}/stat`, 'utf8'),
+    tasks: (identifier) => readdirSync(`/proc/${identifier}/task`),
+    children: (identifier, thread) => readFileSync(`/proc/${identifier}/task/${thread}/children`, 'utf8')
+        .trim()
+        .split(/\s+/u)
+        .filter(Boolean)
+        .map(Number),
+};
 
 /**
  * Identify descendants across Linux worker threads without trusting reused PIDs.
  * @param root - Owned root process identifier.
+ * @param read - Process-table reader; defaults to the Linux process table.
  * @returns Observable process identities and current resident bytes.
  */
-function observeProcesses(root: number): { identifier: number; started: string; bytes: number }[] {
+export function observeProcesses(
+    root: number,
+    read: ProcessObservationReader = linuxProcessReader,
+): { identifier: number; started: string; bytes: number }[] {
     const pending = [root];
     const visited = new Set<number>();
     const result: { identifier: number; started: string; bytes: number }[] = [];
@@ -91,14 +123,13 @@ function observeProcesses(root: number): { identifier: number; started: string; 
         }
         visited.add(identifier);
         try {
-            const status = readFileSync(`/proc/${identifier}/status`, 'utf8');
-            const stat = readFileSync(`/proc/${identifier}/stat`, 'utf8');
+            const status = read.status(identifier);
+            const stat = read.stat(identifier);
             const started = stat.slice(stat.lastIndexOf(')') + 2).split(' ')[19]!;
             result.push({ identifier, started, bytes: Number(status.match(/^VmRSS:\s+(\d+) kB$/mu)?.[1] ?? 0) * 1024 });
-            for (const thread of readdirSync(`/proc/${identifier}/task`)) {
+            for (const thread of read.tasks(identifier)) {
                 try {
-                    const children = readFileSync(`/proc/${identifier}/task/${thread}/children`, 'utf8').trim();
-                    pending.push(...children.split(/\s+/u).filter(Boolean).map(Number));
+                    pending.push(...read.children(identifier, thread));
                 } catch {
                     continue;
                 }
@@ -113,13 +144,14 @@ function observeProcesses(root: number): { identifier: number; started: string; 
 /**
  * Observe owned Linux processes without summing independent historical RSS maxima.
  * @param root - Root process identifier for this invocation.
+ * @param read - Process-table reader; defaults to the Linux process table.
  * @returns Current tree RSS in MiB; shared pages may be counted more than once.
  */
-export function processTreeMiB(root = process.pid): number {
+export function processTreeMiB(root = process.pid, read?: ProcessObservationReader): number {
     if (process.platform !== 'linux') {
         return process.memoryUsage().rss / MIB;
     }
-    const observations = observeProcesses(root);
+    const observations = observeProcesses(root, read);
     return observations.length ? observations.reduce((sum, process) => sum + process.bytes, 0) / MIB
         : process.memoryUsage().rss / MIB;
 }
@@ -137,6 +169,8 @@ export async function runLintTasks(
     const {
         budget, signal, stdio = 'inherit', intervalMs = 100, admissionTimeoutMs = 30000,
     } = options;
+    const platform = options.platform ?? process.platform;
+    const read = options.reader;
     if (
         !Number.isFinite(intervalMs)
         || intervalMs < 1
@@ -170,7 +204,7 @@ export async function runLintTasks(
     }
     const report: LintExecutionReport = {
         budget: structuredClone(budget),
-        enforcement: process.platform === 'linux' ? 'monitored-process-tree' : 'admission-only',
+        enforcement: platform === 'linux' ? 'monitored-process-tree' : 'admission-only',
         peakTreeMiB: initialUsage,
         started: 0,
         completed: 0,
@@ -178,7 +212,7 @@ export async function runLintTasks(
         warnings: ['RSS sampling is best-effort, may overshoot transiently, and may double-count shared pages.'],
         tasks: [],
     };
-    if (process.platform !== 'linux') {
+    if (platform !== 'linux') {
         report.warnings.push('Descendant RSS is not observable on this platform; only admission is controlled.');
     }
     if (!tasks.length) {
@@ -189,10 +223,10 @@ export async function runLintTasks(
         const timers = new Set<ReturnType<typeof setTimeout>>();
         const descendants = new Map<number, string>();
         const track = () => {
-            if (process.platform === 'linux') {
+            if (platform === 'linux') {
                 for (const child of active.keys()) {
                     if (child.pid) {
-                        for (const observation of observeProcesses(child.pid)) {
+                        for (const observation of observeProcesses(child.pid, read)) {
                             descendants.set(observation.identifier, observation.started);
                         }
                     }
@@ -202,7 +236,7 @@ export async function runLintTasks(
         const cleanupDescendants = (termination: NodeJS.Signals) => {
             for (const [identifier, started] of descendants) {
                 try {
-                    const stat = readFileSync(`/proc/${identifier}/stat`, 'utf8');
+                    const stat = (read ?? linuxProcessReader).stat(identifier);
                     if (stat.slice(stat.lastIndexOf(')') + 2).split(' ')[19] === started) {
                         process.kill(identifier, termination);
                     }
