@@ -88,6 +88,42 @@ describe('one lint admission coordinator', () => {
         await closed;
     });
 
+    it('rejects admission frames with invalid credentials or reservations', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const send = (payload: unknown): Promise<string> => new Promise((resolve, reject) => {
+                const socket = createConnection(session.descriptor.endpoint);
+                const timer = setTimeout(() => {
+                    socket.destroy();
+                    reject(new Error('Admission reply timed out.'));
+                }, 5000);
+                let answer = '';
+                socket.on('error', (error: Error) => {
+                    clearTimeout(timer);
+                    resolve(`error:${error.message}`);
+                });
+                socket.on('data', (data: Buffer) => {
+                    answer += data.toString('utf8');
+                    if (answer.includes('\n')) {
+                        clearTimeout(timer);
+                        socket.end();
+                        resolve(answer);
+                    }
+                });
+                socket.on('connect', () => {
+                    socket.write(`${JSON.stringify(payload)}\n`);
+                });
+            });
+            expect(await send({ token: '0'.repeat(48), memory: 64, threads: 1 }))
+                .toContain('Invalid lint session credential');
+            expect(await send({ token: session.descriptor.token, memory: 0, threads: 1 }))
+                .toContain('Reservation exceeds');
+        } finally {
+            await session.close();
+        }
+    });
+
     it('rejects malformed admission payloads without granting a lease', async () => {
         const session = await startLintSession(BUDGET, { usage: () => 16 });
         try {

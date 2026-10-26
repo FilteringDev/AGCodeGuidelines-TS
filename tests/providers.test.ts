@@ -142,6 +142,10 @@ describe('effective compatibility configuration', () => {
             expect(createCompatibilityConfig({ rules: { 'no-debugger': 'error' }, context }).fallback).toHaveLength(1);
         }
         expect(createCompatibilityConfig({
+            rules: { 'no-debugger': 'error' },
+            context: { parserOptions: { ecmaFeatures: { globalReturn: true } } },
+        }).config.settings).toMatchObject({ agParserOptions: { ecmaFeatures: { globalReturn: true } } });
+        expect(createCompatibilityConfig({
             rules: { quotes: ['warn', 'single', { avoidEscape: true }] }, context: { settings: { custom: true } },
         }).fallback).toHaveLength(1);
         expect(createCompatibilityConfig({

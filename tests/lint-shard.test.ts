@@ -73,6 +73,11 @@ describe('shard planning', () => {
         expect(assignShards(['a', 'b', 'c', 'd'], [10, 40, 30, 20], 2)).toEqual([['a', 'b'], ['c', 'd']]);
         expect(assignShards(['a'], [1], 3)).toEqual([['a']]);
     });
+
+    it('rejects sharding when a valued option has no value', () => {
+        expect(planSharding(['--format=json', '--threads'])).toBeUndefined();
+        expect(planSharding(['--format=json', '--config'])).toBeUndefined();
+    });
 });
 
 describe('shard reports', () => {

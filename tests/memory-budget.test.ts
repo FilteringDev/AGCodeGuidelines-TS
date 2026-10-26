@@ -167,6 +167,12 @@ describe('observable memory limits', () => {
             hostAvailableMiB: 2048,
         });
         expect(resolveMemoryBudget(portable)).toMatchObject({ maxMiB: 1638, hardLimitMiB: 4096 });
+        const constrained = probeMemory({
+            system: { ...system, constrainedBytes: 4096 * MIB },
+        });
+        expect(constrained.constraints).toEqual([
+            expect.objectContaining({ source: 'node.constrainedMemory', limitBytes: 4096 * MIB }),
+        ]);
         expect(() => probeMemory({ system, read: () => undefined, hostAvailableMiB: 2048 })).toThrow(
             'provisioned host limit',
         );
