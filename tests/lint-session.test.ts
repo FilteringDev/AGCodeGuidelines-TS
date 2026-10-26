@@ -195,6 +195,8 @@ describe('one lint admission coordinator', () => {
                 .toContain('Invalid lint session credential');
             expect(await send({ token: session.descriptor.token, memory: 0, threads: 1 }))
                 .toContain('Reservation exceeds');
+            expect(await send({ memory: 64, threads: 1 }))
+                .toContain('Invalid lint session credential');
         } finally {
             await session.close();
         }
