@@ -102,6 +102,34 @@ describe('memory-aware lint CLI', () => {
         }
     });
 
+    it('shares one package permit across nested invocations without a parent lease', async () => {
+        const { startLintSession } = await import('../packages/oxlint-config/src/lint-session');
+        const { probeMemory, resolveMemoryBudget } = await import('../packages/oxlint-config/src/memory-budget');
+        const session = await startLintSession(resolveMemoryBudget(probeMemory(), 1024), { usage: () => 16 });
+        const previous = process.env.AG_LINT_SESSION;
+        const previousLease = process.env.AG_LINT_LEASE_MIB;
+        process.env.AG_LINT_SESSION = JSON.stringify(session.descriptor);
+        delete process.env.AG_LINT_LEASE_MIB;
+        try {
+            expect(await runLintCli(['--max-mem', '256', '--command', process.execPath, '-e', 'process.exit(0)'], {
+                stdio: 'ignore',
+            })).toBe(0);
+            expect(session.metrics().acquired).toBe(1);
+        } finally {
+            if (previous === undefined) {
+                delete process.env.AG_LINT_SESSION;
+            } else {
+                process.env.AG_LINT_SESSION = previous;
+            }
+            if (previousLease === undefined) {
+                delete process.env.AG_LINT_LEASE_MIB;
+            } else {
+                process.env.AG_LINT_LEASE_MIB = previousLease;
+            }
+            await session.close();
+        }
+    });
+
     it('prints its memory contract without loading engines', async () => {
         const output: string[] = [];
         expect(await runLintCli(['--help'], { print: (text) => output.push(text) })).toBe(0);

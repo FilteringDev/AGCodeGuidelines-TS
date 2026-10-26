@@ -65,6 +65,49 @@ describe('one lint admission coordinator', () => {
         }
     });
 
+    it('extends queued deadlines while leases are active without an explicit timeout', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const release = await acquireLintLease(session.descriptor, 128, 1);
+            const pending = acquireLintLease(session.descriptor, 128, 1);
+            const outcome = await Promise.race([
+                pending.then(() => 'granted' as const, (error: Error) => error.message),
+                new Promise<'waiting'>((resolve) => {
+                    setTimeout(() => resolve('waiting'), 100);
+                }),
+            ]);
+            expect(outcome).toBe('waiting');
+            release();
+            await expect(pending).resolves.toBeTypeOf('function');
+        } finally {
+            await session.close();
+        }
+    });
+
+    it('drops queued reservations when their socket closes before admission', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const release = await acquireLintLease(session.descriptor, 128, 1);
+            const socket = createConnection(session.descriptor.endpoint);
+            await new Promise<void>((resolve) => {
+                socket.on('connect', () => resolve());
+            });
+            socket.write(`${JSON.stringify({ token: session.descriptor.token, memory: 128, threads: 1 })}\n`);
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 100);
+            });
+            socket.destroy();
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 100);
+            });
+            release();
+            await expect(acquireLintLease(session.descriptor, 64, 1)).resolves.toBeTypeOf('function');
+        } finally {
+            await session.close();
+        }
+    });
+
     it('validates inherited metadata and rejects already cancelled requests', async () => {
         expect(readLintSession(undefined)).toBeUndefined();
         expect(() => readLintSession('{}')).toThrow('Invalid inherited');
