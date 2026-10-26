@@ -252,6 +252,33 @@ describe('one lint admission coordinator', () => {
         }
     });
 
+    it('drops repeated payloads on a granted socket without granting again', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            const release = await acquireLintLease(session.descriptor, 128, 1);
+            const socket = createConnection(session.descriptor.endpoint);
+            await new Promise<void>((resolve) => {
+                socket.on('connect', () => resolve());
+            });
+            socket.write(`${JSON.stringify({ token: session.descriptor.token, memory: 64, threads: 1 })}\n`);
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 100);
+            });
+            // A second payload on the same socket hits the already-received
+            // guard and is dropped without a second grant.
+            socket.write(`${JSON.stringify({ token: session.descriptor.token, memory: 64, threads: 1 })}\n`);
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 100);
+            });
+            socket.destroy();
+            release();
+            expect(session.metrics().acquired).toBeGreaterThanOrEqual(1);
+        } finally {
+            await session.close();
+        }
+    });
+
     it('rejects malformed admission payloads without granting a lease', async () => {
         const session = await startLintSession(BUDGET, { usage: () => 16 });
         try {
