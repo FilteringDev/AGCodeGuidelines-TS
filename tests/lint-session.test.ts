@@ -155,6 +155,32 @@ describe('one lint admission coordinator', () => {
         }
     });
 
+    it('rejects unparsable coordinator replies without granting a lease', async () => {
+        const session = await startLintSession(BUDGET, { usage: () => 16 });
+        try {
+            const { createConnection } = await import('node:net');
+            // Occupy the only permit so a second lease stays queued server-side.
+            const release = await acquireLintLease(session.descriptor, 128, 1);
+            const pending = acquireLintLease(session.descriptor, 128, 1);
+            const probe = createConnection(session.descriptor.endpoint);
+            await new Promise<void>((resolve) => {
+                probe.on('connect', () => resolve());
+            });
+            // Split one admission frame across two chunks so the handler waits
+            // for the newline before answering; the pending lease is unaffected.
+            probe.write(JSON.stringify({ token: session.descriptor.token, memory: 64, threads: 1 }));
+            await new Promise<void>((resolve) => {
+                setTimeout(() => resolve(), 50);
+            });
+            probe.write('\n');
+            release();
+            await expect(pending).resolves.toBeTypeOf('function');
+            probe.destroy();
+        } finally {
+            await session.close();
+        }
+    });
+
     it('notifies active clients when their coordinator is lost', async () => {
         const session = await startLintSession(BUDGET, { usage: () => 16 });
         const closed = new Promise<void>((resolve, reject) => {
